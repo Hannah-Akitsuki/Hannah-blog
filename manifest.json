@@ -1,41 +1,10 @@
 [
   {
-    "title": "嵌入式课程设计——智能老人鞋RTOS",
-    "file": "articles/嵌入式课程设计-智能老人鞋RTOS.md",
-    "source": "嵌入式课程设计——智能老人鞋RTOS.docx",
-    "images": 8,
-    "excerpt": "嵌入式课程设计——智能老人鞋 学号：102301102 专业：计算机科学与技术 姓名：吴晨涵 一、系统概述与功能定位 二、操作系统 本设计采用FreeRTOS实时操作系统，相较于裸机系统，RTOS为智能鞋的多任务管理提供了更优秀的解决方案。"
-  },
-  {
-    "title": "操作系统",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "操作系统知识点梳理",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "数据库",
-    "file": "articles/数据库.md",
-    "source": "数据库.pdf",
-    "images": 17,
-    "excerpt": "数据库系统论笔记 - #HER ATTE HEYERGGTA : NATEXAYE Data :FFF I LX ( #Database (DBMS :FBEZIG-EERS */(DBS) ↳ BA , TERM I F ② E T .E"
-  },
-  {
-    "title": "数据库笔记",
-    "file": "articles/数据库笔记.md",
-    "source": "数据库笔记.docx",
-    "images": 7,
-    "excerpt": "第一章 1.数据(Data)是数据库中存储的基本对象 是描述现实世界中各种具体事物或抽象概念的可存储并具有明确意义的信息 2.数据的含义称为数据的语义，数据与其语义是不可分的。 3.信息与数据之间存在着固有的联系：数据是信息的符号表示或称为"
-  },
-  {
-    "title": "数据挖掘笔记",
-    "file": "articles/数据挖掘笔记.md",
-    "source": "数据挖掘笔记.pdf",
-    "images": 256,
-    "excerpt": "* FE * 12FEEBF 0X Ak # FREE (EFA BAZ .DEA .TAIA)D: G7E : . ) KDD **FEDEE & : BYEl (KDD) :ERRBATTER REFRE : KDD : 1)DF :F"
+    "title": "编译原理",
+    "file": "articles/编译原理.md",
+    "source": "编译原理.pdf",
+    "images": 190,
+    "excerpt": "编译原理 ## 1、选择题 2分*5=10分 ## 2、填空题 3分*5=15分 ## 3、简答题 5分*7=35分 ## 4、综合题 10+12+18=40分 ## 第一章 ## 1. 什么是编译程序：编译程序(compiler)： 把某"
   },
   {
     "title": "系统结构笔记飞书",
@@ -45,27 +14,6 @@
     "excerpt": "系统结构 ## 第一章 ## 1. 计算机系统结构所包含的内容（选择） 系统结构是程序员所看到的计算机的属性，即程序员编写出能在机器上正确运行的程序所必须了解 到的概念性结构和功能特性。 a. 数据表示 i. 硬件能直接识别和处理的数据类型"
   },
   {
-    "title": "编译原理",
-    "file": "articles/编译原理.md",
-    "source": "编译原理.pdf",
-    "images": 190,
-    "excerpt": "编译原理 ## 1、选择题 2分*5=10分 ## 2、填空题 3分*5=15分 ## 3、简答题 5分*7=35分 ## 4、综合题 10+12+18=40分 ## 第一章 ## 1. 什么是编译程序：编译程序(compiler)： 把某"
-  },
-  {
-    "title": "计算方法",
-    "file": "articles/计算方法.md",
-    "source": "计算方法.pdf",
-    "images": 135,
-    "excerpt": "计算⽅法 if Fin X [1] EX EB-IA]T - : X(T) * 2*: X * + T * 2 at X10 in - X-ENTI - [2,XPEEr , ↳LFRE i X * MI **go MX *NI** 1) "
-  },
-  {
-    "title": "计算机系统结构复习提纲_逐点完整版",
-    "file": "articles/计算机系统结构复习提纲_逐点完整版.md",
-    "source": "计算机系统结构复习提纲_逐点完整版.docx",
-    "images": 130,
-    "excerpt": "# 第一章 计算机系统结构导论 本章按复习提纲顺序逐点整理：系统结构/组成/实现 → 设计思路/步骤 → 系列机/兼容机 → 层次结构 → 定义与透明性 → 软硬件取舍与可移植性 → 性能公式/Amdahl → 定量分析原则 → 并行性/F"
-  },
-  {
     "title": "软件工程重点大全",
     "file": "articles/软件工程重点大全.md",
     "source": "软件工程重点大全.pdf",
@@ -73,60 +21,8 @@
     "excerpt": "软件工程重点大全 ## 考点： 20％选择题（10题） 30％简答题（5题） 50％综合题（5题） 五个模块要关注的部分： 用例图 类图和设计原则 判定表（条件、最右边、结果）会画 关键路径分析（什么是，如何选，如何设计与结合） 获得值分析"
   },
   {
-    "title": "马原大题",
-    "file": "articles/马原大题.md",
-    "source": "马原大题.pdf",
-    "images": 0,
-    "excerpt": "## 1. ⻢克思主义的基本特征（P13） ⻢克思主义具有鲜明的科学性、⼈⺠性、实践性、发展性，这些特征体现了⻢克 gam 思主义的本质和使命，也展现出⻢克思主义的理论形象。 · a) ⻢克思主义是科学的理论：⻢克思主义是对⾃然、社会和⼈类"
-  },
-  {
-    "title": "第六章协议部分知识点补充",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网1-2",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网3",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网4",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网第七章知识点",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网第九章知识点",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网第五章知识点",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网第八章知识点",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网第六章知识点-删减版",
-    "publishAfter": "2026-12-21",
-    "locked": true
-  },
-  {
-    "title": "计网第六章知识点",
-    "publishAfter": "2026-12-21",
-    "locked": true
+    "title": "操作系统",
+    "locked": true,
+    "publishAfter": "2026-12-21"
   }
 ]
