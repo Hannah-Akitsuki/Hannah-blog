@@ -10,3 +10,19 @@
 
 /* 侧边栏分组标题 */
 .side-group{font-size:.72rem;letter-spacing:.18em;color:var(--muted,#888);text-transform:uppercase;padding:.9rem 1.4rem .4rem;border-top:1px solid rgba(128,128,128,.15);margin-top:.6rem}
+
+
+/* 门户页 */
+.hub{display:flex;flex-direction:column;gap:2.2rem;margin:1.2rem 0 2.6rem}
+.hub-intro h2{font-size:2.1rem;margin:.25em 0 .4em;letter-spacing:.02em}
+.hub-intro p{color:var(--muted,#6b6b6b);max-width:42em;line-height:1.9;margin:0}
+.hub-intro a{display:inline-block;margin-top:.7em;color:inherit;font-size:.92rem}
+.hub-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem}
+.hub-tile{display:flex;flex-direction:column;gap:.55em;padding:1.5rem 1.4rem;border:1px solid rgba(0,0,0,.12);border-radius:16px;text-decoration:none;color:inherit;background:rgba(255,255,255,.55);cursor:pointer;transition:transform .2s,box-shadow .2s;min-height:9.5rem}
+.hub-tile:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.09)}
+.hub-tile b{font-size:1.08rem;letter-spacing:.04em}
+.hub-tile span{font-size:.85rem;color:var(--muted,#777);line-height:1.7}
+.hub-tile i{font-style:normal;margin-top:auto;font-size:.85rem;opacity:.75}
+.hub-tile.muted{opacity:.55;cursor:default}
+.hub-tile.muted:hover{transform:none;box-shadow:none}
+@media(max-width:820px){.hub-tiles{grid-template-columns:1fr}}
