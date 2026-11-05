@@ -1,5 +1,12 @@
 ﻿[
     {
+        "title":  "寒鹤 · 简介",
+        "file":  "articles/寒鹤.md",
+        "date":  "2026-11-05",
+        "excerpt":  "关于我：个人博客、学习笔记与我的小工具。",
+        "source":  "本站"
+    },
+    {
         "title":  "编译原理",
         "file":  "articles/编译原理.md",
         "source":  "飞书 - 编译原理",
