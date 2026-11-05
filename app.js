@@ -14,3 +14,10 @@ $('#insertImage').onclick=()=>$('#imageFile').click();$('#imageFile').onchange=a
 
 async function init(){try{docs=await(await fetch('manifest.json?t='+Date.now())).json();renderLists();setMode('home')}catch(e){status.textContent='目录加载失败'}}init();
 document.addEventListener('click',e=>{const t=e.target.closest('#tileFzu');if(t){const c=document.getElementById('cards');c.hidden=false;c.scrollIntoView({behavior:'smooth',block:'start'})}const il=e.target.closest('#introLink');if(il){e.preventDefault();const i=docs.findIndex(d=>d.title.includes('寒鹤'));if(i>=0)openDoc(i)}});
+const dlg=document.getElementById('search'),q=document.getElementById('query'),res=document.getElementById('results');
+if(dlg){document.getElementById('searchOpen').onclick=()=>{dlg.showModal();q.focus()};
+document.getElementById('searchClose').onclick=()=>dlg.close();
+q.oninput=e=>{const v=e.target.value.trim();res.innerHTML=!v?'':docs.filter(d=>d.title.includes(v)).map(d=>{const i=docs.indexOf(d);return `<a href="#" data-i="${i}">${esc(d.title)}${locked(d)?'（未公开）':''}</a>`}).join('')};
+res.onclick=e=>{const a=e.target.closest('a[data-i]');if(a){e.preventDefault();dlg.close();openDoc(+a.dataset.i)}};
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();dlg.showModal();q.focus()}});
+}
