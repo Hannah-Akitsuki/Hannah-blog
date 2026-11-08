@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 <script type="importmap">
 {
   "imports": {
@@ -259,15 +259,21 @@ document.documentElement.classList.add('booting');
     <div class="page-head">
       <div class="eyebrow">GALLERY</div>
       <h1>照片墙</h1>
-      <p>来自独立相册目录 <code>photos/</code>，共 <b id="photoTotal">0</b> 张。点击可放大。<span class="owner-only">新增照片后运行 <code>python tools/build_photos.py</code> 更新索引。</span></p>
+      <p>来自独立相册目录 <code>photos/</code>，共 <b id="photoTotal">0</b> 张，按年份分卷。点击照片可放大。<span class="owner-only">新增照片后运行 <code>python tools/build_photos.py</code> 更新索引。</span></p>
     </div>
     <div class="scene-3d" data-scene="wall">
       <div class="scene-sky" aria-hidden="true"></div>
       <img class="scene-poster" src="assets/3d/wall.webp" alt="漂浮空相框墙的三维静帧" width="1200" height="760" loading="lazy" decoding="async">
       <canvas class="scene-canvas" aria-hidden="true" hidden></canvas>
     </div>
-    <div class="photo-grid" id="photoGrid"></div>
+    <div class="rolls" id="photoGrid"></div>
     <div class="more-wrap"><button class="ghost-btn" id="photoMore" hidden>加载更多</button></div>
+    <details class="howto owner-only">
+      <summary>怎么放照片、调顺序、写地点</summary>
+      <p>把照片放进年份文件夹，例如 <code>photos/2026/</code>，然后运行 <code>python tools/build_photos.py</code>（或直接推送让 Action 生成索引）。年份优先取文件夹名，其次依次回退到 EXIF 拍摄时间、文件名日期、文件修改时间。</p>
+      <p>调顺序：在 <code>data/photos.json</code> 里给某张照片手工加 <code>"order": 1</code>（数字越小越靠前），重新构建时会保留；也可以直接用文件名前缀 <code>01-</code> 排序。</p>
+      <p>写地点：给照片加 <code>"place": "福州·三坊七巷"</code>；没有 EXIF GPS、也没写地点时，灯箱只显示日期，不会写「未知」。</p>
+    </details>
   </section>
 
   <!-- 个人日记 -->
@@ -377,11 +383,14 @@ document.documentElement.classList.add('booting');
 <!-- 图片灯箱 -->
 <div class="lightbox" id="lightbox" hidden>
   <button class="lb-close" id="lbClose" aria-label="关闭">×</button>
-  <img id="lightboxImg" alt="">
+  <figure class="polaroid">
+    <img id="lightboxImg" alt="">
+    <figcaption class="lb-caption" id="lbCaption" hidden><span id="lbDate"></span><span id="lbPlace"></span></figcaption>
+  </figure>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

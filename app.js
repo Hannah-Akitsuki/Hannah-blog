@@ -324,12 +324,11 @@ function renderHome() {
     if (a) { e.preventDefault(); openDoc(+a.dataset.i); }
   });
 
-  const items = state.photos.slice(0, 8).map(p =>
-    `<figure class="ph"><img src="${esc(p.src)}" alt="${esc(p.album)}" loading="lazy" decoding="async"></figure>`).join('');
+  const items = state.photos.slice(0, 8).map(photoCard).join('');
   $('#homePhotos').innerHTML = items || '<div class="empty">相册还是空的 —— 把照片放进 <code>photos/</code> 就会出现在这里。</div>';
   $('#homePhotos').addEventListener('click', e => {
-    const img = e.target.closest('img');
-    if (img) openLightbox(img.src);
+    const fig = e.target.closest('.ph');
+    if (fig) openLightbox(fig.dataset.src, fig.dataset.at, fig.dataset.place);
   });
   renderNowCard();
 }
@@ -376,39 +375,74 @@ function renderLinks() {
     </a>`).join('');
 }
 
-/* ---------------- 照片墙 ---------------- */
-function photoCard(p) {
-  return `<figure class="ph" data-src="${esc(p.src)}"><img src="${esc(p.src)}" alt="${esc(p.album)}" loading="lazy" decoding="async"></figure>`;
+/* ---------------- 照片墙（按年份分卷 + 胶卷条） ---------------- */
+function photoAlt(p) {
+  return [p.at, p.place].filter(Boolean).join('　') || '照片';
 }
+function photoCard(p) {
+  return `<figure class="ph" data-src="${esc(p.src)}" data-at="${esc(p.at || '')}" data-place="${esc(p.place || '')}" tabindex="0" role="button" aria-label="${esc(photoAlt(p))}"><img src="${esc(p.src)}" alt="${esc(photoAlt(p))}" loading="lazy" decoding="async" width="1" height="1"></figure>`;
+}
+function photoYear(p) { return Number(p.year) || 0; }
 function renderPhotos() {
-  const grid = $('#photoGrid');
+  const box = $('#photoGrid');
   $('#photoTotal').textContent = state.photos.length;
   state.photoShown = 0;
+  box.innerHTML = '';
   if (!state.photos.length) {
-    grid.innerHTML = '<div class="empty">相册还是空的 —— 把照片放进 <code>photos/</code> 就会出现在这里。</div>';
+    box.innerHTML = '<div class="empty">相册还是空的 —— 把照片放进 <code>photos/</code> 就会出现在这里。</div>';
+    $('#photoMore').hidden = true;
     return;
   }
-  grid.innerHTML = '';
   appendPhotos();
-  grid.addEventListener('click', e => {
+  box.addEventListener('click', e => {
     const fig = e.target.closest('.ph');
-    if (fig) openLightbox(fig.dataset.src);
+    if (fig) openLightbox(fig.dataset.src, fig.dataset.at, fig.dataset.place);
+  });
+  box.addEventListener('keydown', e => {
+    const fig = e.target.closest('.ph');
+    if (fig && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      openLightbox(fig.dataset.src, fig.dataset.at, fig.dataset.place);
+    }
   });
 }
 function appendPhotos() {
-  const grid = $('#photoGrid');
+  const box = $('#photoGrid');
   const next = state.photos.slice(state.photoShown, state.photoShown + PAGE_SIZE);
-  grid.insertAdjacentHTML('beforeend', next.map(photoCard).join(''));
+  const totals = {};
+  state.photos.forEach(p => { totals[photoYear(p)] = (totals[photoYear(p)] || 0) + 1; });
+  next.forEach(p => {
+    const y = photoYear(p);
+    let roll = box.querySelector('.roll[data-year="' + y + '"]');
+    if (!roll) {
+      roll = document.createElement('section');
+      roll.className = 'roll';
+      roll.dataset.year = y;
+      roll.innerHTML = `<div class="roll-head"><b>${y || '未分卷'}</b><span>${totals[y] || 0} 张</span></div><div class="roll-strip"></div>`;
+      const before = [...box.querySelectorAll('.roll')].find(el => Number(el.dataset.year) < y);
+      if (before) box.insertBefore(roll, before); else box.appendChild(roll);
+    }
+    roll.querySelector('.roll-strip').insertAdjacentHTML('beforeend', photoCard(p));
+  });
   state.photoShown += next.length;
   $('#photoMore').hidden = state.photoShown >= state.photos.length;
 }
 
-function openLightbox(src) {
+function openLightbox(src, at, place) {
   const lb = $('#lightbox');
   $('#lightboxImg').src = src;
+  $('#lbDate').textContent = at ? fmtDate(at) : '';
+  $('#lbPlace').textContent = place || '';
+  $('#lbCaption').hidden = !(at || place);
   lb.hidden = false;
 }
-function closeLightbox() { $('#lightbox').hidden = true; $('#lightboxImg').src = ''; }
+function closeLightbox() {
+  $('#lightbox').hidden = true;
+  $('#lightboxImg').src = '';
+  $('#lbDate').textContent = '';
+  $('#lbPlace').textContent = '';
+  $('#lbCaption').hidden = true;
+}
 
 /* ---------------- 音乐 ---------------- */
 let audio = null;
