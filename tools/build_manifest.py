@@ -48,25 +48,46 @@ def split_front_matter(text):
     return parse_simple_yaml(raw), body
 
 
+def parse_scalar(value, key=""):
+    value = value.strip()
+    if value[:1] in ('"', "'") and value[-1:] == value[:1] and len(value) >= 2:
+        value = value[1:-1].replace(value[0] + value[0], value[0]).replace("\\n", "\n")
+    elif value.startswith("[") and value.endswith("]"):
+        inner = value[1:-1].strip()
+        return [] if not inner else [parse_scalar(x) for x in inner.split(",") if x.strip()]
+    elif value.lower() in ("true", "yes"):
+        return True
+    elif value.lower() in ("false", "no"):
+        return False
+    elif key in ("tags", "related") and "," in value:
+        # 兼容 Pages CMS 里用逗号分隔的写法
+        return [x.strip() for x in value.split(",") if x.strip()]
+    return value
+
+
 def parse_simple_yaml(lines):
+    """只解析单层 YAML：标量 + 块状列表（tags / related 用）。"""
     data = {}
-    for line in lines:
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-        if ":" not in line:
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip() or line.lstrip().startswith("#") or ":" not in line:
+            i += 1
             continue
         key, value = line.split(":", 1)
         key = key.strip()
         value = value.strip()
-        if value[:1] in ('"', "'") and value[-1:] == value[:1] and len(value) >= 2:
-            quote = value[0]
-            value = value[1:-1]
-            value = value.replace(quote + quote, quote).replace("\\n", "\n")
-        elif value.lower() in ("true", "yes"):
-            value = True
-        elif value.lower() in ("false", "no"):
-            value = False
-        data[key] = value
+        if value == "":
+            items = []
+            j = i + 1
+            while j < len(lines) and lines[j].strip().startswith("- "):
+                items.append(parse_scalar(lines[j].strip()[2:]))
+                j += 1
+            data[key] = items if items else ""
+            i = j
+            continue
+        data[key] = parse_scalar(value, key)
+        i += 1
     return data
 
 
@@ -80,6 +101,27 @@ def auto_excerpt(body):
 
 def count_images(body):
     return len(re.findall(r"images/[^)\"'\\s]+", body))
+
+
+WIKI_LINK = re.compile(r"\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]")
+
+
+def extract_wikilinks(body):
+    """只读解析正文里的 [[笔记名]] 双链，不改正文。"""
+    out = []
+    for m in WIKI_LINK.finditer(body):
+        target = m.group(1).strip()
+        if target and target not in out:
+            out.append(target)
+    return out
+
+
+def as_list(value):
+    if isinstance(value, list):
+        return [str(x).strip() for x in value if str(x).strip()]
+    if isinstance(value, str):
+        return [x.strip() for x in re.split(r"[,，]", value) if x.strip()]
+    return []
 
 
 def load_previous():
@@ -141,6 +183,15 @@ def build_manifest():
             n = count_images(body)
             if n:
                 entry["images"] = n
+        tags = as_list(fm.get("tags")) or as_list(old.get("tags"))
+        if tags:
+            entry["tags"] = tags
+        related = as_list(fm.get("related")) or as_list(old.get("related"))
+        if related:
+            entry["related"] = related
+        links = extract_wikilinks(body)
+        if links:
+            entry["links"] = links
         entries.append(entry)
 
     # 新文章（无 legacyIndex）按日期倒序在前，旧文章按 legacyIndex 稳定排序在后

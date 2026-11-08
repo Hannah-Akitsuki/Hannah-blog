@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=17">
+<link rel="stylesheet" href="style.css?v=18">
 <script type="importmap">
 {
   "imports": {
@@ -180,7 +180,19 @@ document.documentElement.classList.add('booting');
           </div>
           <span class="collection-count" id="notesTotal">00 篇笔记</span>
         </div>
+        <div class="notes-mode" role="tablist" aria-label="笔记显示方式">
+          <button class="seg-btn on" id="notesModeCards" type="button" role="tab" aria-selected="true">卡片</button>
+          <button class="seg-btn" id="notesModeGraph" type="button" role="tab" aria-selected="false">知识图谱</button>
+        </div>
         <div class="cards" id="notesCards"></div>
+        <div class="graph-wrap" id="graphWrap" hidden>
+          <div class="graph-bar">
+            <span class="tiny" id="graphHint">节点是笔记，连线是共享标签或显式关联。拖拽移动、滚轮缩放、点节点阅读。</span>
+            <button class="ghost-btn" id="graphReset" type="button">复位</button>
+          </div>
+          <svg class="graph-canvas" id="graphCanvas" role="img" aria-label="笔记知识图谱"></svg>
+          <div class="graph-list" id="graphList"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -423,7 +435,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=16"></script>
+<script src="app.js?v=18"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

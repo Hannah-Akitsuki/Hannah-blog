@@ -63,6 +63,12 @@ content:
         type: image
         options:
           media: images
+      - name: tags
+        label: 标签（知识图谱用，英文逗号分隔）
+        type: string
+      - name: related
+        label: 关联笔记 id（英文逗号分隔，如 compiler, operating-systems）
+        type: string
       - name: body
         label: 正文
         type: rich-text

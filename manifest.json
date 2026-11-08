@@ -7,7 +7,13 @@
     "excerpt": "关于我：个人博客、学习笔记与我的小工具。",
     "category": "关于",
     "source": "本站",
-    "legacyIndex": 0
+    "legacyIndex": 0,
+    "tags": [
+      "关于本站",
+      "阅读",
+      "旅行",
+      "自建工具"
+    ]
   },
   {
     "id": "compiler",
@@ -18,7 +24,18 @@
     "category": "编译原理",
     "source": "飞书 - 编译原理",
     "legacyIndex": 1,
-    "images": 190
+    "images": 190,
+    "tags": [
+      "编译原理",
+      "词法分析",
+      "语法分析",
+      "语义分析",
+      "中间代码",
+      "目标代码"
+    ],
+    "related": [
+      "architecture"
+    ]
   },
   {
     "id": "architecture",
@@ -29,7 +46,18 @@
     "category": "系统架构",
     "source": "飞书 - 系统结构",
     "legacyIndex": 2,
-    "images": 230
+    "images": 230,
+    "tags": [
+      "系统架构",
+      "指令系统",
+      "流水线",
+      "存储层次",
+      "并行处理",
+      "存储"
+    ],
+    "related": [
+      "operating-systems"
+    ]
   },
   {
     "id": "software-engineering",
@@ -40,7 +68,15 @@
     "category": "软件工程",
     "source": "飞书 - 软件工程重点大全",
     "legacyIndex": 3,
-    "images": 181
+    "images": 181,
+    "tags": [
+      "软件工程",
+      "需求分析",
+      "用例图",
+      "类图",
+      "关键路径",
+      "软件测试"
+    ]
   },
   {
     "id": "computer-networks",
@@ -52,7 +88,18 @@
     "source": "计网（多份 docx）",
     "publishAfter": "2026-12-21",
     "legacyIndex": 4,
-    "images": 217
+    "images": 217,
+    "tags": [
+      "计算机网络",
+      "数据链路层",
+      "网络层",
+      "传输层",
+      "网络安全",
+      "TCP"
+    ],
+    "related": [
+      "operating-systems"
+    ]
   },
   {
     "id": "operating-systems",
@@ -64,6 +111,19 @@
     "source": "飞书 - 操作系统知识点梳理",
     "publishAfter": "2026-12-21",
     "legacyIndex": 5,
-    "images": 151
+    "images": 151,
+    "tags": [
+      "操作系统",
+      "进程管理",
+      "调度算法",
+      "内存管理",
+      "虚拟存储",
+      "文件系统",
+      "存储"
+    ],
+    "related": [
+      "computer-networks",
+      "architecture"
+    ]
   }
 ]

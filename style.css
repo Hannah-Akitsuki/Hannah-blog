@@ -407,6 +407,38 @@ dialog h3{font:500 19px 'Noto Serif SC';margin:0 0 8px}
 .foot-copy:hover{color:var(--green);border-color:var(--green)}
 .foot-note{font-size:11px;color:var(--muted);line-height:1.7}
 
+/* ================= 笔记知识图谱 ================= */
+.notes-mode{display:inline-flex;gap:4px;margin:0 0 18px;padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.seg-btn{border:none;background:transparent;color:var(--muted);font-size:12.5px;padding:6px 16px;border-radius:999px;transition:.2s}
+.seg-btn.on{background:var(--green);color:#fff}
+.graph-wrap{margin:0 0 10px}
+.graph-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 12px}
+.graph-bar .tiny{margin:0}
+.graph-canvas{
+  display:block;width:100%;height:560px;background:var(--card-2);
+  border:1px solid var(--line);border-radius:16px;
+  touch-action:none;cursor:grab;user-select:none;overflow:hidden;
+}
+.graph-canvas:active{cursor:grabbing}
+.graph-edge{stroke:var(--muted);stroke-width:1.4;opacity:.45}
+.graph-edge.kind-related{stroke:var(--accent);stroke-dasharray:6 4;opacity:.7}
+.graph-edge.kind-link{stroke:var(--green);stroke-dasharray:2 4;opacity:.7}
+.graph-edge.hot{stroke:var(--green);stroke-width:2.6;opacity:1}
+.graph-node{cursor:pointer}
+.graph-node circle{fill:var(--green);stroke:var(--card);stroke-width:2;transition:fill .2s,stroke .2s}
+.graph-node text{fill:#fff;font:500 11.5px 'Noto Serif SC',serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.graph-node:hover circle{stroke:var(--accent);stroke-width:3}
+.graph-node.locked circle{fill:var(--muted);opacity:.92}
+.graph-node.dim{opacity:.28}
+.graph-list{display:none}
+.graph-rel{
+  display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:12px 14px;color:var(--ink);font-family:inherit;
+}
+.graph-rel b{display:block;font:500 15px 'Noto Serif SC',serif;margin:0 0 4px}
+.graph-rel span{display:block;font-size:12px;color:var(--muted);line-height:1.7}
+.graph-rel:hover{border-color:var(--green)}
+
 /* ================= 响应式 ================= */
 @media(max-width:1120px){
   .main-nav{gap:12px}
@@ -433,6 +465,8 @@ dialog h3{font:500 19px 'Noto Serif SC';margin:0 0 8px}
 }
 @media(max-width:700px){
   .now-grid{grid-template-columns:1fr}
+  .graph-canvas,.graph-bar{display:none}
+  .graph-list{display:flex;flex-direction:column;gap:10px}
 }
 @media(max-width:600px){
   .hero h1{letter-spacing:.04em}

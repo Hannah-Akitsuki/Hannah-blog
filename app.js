@@ -398,6 +398,229 @@ function closeBookDrawer() {
   $('#bookMask').hidden = true;
 }
 
+/* ---------------- 笔记知识图谱 ----------------
+   节点 = 文章；边 = 共享标签 / related 显式关联 / 正文双链（只读解析）。
+   手写 SVG 力导向，无第三方图表库；节点超过 80 个或窄屏/省动效时降级静态布局。 */
+const GRAPH_NS = 'http://www.w3.org/2000/svg';
+const GRAPH_LIVE_LIMIT = 80;
+let graphMode = false, graphRaf = 0, graphData = null;
+let graphView = { x: 0, y: 0, k: 1 };
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(GRAPH_NS, tag);
+  if (attrs) Object.keys(attrs).forEach(k => el.setAttribute(k, attrs[k]));
+  return el;
+}
+function buildGraphData() {
+  const nodes = state.docs.map((d, i) => ({
+    id: String(d.id || d.title || i),
+    title: String(d.title || ('笔记 ' + i)),
+    index: i,
+    tags: Array.isArray(d.tags) ? d.tags : [],
+    related: Array.isArray(d.related) ? d.related : [],
+    links: Array.isArray(d.links) ? d.links : [],
+    locked: locked(d),
+    x: 0, y: 0, vx: 0, vy: 0, pinned: false
+  }));
+  const byRef = new Map();
+  nodes.forEach(n => {
+    byRef.set(n.id.toLowerCase(), n);
+    byRef.set(n.title.toLowerCase(), n);
+  });
+  const resolve = ref => byRef.get(String(ref).trim().toLowerCase()) || null;
+  const edges = new Map();
+  function addEdge(a, b, kind, label) {
+    if (!a || !b || a === b) return;
+    const key = [a.id, b.id].sort().join('|');
+    if (edges.has(key)) return;
+    edges.set(key, { a: a, b: b, kind: kind, label: label });
+  }
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const shared = nodes[i].tags.filter(t => nodes[j].tags.indexOf(t) >= 0);
+      if (shared.length) addEdge(nodes[i], nodes[j], 'tag', shared.join('、'));
+    }
+  }
+  nodes.forEach(n => {
+    n.related.forEach(r => addEdge(n, resolve(r), 'related', '显式关联'));
+    n.links.forEach(r => addEdge(n, resolve(r), 'link', '双链'));
+  });
+  return { nodes: nodes, edges: [...edges.values()], W: 800, H: 560 };
+}
+function renderGraph() {
+  const canvas = $('#graphCanvas');
+  const list = $('#graphList');
+  if (!canvas) return;
+  stopGraph();
+  graphData = buildGraphData();
+  const g = graphData;
+  const W = Math.max(320, Math.round(canvas.getBoundingClientRect().width || $('#graphWrap').clientWidth || 800));
+  g.W = W; g.H = 560;
+  canvas.setAttribute('viewBox', '0 0 ' + W + ' ' + g.H);
+  canvas.innerHTML = '';
+  const view = svgEl('g', { class: 'graph-view' });
+  canvas.appendChild(view);
+  const R = Math.min(W, g.H) * 0.32;
+  g.nodes.forEach((n, i) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(1, g.nodes.length);
+    n.x = W / 2 + Math.cos(a) * R;
+    n.y = g.H / 2 + Math.sin(a) * R;
+    n.r = 30;
+  });
+  g.edges.forEach(e => {
+    const line = svgEl('line', { class: 'graph-edge ' + e.kind, x1: 0, y1: 0, x2: 0, y2: 0 });
+    const t = svgEl('title');
+    t.textContent = e.label || '关联';
+    line.appendChild(t);
+    view.appendChild(line);
+    e.el = line;
+  });
+  g.nodes.forEach(n => {
+    const el = svgEl('g', { class: 'graph-node' + (n.locked ? ' locked' : '') });
+    el.appendChild(svgEl('circle', { r: n.r, cx: 0, cy: 0 }));
+    const txt = svgEl('text');
+    txt.textContent = n.title.length > 5 ? n.title.slice(0, 5) + '…' : n.title;
+    el.appendChild(txt);
+    el.addEventListener('pointerenter', () => highlightGraphNode(n));
+    el.addEventListener('pointerleave', clearGraphHighlight);
+    view.appendChild(el);
+    n.el = el;
+  });
+  applyGraphTransform();
+  drawGraph();
+  renderGraphList();
+  const hint = $('#graphHint');
+  if (hint) {
+    hint.textContent = g.nodes.length > GRAPH_LIVE_LIMIT
+      ? '节点超过 ' + GRAPH_LIVE_LIMIT + ' 个，已降级为静态布局；仍可缩放、点开阅读。'
+      : '节点是笔记，连线是共享标签或显式关联。拖拽移动、滚轮缩放、点节点阅读。';
+  }
+}
+function drawGraph() {
+  const g = graphData;
+  if (!g) return;
+  g.edges.forEach(e => {
+    e.el.setAttribute('x1', e.a.x);
+    e.el.setAttribute('y1', e.a.y);
+    e.el.setAttribute('x2', e.b.x);
+    e.el.setAttribute('y2', e.b.y);
+  });
+  g.nodes.forEach(n => n.el.setAttribute('transform', 'translate(' + n.x + ',' + n.y + ')'));
+}
+function stepPhysics(g, alpha) {
+  const nodes = g.nodes;
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      let d2 = dx * dx + dy * dy;
+      if (d2 < 100) { dx = (Math.random() - .5) * 8; dy = (Math.random() - .5) * 8; d2 = 64; }
+      const d = Math.sqrt(d2);
+      const f = Math.min(4000 / d2, 40) + (d < 76 ? (76 - d) * 0.5 : 0);
+      const fx = dx / d * f, fy = dy / d * f;
+      a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+    }
+  }
+  g.edges.forEach(e => {
+    const a = e.a, b = e.b;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    const f = (d - 150) * 0.016;
+    const fx = dx / d * f, fy = dy / d * f;
+    if (!a.pinned) { a.vx += fx; a.vy += fy; }
+    if (!b.pinned) { b.vx -= fx; b.vy -= fy; }
+  });
+  nodes.forEach(n => {
+    if (n.pinned) { n.vx = 0; n.vy = 0; return; }
+    n.vx += (g.W / 2 - n.x) * 0.0035;
+    n.vy += (g.H / 2 - n.y) * 0.0035;
+    n.vx *= 0.86; n.vy *= 0.86;
+    n.x = Math.max(40, Math.min(g.W - 40, n.x + n.vx * alpha));
+    n.y = Math.max(40, Math.min(g.H - 40, n.y + n.vy * alpha));
+  });
+}
+function startGraphSim() {
+  stopGraph();
+  const g = graphData;
+  if (!g) return;
+  const narrow = window.matchMedia('(max-width:700px)').matches;
+  if (reduceMotion() || narrow || g.nodes.length > GRAPH_LIVE_LIMIT) {
+    drawGraph();
+    return;
+  }
+  let alpha = 1;
+  const step = () => {
+    stepPhysics(g, alpha);
+    alpha *= 0.98;
+    drawGraph();
+    if (alpha > 0.03) graphRaf = requestAnimationFrame(step);
+    else graphRaf = 0;
+  };
+  graphRaf = requestAnimationFrame(step);
+}
+function stopGraph() {
+  if (graphRaf) cancelAnimationFrame(graphRaf);
+  graphRaf = 0;
+}
+function highlightGraphNode(node) {
+  if (!graphData) return;
+  const ids = {};
+  ids[node.id] = true;
+  graphData.edges.forEach(e => {
+    const hot = e.a.id === node.id || e.b.id === node.id;
+    e.el.classList.toggle('hot', hot);
+    if (hot) { ids[e.a.id] = true; ids[e.b.id] = true; }
+  });
+  graphData.nodes.forEach(n => n.el.classList.toggle('dim', !ids[n.id]));
+}
+function clearGraphHighlight() {
+  if (!graphData) return;
+  graphData.edges.forEach(e => e.el.classList.remove('hot'));
+  graphData.nodes.forEach(n => n.el.classList.remove('dim'));
+}
+function applyGraphTransform() {
+  const canvas = $('#graphCanvas');
+  const g = canvas && canvas.querySelector('.graph-view');
+  if (g) g.setAttribute('transform', 'translate(' + graphView.x + ',' + graphView.y + ') scale(' + graphView.k + ')');
+}
+function renderGraphList() {
+  const list = $('#graphList');
+  if (!list || !graphData) return;
+  const rel = {};
+  graphData.edges.forEach(e => {
+    (rel[e.a.id] = rel[e.a.id] || []).push(e.b.title);
+    (rel[e.b.id] = rel[e.b.id] || []).push(e.a.title);
+  });
+  list.innerHTML = graphData.nodes.map(n =>
+    `<button type="button" class="graph-rel" data-i="${n.index}">
+      <b>${esc(n.title)}</b>
+      <span>${n.tags.length ? '标签：' + esc(n.tags.join('、')) : '暂无标签'}</span>
+      ${rel[n.id] ? '<span>关联：' + esc(rel[n.id].join('、')) + '</span>' : ''}
+    </button>`).join('');
+}
+function setGraphMode(on) {
+  graphMode = !!on;
+  const cards = $('#notesCards'), wrap = $('#graphWrap');
+  if (cards) cards.hidden = graphMode;
+  if (wrap) wrap.hidden = !graphMode;
+  const btnCards = $('#notesModeCards'), btnGraph = $('#notesModeGraph');
+  if (btnCards) { btnCards.classList.toggle('on', !graphMode); btnCards.setAttribute('aria-selected', !graphMode ? 'true' : 'false'); }
+  if (btnGraph) { btnGraph.classList.toggle('on', graphMode); btnGraph.setAttribute('aria-selected', graphMode ? 'true' : 'false'); }
+  if (graphMode) {
+    renderGraph();
+    startGraphSim();
+  } else {
+    stopGraph();
+  }
+}
+function graphPoint(e) {
+  const canvas = $('#graphCanvas');
+  const view = canvas.querySelector('.graph-view');
+  const pt = canvas.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  return pt.matrixTransform(view.getScreenCTM().inverse());
+}
+
 function renderHome() {
   const course = state.docs.filter(d => !isIntro(d));
   $('#homeCards').innerHTML = course.map(d => {
@@ -985,6 +1208,11 @@ function showView(name, keepScroll) {
     if (name === 'guestbook') renderGuestbook();
     if (name === 'now') renderNow();
     if (name === 'books') renderBooks();
+    if (name !== 'notes') stopGraph();
+    if (name === 'notes' && graphMode) {
+      if (!graphData) renderGraph();
+      startGraphSim();
+    }
 
     if (!keepScroll) window.scrollTo({ top: 0, behavior: 'auto' });
     document.body.classList.remove('mobile-open');
@@ -1264,6 +1492,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (e.key === 'Escape') { closeSearch(); closeLightbox(); closeBookDrawer(); }
   });
+
+  const notesModeCards = $('#notesModeCards');
+  if (notesModeCards) {
+    notesModeCards.addEventListener('click', () => setGraphMode(false));
+    $('#notesModeGraph').addEventListener('click', () => setGraphMode(true));
+    $('#graphReset').addEventListener('click', () => {
+      if (!graphMode) return;
+      graphView = { x: 0, y: 0, k: 1 };
+      applyGraphTransform();
+      renderGraph();
+      startGraphSim();
+    });
+    $('#graphList').addEventListener('click', e => {
+      const b = e.target.closest('.graph-rel');
+      if (b) openDoc(+b.dataset.i);
+    });
+    const canvas = $('#graphCanvas');
+    let gDrag = null, gPan = null;
+    canvas.addEventListener('wheel', e => {
+      if (!graphMode) return;
+      e.preventDefault();
+      graphView.k = Math.max(0.5, Math.min(2.6, graphView.k * Math.exp(-e.deltaY * 0.0012)));
+      applyGraphTransform();
+    }, { passive: false });
+    canvas.addEventListener('pointerdown', e => {
+      if (!graphMode) return;
+      canvas.setPointerCapture(e.pointerId);
+      const nodeEl = e.target.closest('.graph-node');
+      if (nodeEl) {
+        const n = graphData.nodes.find(x => x.el === nodeEl);
+        if (n) {
+          n.pinned = true;
+          gDrag = { n: n, moved: false, sx: e.clientX, sy: e.clientY };
+        }
+      } else {
+        gPan = { sx: e.clientX, sy: e.clientY, vx: graphView.x, vy: graphView.y };
+      }
+    });
+    canvas.addEventListener('pointermove', e => {
+      if (gDrag) {
+        const p = graphPoint(e);
+        gDrag.n.x = p.x;
+        gDrag.n.y = p.y;
+        if (Math.abs(e.clientX - gDrag.sx) + Math.abs(e.clientY - gDrag.sy) > 6) gDrag.moved = true;
+        drawGraph();
+      } else if (gPan) {
+        graphView.x = gPan.vx + (e.clientX - gPan.sx);
+        graphView.y = gPan.vy + (e.clientY - gPan.sy);
+        applyGraphTransform();
+      }
+    });
+    canvas.addEventListener('pointerup', () => {
+      if (gDrag) {
+        const n = gDrag.n;
+        n.pinned = false;
+        if (!gDrag.moved) openDoc(n.index);
+        gDrag = null;
+      }
+      gPan = null;
+    });
+    canvas.addEventListener('pointercancel', () => {
+      if (gDrag) gDrag.n.pinned = false;
+      gDrag = null;
+      gPan = null;
+    });
+  }
 
   const bookGrid = $('#bookGrid');
   if (bookGrid) {
