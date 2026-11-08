@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=19">
+<link rel="stylesheet" href="style.css?v=20">
 <script type="importmap">
 {
   "imports": {
@@ -134,10 +134,10 @@ document.documentElement.classList.add('booting');
           <p>按课程翻词条，支持中英文与缩写搜索；每条都能复制深链发给同学。</p>
           <span class="study-go">打开 →</span>
         </a>
-        <a class="study-card" href="#demos">
+        <a class="study-card" href="#vis">
           <span class="study-kicker">PLAYGROUND</span>
           <b>交互演示</b>
-          <p>浮点拆位、TCP 状态机、排序、页面置换、流水线、NFA→DFA，一步一步看。</p>
+          <p>排序、树旋转、虚拟地址、Cache、页面置换、磁盘调度、TCP，一步一步看。</p>
           <span class="study-go">打开 →</span>
         </a>
       </div>
@@ -204,7 +204,7 @@ document.documentElement.classList.add('booting');
           <button class="seg-btn on" id="notesModeCards" type="button" role="tab" aria-selected="true">卡片</button>
           <button class="seg-btn" id="notesModeGraph" type="button" role="tab" aria-selected="false">知识图谱</button>
           <a class="seg-btn seg-link" href="#glossary" role="tab">术语速查</a>
-          <a class="seg-btn seg-link" href="#demos" role="tab">交互演示</a>
+          <a class="seg-btn seg-link" href="#vis" role="tab">交互演示</a>
         </div>
         <div class="cards" id="notesCards"></div>
         <div class="graph-wrap" id="graphWrap" hidden>
@@ -224,7 +224,7 @@ document.documentElement.classList.add('booting');
     <div class="page-head">
       <div class="eyebrow">GLOSSARY</div>
       <h1>术语速查</h1>
-      <p>从现有课程笔记里摘出来的词条，按课程分组。中文、英文或缩写都能搜；点开词条可复制深链。<span id="glossaryCount"></span></p>
+      <p>408 四门课的核心术语，按课程分组。中文、英文或缩写都能搜；带图的词条可在抽屉里放大看波形、时序与结构图。<span id="glossaryCount"></span></p>
     </div>
     <div class="glossary-panel">
       <div class="glossary-search-row">
@@ -235,7 +235,7 @@ document.documentElement.classList.add('booting');
     </div>
     <div class="glossary-list" id="glossaryList"></div>
     <div class="empty" id="glossaryEmpty" hidden>没有匹配的术语，换个关键词试试。</div>
-    <p class="tiny glossary-note">只收录笔记正文里明确讲过的术语。计算机组成原理、数据结构两门暂时没有对应笔记，标为「待补」，不编造定义。</p>
+    <p class="tiny glossary-note">按主流教材口径整理，争议处会写明前提（如曼彻斯特编码的两种电平约定）。图均为内嵌 SVG，随暗色主题变色。</p>
   </section>
 
   <!-- 交互演示 -->
@@ -245,9 +245,8 @@ document.documentElement.classList.add('booting');
       <h1>交互演示</h1>
       <p>把课堂上的过程一步一步放慢看。每个演示都能单步、重置，并带可分享深链。</p>
     </div>
-    <div class="demo-list" id="demoList">
-      <div class="empty">六个演示正在搭建：浮点拆位、TCP 状态机、排序、页面置换、流水线、NFA→DFA。稍后上线。</div>
-    </div>
+    <div class="demo-list" id="demoList"></div>
+    <div class="demo-mount" id="demoMount" hidden></div>
   </section>
 
   <!-- 文章 -->
@@ -488,14 +487,18 @@ document.documentElement.classList.add('booting');
 <!-- 图片灯箱 -->
 <div class="lightbox" id="lightbox" hidden>
   <button class="lb-close" id="lbClose" aria-label="关闭">×</button>
-  <figure class="polaroid">
+  <figure class="polaroid" id="lbPhoto">
     <img id="lightboxImg" alt="">
     <figcaption class="lb-caption" id="lbCaption" hidden><span id="lbDate"></span><span id="lbPlace"></span></figcaption>
+  </figure>
+  <figure class="diagram-lb" id="lbDiagram" hidden>
+    <div id="lbSvg"></div>
+    <figcaption id="lbSvgCaption" hidden></figcaption>
   </figure>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=19"></script>
+<script src="app.js?v=20"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

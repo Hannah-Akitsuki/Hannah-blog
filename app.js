@@ -401,11 +401,8 @@ function closeBookDrawer() {
 /* ---------------- 术语速查 ----------------
    数据来自 data/glossary.json，只收笔记正文明确讲过的词条；支持课程分组、
    中英文/缩写搜索、键盘上下选择、抽屉详情与 #term-<id> 深链。 */
-const COURSE_ORDER = ['计算机组成原理', '计算机网络', '数据结构', '操作系统', '系统架构', '编译原理'];
-const COURSE_PENDING = {
-  '计算机组成原理': '这门课还没有对应笔记，词条待补，不编造定义。',
-  '数据结构': '这门课还没有对应笔记，词条待补，不编造定义。'
-};
+const COURSE_ORDER = ['数据结构', '计算机组成原理', '操作系统', '计算机网络', '系统架构', '编译原理'];
+const COURSE_PENDING = {};
 let termCourse = '全部';
 let termQuery = '';
 let termResults = [];
@@ -518,6 +515,12 @@ async function openTerm(id, fromHash) {
     </div>
     <p class="book-review">${esc(t.brief || '')}</p>
     ${t.detail ? `<p class="term-detail">${esc(t.detail)}</p>` : ''}
+    ${t.diagram ? `<figure class="term-figure">
+      <div class="term-figure-box" role="button" tabindex="0" aria-label="放大配图"
+        data-caption="${esc(t.caption || '')}">${t.diagram}</div>
+      ${t.caption ? `<figcaption>${esc(t.caption)}</figcaption>` : ''}
+      <p class="term-figure-tip">点击图可放大</p>
+    </figure>` : ''}
     ${rel.length ? `<div class="term-rel"><b>相关术语</b><div class="term-related">
       ${rel.map(r => `<button type="button" data-term="${esc(r.id)}">${esc(r.term || r.id)}</button>`).join('')}
     </div></div>` : ''}
@@ -546,11 +549,86 @@ function moveTermCursor(delta) {
   items.forEach((el, i) => el.classList.toggle('on', i === termCursor));
   if (items[termCursor]) items[termCursor].scrollIntoView({ block: 'nearest' });
 }
-function renderDemos() {
-  /* 第二批：交互演示。骨架与深链在 #vis-<id> 中接入。 */
+/* ---------------- 交互演示 ----------------
+   列表只加载 registry；每个演示是独立 ESM 模块，点开时才 import()，
+   首页与笔记页首屏不下载任何演示代码。 */
+let demoRegistry = null;
+let activeDemo = null;
+let demoToken = 0;
+
+function closeDemo() {
+  demoToken++;
+  if (activeDemo) {
+    try { if (activeDemo.dispose) activeDemo.dispose(); } catch (e) {}
+    activeDemo = null;
+  }
+  const holder = $('#demoMount');
+  if (holder) { holder.hidden = true; holder.innerHTML = ''; }
+  const list = $('#demoList');
+  if (list) list.hidden = false;
 }
-function openDemo(id, fromHash) {
-  /* 第二批：根据 #vis-<id> 打开对应演示。 */
+
+async function renderDemos() {
+  const box = $('#demoList');
+  if (!box || box.dataset.ready === '1') return;
+  try {
+    demoRegistry = await import('./demos/registry.mjs');
+  } catch (e) {
+    console.error(e);
+    box.innerHTML = '<div class="empty">演示清单加载失败，请刷新重试。</div>';
+    return;
+  }
+  const groups = demoRegistry.COURSE_ORDER.map(course => ({
+    course,
+    items: demoRegistry.DEMOS.filter(d => d.course === course)
+  })).filter(g => g.items.length);
+  box.innerHTML = groups.map(g => `
+    <section class="demo-course">
+      <h2>${esc(g.course)}<span>${g.items.length} DEMOS</span></h2>
+      <div class="demo-cards">
+        ${g.items.map(d => `<a class="demo-card" href="#vis-${esc(d.id)}">
+          <span class="demo-card-kicker">${esc(d.id.toUpperCase())}</span>
+          <b>${esc(d.title)}</b>
+          <p>${esc(d.desc)}</p>
+          <span class="demo-go">打开演示 →</span>
+        </a>`).join('')}
+      </div>
+    </section>`).join('');
+  box.dataset.ready = '1';
+}
+
+async function openDemo(id, fromHash, query) {
+  if (!/^[a-z0-9-]+$/.test(id)) return;
+  const holder = $('#demoMount');
+  const list = $('#demoList');
+  if (!holder) return;
+  let meta;
+  try {
+    demoRegistry = demoRegistry || await import('./demos/registry.mjs');
+    meta = demoRegistry.demoById(id);
+  } catch (e) { meta = null; }
+  if (!meta) {
+    if (!fromHash) location.hash = '#vis';
+    return;
+  }
+  closeDemo();
+  const token = demoToken;
+  holder.hidden = false;
+  holder.innerHTML = '<div class="demo-loading">正在加载演示…</div>';
+  if (list) list.hidden = true;
+  try {
+    const mod = await import('./demos/' + id + '.mjs');
+    if (token !== demoToken) return;
+    holder.innerHTML = '';
+    const params = new URLSearchParams(query || '');
+    const instance = mod.mount(holder, { id, params });
+    activeDemo = { id, dispose: instance && instance.dispose };
+  } catch (e) {
+    console.error(e);
+    if (token !== demoToken) return;
+    holder.innerHTML = '<div class="empty">这个演示加载失败，请刷新重试。</div>';
+    activeDemo = null;
+  }
 }
 
 /* ---------------- 笔记知识图谱 ----------------
@@ -900,10 +978,25 @@ function appendPhotos() {
 
 function openLightbox(src, at, place) {
   const lb = $('#lightbox');
+  $('#lbPhoto').hidden = false;
+  $('#lbDiagram').hidden = true;
+  $('#lbSvg').innerHTML = '';
+  $('#lbSvgCaption').hidden = true;
   $('#lightboxImg').src = src;
   $('#lbDate').textContent = at ? fmtDate(at) : '';
   $('#lbPlace').textContent = place || '';
   $('#lbCaption').hidden = !(at || place);
+  lb.hidden = false;
+}
+/* 术语配图放大：复用灯箱，但换成随主题变色的 SVG 面板 */
+function openDiagramLightbox(svg, caption) {
+  const lb = $('#lightbox');
+  $('#lbPhoto').hidden = true;
+  $('#lbDiagram').hidden = false;
+  $('#lightboxImg').src = '';
+  $('#lbSvg').innerHTML = svg || '';
+  $('#lbSvgCaption').textContent = caption || '';
+  $('#lbSvgCaption').hidden = !caption;
   lb.hidden = false;
 }
 function closeLightbox() {
@@ -912,6 +1005,11 @@ function closeLightbox() {
   $('#lbDate').textContent = '';
   $('#lbPlace').textContent = '';
   $('#lbCaption').hidden = true;
+  $('#lbSvg').innerHTML = '';
+  $('#lbSvgCaption').textContent = '';
+  $('#lbSvgCaption').hidden = true;
+  $('#lbPhoto').hidden = false;
+  $('#lbDiagram').hidden = true;
 }
 
 /* ---------------- 音乐 ---------------- */
@@ -1366,6 +1464,7 @@ function showView(name, keepScroll) {
     if (name === 'glossary') renderGlossary();
     if (name !== 'glossary') closeTerm();
     if (name === 'demos') renderDemos();
+    else closeDemo();
     if (name !== 'notes') stopGraph();
     if (name === 'notes' && graphMode) {
       if (!graphData) renderGraph();
@@ -1386,10 +1485,18 @@ function route() {
     openTerm(id, true);
     return;
   }
-  if (h.indexOf('vis-') === 0) {
-    const id = safeDecode(h.slice(4));
+  if (h === 'vis') {
     showView('demos');
-    openDemo(id, true);
+    closeDemo();
+    return;
+  }
+  if (h.indexOf('vis-') === 0) {
+    const rest = h.slice(4);
+    const cut = rest.indexOf('?');
+    const id = safeDecode(cut >= 0 ? rest.slice(0, cut) : rest);
+    const qs = cut >= 0 ? rest.slice(cut + 1) : '';
+    showView('demos');
+    openDemo(id, true, qs);
     return;
   }
   if (h.indexOf('note-') === 0) {
@@ -1851,14 +1958,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const termMask = $('#termMask');
   if (termMask) termMask.addEventListener('click', closeTerm);
   const termBody = $('#termDrawerBody');
-  if (termBody) termBody.addEventListener('click', e => {
-    const rel = e.target.closest('[data-term]');
-    if (rel) { openTerm(rel.dataset.term); return; }
-    if (e.target.closest('#termCopy') && termOpenId) {
-      const url = location.origin + location.pathname + termHref(termOpenId);
-      copyText(url).then(ok => toast(ok ? '已复制术语链接' : url));
-    }
-  });
+  if (termBody) {
+    const zoomFigure = box => {
+      const svg = box.querySelector('svg');
+      if (svg) openDiagramLightbox(svg.outerHTML, box.dataset.caption || '');
+    };
+    termBody.addEventListener('click', e => {
+      const rel = e.target.closest('[data-term]');
+      if (rel) { openTerm(rel.dataset.term); return; }
+      const fig = e.target.closest('.term-figure-box');
+      if (fig) { zoomFigure(fig); return; }
+      if (e.target.closest('#termCopy') && termOpenId) {
+        const url = location.origin + location.pathname + termHref(termOpenId);
+        copyText(url).then(ok => toast(ok ? '已复制术语链接' : url));
+      }
+    });
+    termBody.addEventListener('keydown', e => {
+      const fig = e.target.closest('.term-figure-box');
+      if (fig && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); zoomFigure(fig); }
+    });
+  }
 
   const rssCopy = $('#rssCopy');
   if (rssCopy) rssCopy.addEventListener('click', () => {

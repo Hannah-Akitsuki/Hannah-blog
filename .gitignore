@@ -5,5 +5,7 @@ data/diary-all.json
 # 本地构建/测试临时产物
 .tmp-*/
 .tmp-*
+__pycache__/
+*.pyc
 # Draco 对比导出（只用于体积对比，未上线）
 assets/3d/*-draco.glb
