@@ -145,6 +145,24 @@ def main():
     arr[i + 1], arr[-1] = arr[-1], arr[i + 1]
     print("验算快排划分：枢轴 27 → %s" % arr)
 
+    # 计组：IEEE 754 位域 / Cache 地址拆分
+    import struct
+    raw = struct.unpack(">I", struct.pack(">f", -12.5))[0]
+    sign = raw >> 31
+    exp = (raw >> 23) & 0xFF
+    frac = raw & 0x7FFFFF
+    val = ((-1) ** sign) * (1 + frac / (1 << 23)) * (2 ** (exp - 127))
+    print("验算 IEEE 754：-12.5 → sign=%d exp=%d(%s) frac=0x%06X，还原=%.1f"
+          % (sign, exp, format(exp, "08b"), frac, val))
+
+    addr = 0x12345678
+    off_bits, idx_bits = 6, 10
+    offset = addr & ((1 << off_bits) - 1)
+    index = (addr >> off_bits) & ((1 << idx_bits) - 1)
+    tag = addr >> (off_bits + idx_bits)
+    print("验算 Cache 拆分：0x%08X → tag=0x%X index=0x%X offset=0x%X"
+          % (addr, tag, index, offset))
+
 
 if __name__ == "__main__":
     main()

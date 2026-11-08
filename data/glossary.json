@@ -3700,6 +3700,1009 @@
         "merge-sort"
       ],
       "source": "王道《数据结构》· 外部排序"
+    },
+    {
+      "id": "sign-magnitude",
+      "term": "原码",
+      "abbr": "Sign-Magnitude",
+      "course": "计算机组成原理",
+      "brief": "最高位为符号位（0 正 1 负），其余位表示数值绝对值的编码。",
+      "detail": "8 位原码范围 -127 ~ +127，0 有 +0（0000 0000）与 -0（1000 0000）两种表示。原码乘除方便，但加减需先判符号、比较绝对值，电路复杂，现代机器不用原码直接存整数。",
+      "related": [
+        "ones-complement",
+        "twos-complement",
+        "biased-notation"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算",
+      "caption": "8 位原码 / 反码 / 补码 / 移码对照（+45、-45）：补码 = 反码 + 1，移码 = 补码符号位取反。",
+      "diagram": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 330\" role=\"img\" aria-label=\"原码反码补码移码对照\" preserveAspectRatio=\"xMidYMid meet\"><text class=\"dg-text\" x=\"20.0\" y=\"28.0\" text-anchor=\"start\">8 位原码 / 反码 / 补码 / 移码（以 +45、-45 为例）</text><text class=\"dg-text\" x=\"20.0\" y=\"62.0\" text-anchor=\"start\">真值</text><text class=\"dg-text\" x=\"125.0\" y=\"62.0\" text-anchor=\"start\">原码</text><text class=\"dg-text\" x=\"275.0\" y=\"62.0\" text-anchor=\"start\">反码</text><text class=\"dg-text\" x=\"425.0\" y=\"62.0\" text-anchor=\"start\">补码</text><text class=\"dg-text\" x=\"575.0\" y=\"62.0\" text-anchor=\"start\">移码</text><line class=\"dg-axis\" x1=\"20.0\" y1=\"74.0\" x2=\"720.0\" y2=\"74.0\"/><text class=\"dg-mono\" x=\"20.0\" y=\"100.0\" text-anchor=\"start\">+45</text><text class=\"dg-mono\" x=\"125.0\" y=\"100.0\" text-anchor=\"start\">0010 1101</text><text class=\"dg-mono\" x=\"275.0\" y=\"100.0\" text-anchor=\"start\">0010 1101</text><text class=\"dg-mono\" x=\"425.0\" y=\"100.0\" text-anchor=\"start\">0010 1101</text><text class=\"dg-mono\" x=\"575.0\" y=\"100.0\" text-anchor=\"start\">1010 1101</text><text class=\"dg-mono\" x=\"20.0\" y=\"138.0\" text-anchor=\"start\">-45</text><text class=\"dg-mono\" x=\"125.0\" y=\"138.0\" text-anchor=\"start\">1010 1101</text><text class=\"dg-mono\" x=\"275.0\" y=\"138.0\" text-anchor=\"start\">1101 0010</text><text class=\"dg-mono\" x=\"425.0\" y=\"138.0\" text-anchor=\"start\">1101 0011</text><text class=\"dg-mono\" x=\"575.0\" y=\"138.0\" text-anchor=\"start\">0101 0011</text><line class=\"dg-axis\" x1=\"20.0\" y1=\"150.0\" x2=\"720.0\" y2=\"150.0\"/><text class=\"dg-muted\" x=\"20.0\" y=\"184.0\" text-anchor=\"start\">补码 = 反码 + 1（负数最低位加 1）；移码 = 补码符号位取反（8 位偏置 128）。</text><text class=\"dg-muted\" x=\"20.0\" y=\"214.0\" text-anchor=\"start\">原码、反码有 ±0 两种表示；补码与移码的 0 唯一。</text><text class=\"dg-muted\" x=\"20.0\" y=\"244.0\" text-anchor=\"start\">n 位补码范围 -2^(n-1) ~ 2^(n-1)-1；8 位为 -128 ~ +127。</text><text class=\"dg-muted\" x=\"20.0\" y=\"274.0\" text-anchor=\"start\">补码符号位权重为 -2^(n-1)：1101 0011₂ = -128+64+16+2+1 = -45。</text><text class=\"dg-muted\" x=\"20.0\" y=\"304.0\" text-anchor=\"start\">移码把 8 位无符号数的零点平移到 128，便于浮点阶码比较大小。</text></svg>"
+    },
+    {
+      "id": "ones-complement",
+      "term": "反码",
+      "abbr": "Ones' Complement",
+      "course": "计算机组成原理",
+      "brief": "正数与原码相同；负数符号位不变、数值位逐位取反。",
+      "detail": "反码同样有 ±0 两种表示，8 位范围 -127 ~ +127。反码主要用于由原码求补码的中间步骤；现代计算机的整数存储与运算使用补码，不直接用反码。",
+      "related": [
+        "sign-magnitude",
+        "twos-complement",
+        "biased-notation"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "twos-complement",
+      "term": "补码",
+      "abbr": "Two's Complement",
+      "course": "计算机组成原理",
+      "brief": "负数的补码等于其反码最低位加 1；正数补码与原码相同。",
+      "detail": "n 位补码范围 -2^(n-1) ~ 2^(n-1)-1（8 位为 -128 ~ +127），0 的补码唯一。符号位权重为 -2^(n-1)，因此减法可转成加法。补码比原码多表示一个最小负数，溢出需另判。",
+      "related": [
+        "sign-magnitude",
+        "ones-complement",
+        "biased-notation",
+        "overflow-detection"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算",
+      "caption": "8 位原码 / 反码 / 补码 / 移码对照（+45、-45）：补码 = 反码 + 1，移码 = 补码符号位取反。",
+      "diagram": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 330\" role=\"img\" aria-label=\"原码反码补码移码对照\" preserveAspectRatio=\"xMidYMid meet\"><text class=\"dg-text\" x=\"20.0\" y=\"28.0\" text-anchor=\"start\">8 位原码 / 反码 / 补码 / 移码（以 +45、-45 为例）</text><text class=\"dg-text\" x=\"20.0\" y=\"62.0\" text-anchor=\"start\">真值</text><text class=\"dg-text\" x=\"125.0\" y=\"62.0\" text-anchor=\"start\">原码</text><text class=\"dg-text\" x=\"275.0\" y=\"62.0\" text-anchor=\"start\">反码</text><text class=\"dg-text\" x=\"425.0\" y=\"62.0\" text-anchor=\"start\">补码</text><text class=\"dg-text\" x=\"575.0\" y=\"62.0\" text-anchor=\"start\">移码</text><line class=\"dg-axis\" x1=\"20.0\" y1=\"74.0\" x2=\"720.0\" y2=\"74.0\"/><text class=\"dg-mono\" x=\"20.0\" y=\"100.0\" text-anchor=\"start\">+45</text><text class=\"dg-mono\" x=\"125.0\" y=\"100.0\" text-anchor=\"start\">0010 1101</text><text class=\"dg-mono\" x=\"275.0\" y=\"100.0\" text-anchor=\"start\">0010 1101</text><text class=\"dg-mono\" x=\"425.0\" y=\"100.0\" text-anchor=\"start\">0010 1101</text><text class=\"dg-mono\" x=\"575.0\" y=\"100.0\" text-anchor=\"start\">1010 1101</text><text class=\"dg-mono\" x=\"20.0\" y=\"138.0\" text-anchor=\"start\">-45</text><text class=\"dg-mono\" x=\"125.0\" y=\"138.0\" text-anchor=\"start\">1010 1101</text><text class=\"dg-mono\" x=\"275.0\" y=\"138.0\" text-anchor=\"start\">1101 0010</text><text class=\"dg-mono\" x=\"425.0\" y=\"138.0\" text-anchor=\"start\">1101 0011</text><text class=\"dg-mono\" x=\"575.0\" y=\"138.0\" text-anchor=\"start\">0101 0011</text><line class=\"dg-axis\" x1=\"20.0\" y1=\"150.0\" x2=\"720.0\" y2=\"150.0\"/><text class=\"dg-muted\" x=\"20.0\" y=\"184.0\" text-anchor=\"start\">补码 = 反码 + 1（负数最低位加 1）；移码 = 补码符号位取反（8 位偏置 128）。</text><text class=\"dg-muted\" x=\"20.0\" y=\"214.0\" text-anchor=\"start\">原码、反码有 ±0 两种表示；补码与移码的 0 唯一。</text><text class=\"dg-muted\" x=\"20.0\" y=\"244.0\" text-anchor=\"start\">n 位补码范围 -2^(n-1) ~ 2^(n-1)-1；8 位为 -128 ~ +127。</text><text class=\"dg-muted\" x=\"20.0\" y=\"274.0\" text-anchor=\"start\">补码符号位权重为 -2^(n-1)：1101 0011₂ = -128+64+16+2+1 = -45。</text><text class=\"dg-muted\" x=\"20.0\" y=\"304.0\" text-anchor=\"start\">移码把 8 位无符号数的零点平移到 128，便于浮点阶码比较大小。</text></svg>"
+    },
+    {
+      "id": "biased-notation",
+      "term": "移码",
+      "abbr": "Biased Notation",
+      "course": "计算机组成原理",
+      "brief": "把真值加上一个固定偏置（n 位偏置为 2^(n-1)）后按无符号数存储的编码。",
+      "detail": "8 位移码偏置 128，+45 → 128+45=173（1010 1101₂），-45 → 83（0101 0011₂）。移码与补码只差符号位取反；因为无符号数大小顺序与真值一致，常用于浮点数阶码，便于比较阶的大小。",
+      "related": [
+        "twos-complement",
+        "sign-magnitude",
+        "ieee754"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "fixed-point",
+      "term": "定点数",
+      "abbr": "Fixed-Point",
+      "course": "计算机组成原理",
+      "brief": "小数点位置在数中固定不变的数，分定点整数与定点小数。",
+      "detail": "定点整数小数点约定在最低位之后，定点小数约定在符号位与数值位之间。运算通常用补码，加减后需判断溢出；定点表示范围有限，表示很大或很小的数需用浮点数。",
+      "related": [
+        "floating-point",
+        "twos-complement",
+        "overflow-detection"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "floating-point",
+      "term": "浮点数",
+      "abbr": "Floating-Point",
+      "course": "计算机组成原理",
+      "brief": "用阶码与尾数共同表示实数，形式为 M × 2^E，可兼顾表示范围与精度。",
+      "detail": "阶码是定点整数（常用移码），尾数是定点小数（常用原码或补码）。规格化后尾数最高位非 0（IEEE 754 隐含 1）。浮点加减需对阶、尾数运算、规格化、舍入与溢出判断。",
+      "related": [
+        "ieee754",
+        "float-normalization",
+        "fixed-point"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "ieee754",
+      "term": "IEEE 754 标准",
+      "abbr": "IEEE 754",
+      "course": "计算机组成原理",
+      "brief": "规定浮点数位域与舍入规则的国际标准；单精度 1+8+23 位，双精度 1+11+52 位。",
+      "detail": "单精度阶码偏置 127，双精度偏置 1023；规格化数尾数隐含最高位 1。阶码全 0 表示非规格化数或 ±0，阶码全 1 表示 ±∞ 或 NaN。考题常要求把十进制数拆成 sign/exponent/fraction 三段。",
+      "related": [
+        "floating-point",
+        "biased-notation",
+        "float-normalization"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算",
+      "caption": "-12.5 的单精度表示：符号 1、阶码 1000 0010（130，偏置 127）、尾数 1001 后补 0；还原为 -1.1001₂ × 2³。",
+      "diagram": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 360\" role=\"img\" aria-label=\"IEEE 754 单精度位域\" preserveAspectRatio=\"xMidYMid meet\"><text class=\"dg-text\" x=\"20.0\" y=\"28.0\" text-anchor=\"start\">IEEE 754 单精度（32 位）位域拆分：-12.5</text><rect class=\"dg-fill-accent\" x=\"40.0\" y=\"78\" width=\"22.0\" height=\"48\" rx=\"3\"/><text class=\"dg-mono\" x=\"51.0\" y=\"108.0\" text-anchor=\"middle\">1</text><text class=\"dg-muted\" x=\"51.0\" y=\"68.0\" text-anchor=\"middle\">符号 1 位</text><rect class=\"dg-fill-green\" x=\"62.0\" y=\"78\" width=\"170.0\" height=\"48\" rx=\"3\"/><text class=\"dg-mono\" x=\"147.0\" y=\"108.0\" text-anchor=\"middle\">1000 0010</text><text class=\"dg-muted\" x=\"147.0\" y=\"68.0\" text-anchor=\"middle\">阶码 8 位（偏置 127）</text><rect class=\"dg-fill\" x=\"232.0\" y=\"78\" width=\"488.0\" height=\"48\" rx=\"3\"/><text class=\"dg-mono\" x=\"476.0\" y=\"108.0\" text-anchor=\"middle\">1001 0000 0000 0000 0000 000</text><text class=\"dg-muted\" x=\"476.0\" y=\"68.0\" text-anchor=\"middle\">尾数 23 位（隐含最高位 1）</text><text class=\"dg-muted\" x=\"40.0\" y=\"146.0\" text-anchor=\"start\">第 31 位</text><text class=\"dg-muted\" x=\"147.0\" y=\"146.0\" text-anchor=\"middle\">第 30–23 位</text><text class=\"dg-muted\" x=\"476.0\" y=\"146.0\" text-anchor=\"middle\">第 22–0 位</text><text class=\"dg-text\" x=\"20.0\" y=\"190.0\" text-anchor=\"start\">真值 -12.5 = -1100.1₂ = -1.1001₂ × 2³。</text><text class=\"dg-muted\" x=\"20.0\" y=\"220.0\" text-anchor=\"start\">阶码 = 3 + 127 = 130 = 1000 0010₂；尾数去掉隐含的 1，只存 1001 及其后的 0。</text><text class=\"dg-muted\" x=\"20.0\" y=\"250.0\" text-anchor=\"start\">还原：(-1)^1 × 1.1001₂ × 2^(130-127) = -1.5625 × 8 = -12.5。</text><text class=\"dg-muted\" x=\"20.0\" y=\"280.0\" text-anchor=\"start\">阶码全 0：非规格化数（尾数非 0）或 ±0；阶码全 1：±∞（尾数 0）或 NaN。</text><text class=\"dg-muted\" x=\"20.0\" y=\"310.0\" text-anchor=\"start\">双精度为 1 + 11 + 52 位，偏置 1023；单精度偏置 127。</text><text class=\"dg-muted\" x=\"20.0\" y=\"340.0\" text-anchor=\"start\">规格化数的尾数最高位恒为 1，因此隐藏不存，可多存 1 位精度。</text></svg>"
+    },
+    {
+      "id": "float-normalization",
+      "term": "浮点数规格化",
+      "abbr": "",
+      "course": "计算机组成原理",
+      "brief": "调整阶码与尾数，使尾数最高有效位为 1（IEEE 754 规格化数隐含 1）的过程。",
+      "detail": "左规：尾数每左移一位、阶码减 1；右规：尾数每右移一位、阶码加 1。规格化保证表示唯一、精度最大。IEEE 754 的规格化数尾数形如 1.xxxx，隐藏最高位 1。",
+      "related": [
+        "floating-point",
+        "ieee754",
+        "shift-operation"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "alu",
+      "term": "算术逻辑单元",
+      "abbr": "ALU",
+      "course": "计算机组成原理",
+      "brief": "完成算术与逻辑运算的组合逻辑部件，是运算器的核心。",
+      "detail": "ALU 接收两个操作数与操作控制信号，输出运算结果及零、符号、进位、溢出等标志。ALU 本身不存储数据，操作数来自寄存器或数据通路，结果写回寄存器。",
+      "related": [
+        "datapath",
+        "cpu",
+        "overflow-detection"
+      ],
+      "source": "王道《计算机组成原理》· 运算器"
+    },
+    {
+      "id": "overflow-detection",
+      "term": "溢出判断",
+      "abbr": "Overflow",
+      "course": "计算机组成原理",
+      "brief": "判断运算结果是否超出定点数可表示范围；补码加减常用双符号位或进位异或判断。",
+      "detail": "双符号位（变形补码）：00 正常、01 正溢、10 负溢、11 正常（负数）。单符号位：最高位进位与次高位进位异或为 1 即溢出。浮点溢出看阶码是否超出上限（上溢）或下限（下溢）。",
+      "related": [
+        "twos-complement",
+        "fixed-point",
+        "alu"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "shift-operation",
+      "term": "移位运算",
+      "abbr": "",
+      "course": "计算机组成原理",
+      "brief": "对二进制位整体左移或右移，分算术移位、逻辑移位与循环移位。",
+      "detail": "算术移位保持符号位不变，空出的位补符号位（负数补 1）；逻辑移位空位一律补 0；循环移位把移出的位补到另一端。左移一位相当于乘 2，右移一位相当于除 2（可能丢精度）。",
+      "related": [
+        "alu",
+        "twos-complement",
+        "float-normalization"
+      ],
+      "source": "王道《计算机组成原理》· 运算器"
+    },
+    {
+      "id": "booth-algorithm",
+      "term": "Booth 算法（补码一位乘）",
+      "abbr": "Booth",
+      "course": "计算机组成原理",
+      "brief": "直接对补码做一位乘法的算法，根据乘数相邻两位的差决定加、减被乘数或加 0。",
+      "detail": "判断乘数 y_i y_{i-1}：01 加 [x]补，10 减 [x]补，00/11 加 0。共 n+1 步，最后一步不移位；符号位参与运算，因此无需单独处理符号。适合补码机器。",
+      "related": [
+        "twos-complement",
+        "alu",
+        "shift-operation"
+      ],
+      "source": "王道《计算机组成原理》· 运算器"
+    },
+    {
+      "id": "check-code",
+      "term": "校验码",
+      "abbr": "Check Code",
+      "course": "计算机组成原理",
+      "brief": "在数据位之外增加校验位，用于发现或纠正传输/存储错误的编码。",
+      "detail": "校验能力由码距决定。奇偶校验、CRC 主要用于检错；海明码可纠正一位错误。计组侧重编码电路与校验位生成，计网侧重链路层应用。",
+      "related": [
+        "code-distance",
+        "error-correction",
+        "parity-check",
+        "crc",
+        "hamming-code"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "code-distance",
+      "term": "码距",
+      "abbr": "Hamming Distance",
+      "course": "计算机组成原理",
+      "brief": "任意两个合法码字之间最少不同的二进制位数。",
+      "detail": "码距 d 可检出 d-1 位错误，可纠正 ⌊(d-1)/2⌋ 位错误。奇偶校验码距为 2，只能检 1 位错、不能纠错；海明码通过增加校验位提高码距，从而纠正一位错。",
+      "related": [
+        "check-code",
+        "error-correction",
+        "hamming-code"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "error-correction",
+      "term": "检错与纠错",
+      "abbr": "",
+      "course": "计算机组成原理",
+      "brief": "检错只判断数据是否出错，纠错还要定位并改正错误位。",
+      "detail": "纠错需要更多冗余位与更大码距。海明码用分组奇偶校验定位错误位并取反纠正；CRC 一般只检错，出错后请求重传。选择方案要在可靠性、开销与延迟之间权衡。",
+      "related": [
+        "check-code",
+        "code-distance",
+        "hamming-code",
+        "crc"
+      ],
+      "source": "王道《计算机组成原理》· 数据的表示和运算"
+    },
+    {
+      "id": "memory-hierarchy",
+      "term": "存储系统层次结构",
+      "abbr": "Memory Hierarchy",
+      "course": "计算机组成原理",
+      "brief": "按速度、容量、成本分层：寄存器 → Cache → 主存 → 辅存，上层是下层的副本。",
+      "detail": "越靠近 CPU 越快、越小、越贵。层次结构能同时获得接近上层的速度与接近下层的容量，前提是程序局部性：时间局部性与空间局部性。",
+      "related": [
+        "locality",
+        "cache-memory",
+        "main-memory",
+        "sram",
+        "dram"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "sram",
+      "term": "静态随机存储器",
+      "abbr": "SRAM",
+      "course": "计算机组成原理",
+      "brief": "用触发器（六管电路）存储信息，断电即失，不需要刷新。",
+      "detail": "速度快、功耗较低（静态）、集成度低、成本高，常用于 Cache。SRAM 的读写速度与 CPU 接近，但容量小。",
+      "related": [
+        "dram",
+        "cache-memory",
+        "memory-hierarchy"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "dram",
+      "term": "动态随机存储器",
+      "abbr": "DRAM",
+      "course": "计算机组成原理",
+      "brief": "用电容存储信息，电容会漏电，需要周期性刷新。",
+      "detail": "集成度高、成本低、速度较慢，用作主存。DRAM 采用行地址与列地址分时复用，减少引脚；刷新按行进行。与 SRAM 的对比是高频考点。",
+      "related": [
+        "sram",
+        "main-memory",
+        "memory-hierarchy"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "main-memory",
+      "term": "主存储器",
+      "abbr": "Main Memory",
+      "course": "计算机组成原理",
+      "brief": "存放当前运行的程序与数据，CPU 可直接访问；由存储体、MAR、MDR 与译码电路组成。",
+      "detail": "容量 = 2^(地址线位数) × 数据线位数。MAR 位数决定地址空间，MDR 位数决定一次读写的数据宽度。主存与 Cache 之间以块为单位交换数据。",
+      "related": [
+        "dram",
+        "sram",
+        "memory-hierarchy",
+        "cache-memory"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "cache-memory",
+      "term": "Cache",
+      "abbr": "Cache",
+      "course": "计算机组成原理",
+      "brief": "位于 CPU 与主存之间的小容量高速缓冲存储器，存放主存中近期使用的块副本。",
+      "detail": "全部由硬件实现，对程序员透明。命中率 h 与平均访问时间 t = h·t_c + (1-h)·t_m 是核心指标。Cache 与主存按块（行）交换，块大小影响空间局部性利用与缺失开销。",
+      "related": [
+        "cache-mapping",
+        "cache-replacement",
+        "write-policy",
+        "cache-hit-rate",
+        "sram"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "cache-mapping",
+      "term": "Cache 映射方式",
+      "abbr": "",
+      "course": "计算机组成原理",
+      "brief": "主存块装入 Cache 行的规则，分直接映射、全相联映射与组相联映射。",
+      "detail": "地址被拆成 Tag、Index（或组号）、Offset 三段。直接映射行号 = 块号 mod 行数；全相联任意块可放任意行；组相联先分组、组间直接、组内全相联。",
+      "related": [
+        "direct-mapped-cache",
+        "set-associative-cache",
+        "fully-associative-cache",
+        "cache-memory"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统",
+      "caption": "32 位地址、64 KB Cache、64 B 块、直接映射：Tag 16 位 + Index 10 位 + Offset 6 位；例 0x12345678 拆为 0x1234 / 0x159 / 0x38。",
+      "diagram": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 380\" role=\"img\" aria-label=\"Cache 地址 tag index offset 拆分\" preserveAspectRatio=\"xMidYMid meet\"><text class=\"dg-text\" x=\"20.0\" y=\"28.0\" text-anchor=\"start\">Cache 地址拆分：32 位地址、64 KB Cache、64 B 块、直接映射</text><rect class=\"dg-fill\" x=\"40.0\" y=\"68\" width=\"340.0\" height=\"46\" rx=\"3\"/><text class=\"dg-mono\" x=\"210.0\" y=\"96.0\" text-anchor=\"middle\">Tag 0x1234（16 位）</text><rect class=\"dg-fill-green\" x=\"380.0\" y=\"68\" width=\"213.0\" height=\"46\" rx=\"3\"/><text class=\"dg-mono\" x=\"486.5\" y=\"96.0\" text-anchor=\"middle\">Index 0x159（10 位）</text><rect class=\"dg-fill-accent\" x=\"593.0\" y=\"68\" width=\"127.0\" height=\"46\" rx=\"3\"/><text class=\"dg-mono\" x=\"656.5\" y=\"96.0\" text-anchor=\"middle\">Offset 0x38（6 位）</text><text class=\"dg-muted\" x=\"40.0\" y=\"132.0\" text-anchor=\"start\">31 … 16</text><text class=\"dg-muted\" x=\"486.5\" y=\"132.0\" text-anchor=\"middle\">15 … 6</text><text class=\"dg-muted\" x=\"656.5\" y=\"132.0\" text-anchor=\"middle\">5 … 0</text><text class=\"dg-text\" x=\"20.0\" y=\"158.0\" text-anchor=\"start\">例：0x12345678 → Tag=0x1234，Index=0x159，Offset=0x38。</text><text class=\"dg-muted\" x=\"20.0\" y=\"188.0\" text-anchor=\"start\">64 KB / 64 B = 1024 行 = 2¹⁰，所以 Index 10 位、Offset 6 位、Tag 32−10−6=16 位。</text><text class=\"dg-muted\" x=\"20.0\" y=\"218.0\" text-anchor=\"start\">直接映射：行号 = 块号 mod 1024；Tag 用来确认该行存的正是所需块。</text><rect class=\"dg-fill\" x=\"30\" y=\"250\" width=\"132\" height=\"46\" rx=\"4\"/><text class=\"dg-text\" x=\"96.0\" y=\"278.0\" text-anchor=\"middle\">地址 0x12345678</text><line class=\"dg-green\" x1=\"162.0\" y1=\"273.0\" x2=\"172.0\" y2=\"273.0\"/><path class=\"dg-green\" d=\"M 172.0,273.0 L 181.1,268.9 L 181.1,277.1 Z\" fill=\"currentColor\" stroke=\"none\"/><path class=\"dg-green\" d=\"M 172.0,273.0 L 181.1,277.1 L 181.1,268.9 Z\" fill=\"currentColor\" stroke=\"none\"/><rect class=\"dg-fill\" x=\"174\" y=\"250\" width=\"132\" height=\"46\" rx=\"4\"/><text class=\"dg-text\" x=\"240.0\" y=\"278.0\" text-anchor=\"middle\">按 Index 选行</text><line class=\"dg-green\" x1=\"306.0\" y1=\"273.0\" x2=\"316.0\" y2=\"273.0\"/><path class=\"dg-green\" d=\"M 316.0,273.0 L 325.1,268.9 L 325.1,277.1 Z\" fill=\"currentColor\" stroke=\"none\"/><path class=\"dg-green\" d=\"M 316.0,273.0 L 325.1,277.1 L 325.1,268.9 Z\" fill=\"currentColor\" stroke=\"none\"/><rect class=\"dg-fill\" x=\"318\" y=\"250\" width=\"132\" height=\"46\" rx=\"4\"/><text class=\"dg-text\" x=\"384.0\" y=\"278.0\" text-anchor=\"middle\">Tag 比较 + 有效位</text><line class=\"dg-green\" x1=\"450.0\" y1=\"273.0\" x2=\"460.0\" y2=\"273.0\"/><path class=\"dg-green\" d=\"M 460.0,273.0 L 469.1,268.9 L 469.1,277.1 Z\" fill=\"currentColor\" stroke=\"none\"/><path class=\"dg-green\" d=\"M 460.0,273.0 L 469.1,277.1 L 469.1,268.9 Z\" fill=\"currentColor\" stroke=\"none\"/><rect class=\"dg-fill\" x=\"462\" y=\"250\" width=\"132\" height=\"46\" rx=\"4\"/><text class=\"dg-text\" x=\"528.0\" y=\"278.0\" text-anchor=\"middle\">命中？</text><line class=\"dg-green\" x1=\"594.0\" y1=\"273.0\" x2=\"604.0\" y2=\"273.0\"/><path class=\"dg-green\" d=\"M 604.0,273.0 L 613.1,268.9 L 613.1,277.1 Z\" fill=\"currentColor\" stroke=\"none\"/><path class=\"dg-green\" d=\"M 604.0,273.0 L 613.1,277.1 L 613.1,268.9 Z\" fill=\"currentColor\" stroke=\"none\"/><rect class=\"dg-fill\" x=\"606\" y=\"250\" width=\"132\" height=\"46\" rx=\"4\"/><text class=\"dg-text\" x=\"672.0\" y=\"278.0\" text-anchor=\"middle\">按 Offset 选字</text><text class=\"dg-muted\" x=\"20.0\" y=\"330.0\" text-anchor=\"start\">命中则按 Offset 在块内取字；缺失则访问主存并装入该行（替换算法见 Cache 替换）。</text><text class=\"dg-muted\" x=\"20.0\" y=\"360.0\" text-anchor=\"start\">组相联把 Index 改为“组号”，组内多路并行比较 Tag；全相联没有 Index。</text></svg>"
+    },
+    {
+      "id": "direct-mapped-cache",
+      "term": "直接映射",
+      "abbr": "Direct Mapped",
+      "course": "计算机组成原理",
+      "brief": "每个主存块只能装入唯一一个 Cache 行：行号 = 块号 mod 行数。",
+      "detail": "地址分为 Tag + Index + Offset；只需一个比较器，硬件简单、速度快，但冲突率高（多个块竞争同一行）。适合对成本敏感的场景。",
+      "related": [
+        "cache-mapping",
+        "set-associative-cache",
+        "fully-associative-cache"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "set-associative-cache",
+      "term": "组相联映射",
+      "abbr": "Set Associative",
+      "course": "计算机组成原理",
+      "brief": "把 Cache 分成若干组，组间直接映射、组内全相联；每组含 n 行称 n 路组相联。",
+      "detail": "地址分为 Tag + 组号 + Offset。组内多行并行比较 Tag，兼顾直接映射的低成本与全相联的低冲突，是实际 Cache 最常用的折中方案。",
+      "related": [
+        "cache-mapping",
+        "direct-mapped-cache",
+        "fully-associative-cache",
+        "cache-replacement"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "fully-associative-cache",
+      "term": "全相联映射",
+      "abbr": "Fully Associative",
+      "course": "计算机组成原理",
+      "brief": "主存任意块都可装入 Cache 任意行，地址只需 Tag + Offset。",
+      "detail": "命中率高、冲突最少，但每行都要比较 Tag，比较器多、成本高，通常只用于小容量 Cache（如 TLB）。替换策略对命中率影响大。",
+      "related": [
+        "cache-mapping",
+        "set-associative-cache",
+        "cache-replacement"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "cache-replacement",
+      "term": "Cache 替换算法",
+      "abbr": "",
+      "course": "计算机组成原理",
+      "brief": "Cache 行满时选择被替换行的策略，常用 LRU、FIFO 与随机替换。",
+      "detail": "直接映射无需替换；全相联与组相联需要替换算法。LRU（最近最少使用）利用时间局部性，命中率通常较高但硬件开销大；FIFO 实现简单但可能淘汰常用块；随机替换开销最小。",
+      "related": [
+        "cache-memory",
+        "set-associative-cache",
+        "fully-associative-cache"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "write-policy",
+      "term": "Cache 写策略",
+      "abbr": "Write Policy",
+      "course": "计算机组成原理",
+      "brief": "写命中/写缺失时如何保持 Cache 与主存一致，分写直达与写回。",
+      "detail": "写直达（write-through）：同时写 Cache 与主存，一致性好但写操作慢；写回（write-back）：只写 Cache 并置脏位，替换时再写回主存，速度快但一致性维护复杂。写缺失还有写分配与非写分配之分。",
+      "related": [
+        "cache-memory",
+        "cache-replacement",
+        "cache-mapping"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "memory-interleaving",
+      "term": "多体交叉编址",
+      "abbr": "Memory Interleaving",
+      "course": "计算机组成原理",
+      "brief": "把主存分成多个独立存储体，通过地址分配让连续访问分布到不同体，实现流水式访问。",
+      "detail": "低位交叉：地址低几位选体，连续地址落在不同体，各体可并行/流水工作，提高带宽；高位交叉：地址高位选体，连续地址在同一体，主要用于扩容。低位交叉在无冲突时接近每拍一字。",
+      "related": [
+        "main-memory",
+        "dram",
+        "memory-hierarchy"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统",
+      "caption": "四体低位交叉：连续地址 0,1,2,3 分布到体 0–3；各体独立、单次访问 4 拍时，第 8 字在 t=11 完成（串行需 32 拍）。",
+      "diagram": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 400\" role=\"img\" aria-label=\"四体低位交叉编址时序\" preserveAspectRatio=\"xMidYMid meet\"><text class=\"dg-text\" x=\"20.0\" y=\"28.0\" text-anchor=\"start\">四体低位交叉编址：连续地址分布在不同体，流水访问</text><line class=\"dg-grid\" x1=\"170.0\" y1=\"70.0\" x2=\"170.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"170.0\" y=\"322.0\" text-anchor=\"middle\">0</text><line class=\"dg-grid\" x1=\"214.0\" y1=\"70.0\" x2=\"214.0\" y2=\"300.0\"/><line class=\"dg-grid\" x1=\"258.0\" y1=\"70.0\" x2=\"258.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"258.0\" y=\"322.0\" text-anchor=\"middle\">2</text><line class=\"dg-grid\" x1=\"302.0\" y1=\"70.0\" x2=\"302.0\" y2=\"300.0\"/><line class=\"dg-grid\" x1=\"346.0\" y1=\"70.0\" x2=\"346.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"346.0\" y=\"322.0\" text-anchor=\"middle\">4</text><line class=\"dg-grid\" x1=\"390.0\" y1=\"70.0\" x2=\"390.0\" y2=\"300.0\"/><line class=\"dg-grid\" x1=\"434.0\" y1=\"70.0\" x2=\"434.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"434.0\" y=\"322.0\" text-anchor=\"middle\">6</text><line class=\"dg-grid\" x1=\"478.0\" y1=\"70.0\" x2=\"478.0\" y2=\"300.0\"/><line class=\"dg-grid\" x1=\"522.0\" y1=\"70.0\" x2=\"522.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"522.0\" y=\"322.0\" text-anchor=\"middle\">8</text><line class=\"dg-grid\" x1=\"566.0\" y1=\"70.0\" x2=\"566.0\" y2=\"300.0\"/><line class=\"dg-grid\" x1=\"610.0\" y1=\"70.0\" x2=\"610.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"610.0\" y=\"322.0\" text-anchor=\"middle\">10</text><line class=\"dg-grid\" x1=\"654.0\" y1=\"70.0\" x2=\"654.0\" y2=\"300.0\"/><line class=\"dg-grid\" x1=\"698.0\" y1=\"70.0\" x2=\"698.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"698.0\" y=\"322.0\" text-anchor=\"middle\">12</text><line class=\"dg-axis\" x1=\"170.0\" y1=\"300.0\" x2=\"698.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"434.0\" y=\"346.0\" text-anchor=\"middle\">时钟拍（每拍启动一次访问；单次访问 4 拍）</text><text class=\"dg-text\" x=\"90.0\" y=\"110.0\" text-anchor=\"middle\">体 0</text><line class=\"dg-axis\" x1=\"170.0\" y1=\"90.0\" x2=\"698.0\" y2=\"90.0\"/><rect class=\"dg-fill-green\" x=\"172.0\" y=\"90\" width=\"172.0\" height=\"30\" rx=\"3\"/><text class=\"dg-mono\" x=\"258.0\" y=\"110.0\" text-anchor=\"middle\">w0</text><rect class=\"dg-fill-green\" x=\"348.0\" y=\"90\" width=\"172.0\" height=\"30\" rx=\"3\"/><text class=\"dg-mono\" x=\"434.0\" y=\"110.0\" text-anchor=\"middle\">w4</text><text class=\"dg-text\" x=\"90.0\" y=\"160.0\" text-anchor=\"middle\">体 1</text><line class=\"dg-axis\" x1=\"170.0\" y1=\"140.0\" x2=\"698.0\" y2=\"140.0\"/><rect class=\"dg-fill-green\" x=\"216.0\" y=\"140\" width=\"172.0\" height=\"30\" rx=\"3\"/><text class=\"dg-mono\" x=\"302.0\" y=\"160.0\" text-anchor=\"middle\">w1</text><rect class=\"dg-fill-green\" x=\"392.0\" y=\"140\" width=\"172.0\" height=\"30\" rx=\"3\"/><text class=\"dg-mono\" x=\"478.0\" y=\"160.0\" text-anchor=\"middle\">w5</text><text class=\"dg-text\" x=\"90.0\" y=\"210.0\" text-anchor=\"middle\">体 2</text><line class=\"dg-axis\" x1=\"170.0\" y1=\"190.0\" x2=\"698.0\" y2=\"190.0\"/><rect class=\"dg-fill-green\" x=\"260.0\" y=\"190\" width=\"172.0\" height=\"30\" rx=\"3\"/><text class=\"dg-mono\" x=\"346.0\" y=\"210.0\" text-anchor=\"middle\">w2</text><rect class=\"dg-fill-green\" x=\"436.0\" y=\"190\" width=\"172.0\" height=\"30\" rx=\"3\"/><text class=\"dg-mono\" x=\"522.0\" y=\"210.0\" text-anchor=\"middle\">w6</text><text class=\"dg-text\" x=\"90.0\" y=\"260.0\" text-anchor=\"middle\">体 3</text><line class=\"dg-axis\" x1=\"170.0\" y1=\"240.0\" x2=\"698.0\" y2=\"240.0\"/><rect class=\"dg-fill-green\" x=\"304.0\" y=\"240\" width=\"172.0\" height=\"30\" rx=\"3\"/><text class=\"dg-mono\" x=\"390.0\" y=\"260.0\" text-anchor=\"middle\">w3</text><rect class=\"dg-fill-green\" x=\"480.0\" y=\"240\" width=\"172.0\" height=\"30\" rx=\"3\"/><text class=\"dg-mono\" x=\"566.0\" y=\"260.0\" text-anchor=\"middle\">w7</text><line class=\"dg-accent\" x1=\"346.0\" y1=\"70.0\" x2=\"346.0\" y2=\"300.0\"/><text class=\"dg-muted\" x=\"352.0\" y=\"64.0\" text-anchor=\"start\">t=4 首字可读</text><text class=\"dg-muted\" x=\"20.0\" y=\"350.0\" text-anchor=\"start\">低 2 位选体：地址 0,1,2,3 落在体 0,1,2,3；各体独立、访问 4 拍时，第 8 字在 t=11 完成。</text><text class=\"dg-muted\" x=\"20.0\" y=\"378.0\" text-anchor=\"start\">对照：单体串行 8 字需 8×4=32 拍；高位交叉把连续地址放在同一体，不能流水。</text></svg>"
+    },
+    {
+      "id": "virtual-memory-coa",
+      "term": "虚拟存储器（计组口径）",
+      "abbr": "Virtual Memory",
+      "course": "计算机组成原理",
+      "brief": "主存与辅存之间的层次，用页表把逻辑地址转换为物理地址，使程序获得大于主存的地址空间。",
+      "detail": "计组侧重硬件地址转换与性能：页表基址寄存器、TLB、缺页处理、Cache 与页式虚存的配合。OS 侧重页面置换与内存分配策略。虚存对程序员透明，由硬件与操作系统共同实现。",
+      "related": [
+        "tlb",
+        "address-translation",
+        "virtual-memory",
+        "main-memory"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "cache-hit-rate",
+      "term": "Cache 命中率",
+      "abbr": "Hit Rate",
+      "course": "计算机组成原理",
+      "brief": "CPU 访问 Cache 命中的次数占总访问次数的比例，记为 h。",
+      "detail": "平均访问时间 t = h·t_c + (1-h)·t_m；若考虑缺失代价，则 t = t_c + (1-h)·t_miss。命中率受块大小、容量、映射方式、替换算法与程序局部性影响；块过大可能增加缺失代价与冲突。",
+      "related": [
+        "cache-memory",
+        "cache-mapping",
+        "cache-replacement"
+      ],
+      "source": "王道《计算机组成原理》· 存储系统"
+    },
+    {
+      "id": "instruction-format",
+      "term": "指令格式",
+      "abbr": "Instruction Format",
+      "course": "计算机组成原理",
+      "brief": "指令由操作码与地址码（操作数地址）组成；按长度分定长指令与变长指令。",
+      "detail": "操作码指出做什么，地址码指出操作数在哪。定长指令译码简单、利于流水线；变长指令编码灵活、节省空间。扩展操作码通过前缀区分不同指令长度。",
+      "related": [
+        "opcode",
+        "isa",
+        "instruction-cycle",
+        "cisc-risc-coa"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "opcode",
+      "term": "操作码",
+      "abbr": "Opcode",
+      "course": "计算机组成原理",
+      "brief": "指令中指明操作类型的字段，分定长操作码与变长（扩展）操作码。",
+      "detail": "n 位定长操作码最多 2^n 条指令，译码简单但浪费编码空间。扩展操作码让短操作码作为长操作码的前缀，需保证任何编码都不是另一编码的前缀，避免译码歧义。",
+      "related": [
+        "instruction-format",
+        "isa",
+        "instruction-cycle"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "immediate-addressing",
+      "term": "立即寻址",
+      "abbr": "Immediate",
+      "course": "计算机组成原理",
+      "brief": "操作数直接放在指令的地址码字段中，取指时即获得操作数。",
+      "detail": "速度最快，无需访存，但操作数范围受地址码位数限制，且指令长度增加。常用于常量赋值与比较。",
+      "related": [
+        "addressing-mode",
+        "direct-addressing",
+        "instruction-format"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "direct-addressing",
+      "term": "直接寻址",
+      "abbr": "Direct",
+      "course": "计算机组成原理",
+      "brief": "指令地址码字段直接给出操作数在主存中的有效地址。",
+      "detail": "只需一次访存（取操作数），实现简单；寻址范围受地址码位数限制。与立即寻址的区别是：直接寻址给的是地址，不是操作数本身。",
+      "related": [
+        "addressing-mode",
+        "indirect-addressing",
+        "immediate-addressing"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "indirect-addressing",
+      "term": "间接寻址",
+      "abbr": "Indirect",
+      "course": "计算机组成原理",
+      "brief": "指令地址码字段给出的是操作数地址的地址，需再访存一次取得有效地址。",
+      "detail": "可扩大寻址范围，便于实现指针与动态数据结构；但至少两次访存，速度较慢。分一次间接与多次间接，考试常算访存次数。",
+      "related": [
+        "addressing-mode",
+        "direct-addressing",
+        "instruction-format"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "register-addressing",
+      "term": "寄存器寻址",
+      "abbr": "Register",
+      "course": "计算机组成原理",
+      "brief": "地址码字段给出寄存器编号，操作数就在该寄存器中。",
+      "detail": "无需访存，指令短、执行快；但寄存器数量有限，寻址范围小。RISC 大量使用寄存器寻址以减少访存。",
+      "related": [
+        "addressing-mode",
+        "register-file",
+        "cisc-risc-coa"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "base-addressing",
+      "term": "基址寻址",
+      "abbr": "Base",
+      "course": "计算机组成原理",
+      "brief": "有效地址 = 基址寄存器内容 + 指令中的形式地址 A。",
+      "detail": "基址寄存器通常由操作系统设定，用于程序重定位与多道程序隔离，面向系统。用户程序不能随意修改基址，A 作为偏移。",
+      "related": [
+        "addressing-mode",
+        "index-addressing",
+        "relative-addressing"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "index-addressing",
+      "term": "变址寻址",
+      "abbr": "Indexed",
+      "course": "计算机组成原理",
+      "brief": "有效地址 = 变址寄存器内容 + 指令中的形式地址 A。",
+      "detail": "变址寄存器由用户程序修改，适合数组遍历与循环，面向用户。基址寻址与变址寻址公式相同，区别在“谁设定寄存器、面向谁”。",
+      "related": [
+        "addressing-mode",
+        "base-addressing",
+        "relative-addressing"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "relative-addressing",
+      "term": "相对寻址",
+      "abbr": "Relative",
+      "course": "计算机组成原理",
+      "brief": "有效地址 = 程序计数器 PC 的值 + 指令中的位移量 A。",
+      "detail": "常用于转移指令与位置无关代码。A 可正可负，转移范围受位移量位数限制。计算时注意 PC 指向的是当前指令还是下一条指令，题目会明确口径。",
+      "related": [
+        "addressing-mode",
+        "index-addressing",
+        "instruction-cycle"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "instruction-cycle",
+      "term": "指令周期",
+      "abbr": "Instruction Cycle",
+      "course": "计算机组成原理",
+      "brief": "CPU 取出并执行一条指令所需的全部时间，通常含取指、间址、执行、中断等阶段。",
+      "detail": "不同指令的指令周期长度不同；每个阶段由若干机器周期组成。取指周期从 PC 取指令到 IR；间址周期取有效地址；执行周期完成运算或访存；有中断请求时进入中断周期。",
+      "related": [
+        "machine-cycle",
+        "instruction-format",
+        "cpu"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "machine-cycle",
+      "term": "机器周期与时钟周期",
+      "abbr": "",
+      "course": "计算机组成原理",
+      "brief": "时钟周期是最小时间单位；机器周期是完成一个基本操作（如一次访存）的时间。",
+      "detail": "一个机器周期含若干时钟周期；一个指令周期含若干机器周期。CPU 主频的倒数为时钟周期。CPI 表示每条指令平均时钟周期数。",
+      "related": [
+        "instruction-cycle",
+        "cpu",
+        "pipeline-performance"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "micro-operation",
+      "term": "微操作",
+      "abbr": "Micro-operation",
+      "course": "计算机组成原理",
+      "brief": "完成一个最基本数据传送或运算的控制动作，如 PC→MAR、M(MAR)→MDR。",
+      "detail": "微操作是微指令的执行单位，由控制信号直接驱动。一条机器指令被分解为若干微操作序列，安排在不同机器周期中。",
+      "related": [
+        "microinstruction",
+        "microprogram",
+        "datapath"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "microinstruction",
+      "term": "微指令",
+      "abbr": "Micro-instruction",
+      "course": "计算机组成原理",
+      "brief": "微程序中的一条指令，包含操作控制字段与顺序控制字段。",
+      "detail": "操作控制字段产生各部件控制信号；顺序控制字段决定下一条微指令地址。分水平型（并行控制信号多、微指令长）与垂直型（编码紧凑、需译码）。",
+      "related": [
+        "micro-operation",
+        "microprogram",
+        "hardwired-control"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "microprogram",
+      "term": "微程序控制",
+      "abbr": "Microprogrammed Control",
+      "course": "计算机组成原理",
+      "brief": "把机器指令的控制信号序列存为微程序，存放在控制存储器中，逐条执行微指令。",
+      "detail": "一条机器指令对应一段微程序，由微指令寄存器与微地址形成电路驱动。设计灵活、易扩展，但需读控制存储器，速度比硬布线慢；CISC 常用。",
+      "related": [
+        "microinstruction",
+        "hardwired-control",
+        "controller"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "hardwired-control",
+      "term": "硬布线控制",
+      "abbr": "Hardwired Control",
+      "course": "计算机组成原理",
+      "brief": "用组合逻辑电路直接产生控制信号，由指令译码、时序与状态信号共同决定。",
+      "detail": "速度快、适合高速流水线，但逻辑固定、修改困难、设计复杂；RISC 与追求性能的 CPU 常用硬布线控制。与微程序控制形成对比。",
+      "related": [
+        "microprogram",
+        "controller",
+        "cisc-risc-coa"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "cisc-risc-coa",
+      "term": "CISC 与 RISC（计组口径）",
+      "abbr": "CISC / RISC",
+      "course": "计算机组成原理",
+      "brief": "CISC 指令复杂、变长、寻址方式多；RISC 指令精简、定长、寻址方式少、寄存器多。",
+      "detail": "CISC 常用微程序控制，单条指令功能强但周期长；RISC 强调硬布线与流水线，Load/Store 架构，指令周期短、主频高。两者界限已逐渐模糊，考试按典型特征对比。",
+      "related": [
+        "cisc",
+        "risc",
+        "instruction-format",
+        "pipeline-coa",
+        "hardwired-control"
+      ],
+      "source": "王道《计算机组成原理》· 指令系统"
+    },
+    {
+      "id": "cpu",
+      "term": "中央处理器",
+      "abbr": "CPU",
+      "course": "计算机组成原理",
+      "brief": "由运算器、控制器与寄存器组构成，负责取指令、译码、执行与控制全机。",
+      "detail": "关键寄存器：PC（下条指令地址）、IR（当前指令）、MAR（地址）、MDR（数据）、PSW（状态标志）。CPU 通过总线与主存、I/O 交换信息。",
+      "related": [
+        "alu",
+        "controller",
+        "datapath",
+        "instruction-cycle"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "datapath",
+      "term": "数据通路",
+      "abbr": "Datapath",
+      "course": "计算机组成原理",
+      "brief": "CPU 内部在寄存器、ALU、存储器之间传送与处理数据的路径及控制部件。",
+      "detail": "分单总线、双总线与多总线结构。单总线一次只能传送一个数据，需多个时钟拍完成一条指令；多总线可并行传送，速度快但硬件复杂。数据通路设计决定微操作序列。",
+      "related": [
+        "cpu",
+        "alu",
+        "micro-operation",
+        "register-file"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "controller",
+      "term": "控制器",
+      "abbr": "Control Unit",
+      "course": "计算机组成原理",
+      "brief": "负责取指令、译码、生成控制信号并协调各部件按时序工作的部件。",
+      "detail": "核心包括 PC、IR、指令译码器、时序电路与控制信号发生器。实现方式分硬布线与微程序。控制器决定 CPU 的指令执行流程与节拍。",
+      "related": [
+        "hardwired-control",
+        "microprogram",
+        "cpu",
+        "instruction-cycle"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "register-file",
+      "term": "寄存器堆",
+      "abbr": "Register File",
+      "course": "计算机组成原理",
+      "brief": "由多个寄存器组成的阵列，支持按编号读写，是 CPU 中速度最快的存储部件。",
+      "detail": "通常有多个读端口与写端口，可同时读出两个操作数并写回一个结果。RISC 依赖大量通用寄存器减少访存；寄存器堆访问延迟远小于 Cache。",
+      "related": [
+        "cpu",
+        "datapath",
+        "register-addressing"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "pipeline-coa",
+      "term": "流水线（计组）",
+      "abbr": "Pipeline",
+      "course": "计算机组成原理",
+      "brief": "把指令执行划分为多个阶段，各阶段由不同部件并行处理不同指令，提高吞吐率。",
+      "detail": "经典五段：IF 取指、ID 译码/取数、EX 执行、MEM 访存、WB 写回。流水线不缩短单条指令延迟，但提高单位时间完成的指令数。需处理结构冒险、数据冒险与控制冒险。",
+      "related": [
+        "pipeline",
+        "pipeline-performance",
+        "data-hazard",
+        "structural-hazard",
+        "control-hazard"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "pipeline-performance",
+      "term": "流水线性能指标",
+      "abbr": "Throughput / Speedup",
+      "course": "计算机组成原理",
+      "brief": "吞吐率、加速比与效率是衡量流水线性能的三个指标。",
+      "detail": "k 段流水线、每段 Δt、n 条指令：总时间 T=(k+n-1)Δt；吞吐率 TP=n/T；加速比 S=nk/(k+n-1)；效率 E=n/(k+n-1)。n 越大越接近理想值 k。",
+      "related": [
+        "pipeline-coa",
+        "machine-cycle",
+        "data-hazard"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "structural-hazard",
+      "term": "结构冒险",
+      "abbr": "Structural Hazard",
+      "course": "计算机组成原理",
+      "brief": "多条指令在同一拍争用同一硬件资源导致的冲突，如取指与访存同时使用存储器。",
+      "detail": "解决方式：分离指令 Cache 与数据 Cache、增加端口、让某些阶段停顿（插入气泡）。结构冒险是资源冲突，不是数据相关。",
+      "related": [
+        "pipeline-coa",
+        "data-hazard",
+        "control-hazard"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "data-hazard",
+      "term": "数据冒险",
+      "abbr": "Data Hazard",
+      "course": "计算机组成原理",
+      "brief": "后一条指令需要前一条指令尚未写回的结果，导致必须等待或转发。",
+      "detail": "408 主要考 RAW（先写后读）。普通 ALU 结果可用转发（旁路）解决；load-use 冒险即使有转发也需停顿 1 拍。WAR/WAW 在乱序执行中才需关注。",
+      "related": [
+        "pipeline-coa",
+        "forwarding",
+        "structural-hazard",
+        "control-hazard"
+      ],
+      "source": "王道《计算机组成原理》· CPU",
+      "caption": "五段流水线 load-use 冒险：I2 的 EX 要等 I1 的 MEM 结果，即使有转发也插 1 个气泡；普通 ALU 结果可由转发消除气泡。",
+      "diagram": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 360\" role=\"img\" aria-label=\"五段流水线与 load-use 气泡\" preserveAspectRatio=\"xMidYMid meet\"><text class=\"dg-text\" x=\"20.0\" y=\"28.0\" text-anchor=\"start\">五段流水线的 load-use 数据冒险（插入 1 个气泡）</text><rect class=\"dg-fill\" x=\"210\" y=\"50\" width=\"92\" height=\"32\" rx=\"3\"/><text class=\"dg-text\" x=\"256.0\" y=\"71.0\" text-anchor=\"middle\">IF 取指</text><rect class=\"dg-fill\" x=\"310\" y=\"50\" width=\"92\" height=\"32\" rx=\"3\"/><text class=\"dg-text\" x=\"356.0\" y=\"71.0\" text-anchor=\"middle\">ID 译码</text><rect class=\"dg-fill\" x=\"410\" y=\"50\" width=\"92\" height=\"32\" rx=\"3\"/><text class=\"dg-text\" x=\"456.0\" y=\"71.0\" text-anchor=\"middle\">EX 执行</text><rect class=\"dg-fill\" x=\"510\" y=\"50\" width=\"92\" height=\"32\" rx=\"3\"/><text class=\"dg-text\" x=\"556.0\" y=\"71.0\" text-anchor=\"middle\">MEM 访存</text><rect class=\"dg-fill\" x=\"610\" y=\"50\" width=\"92\" height=\"32\" rx=\"3\"/><text class=\"dg-text\" x=\"656.0\" y=\"71.0\" text-anchor=\"middle\">WB 写回</text><line class=\"dg-grid\" x1=\"210.0\" y1=\"120.0\" x2=\"210.0\" y2=\"260.0\"/><text class=\"dg-muted\" x=\"245.0\" y=\"138.0\" text-anchor=\"middle\">第 1 拍</text><line class=\"dg-grid\" x1=\"280.0\" y1=\"120.0\" x2=\"280.0\" y2=\"260.0\"/><text class=\"dg-muted\" x=\"315.0\" y=\"138.0\" text-anchor=\"middle\">第 2 拍</text><line class=\"dg-grid\" x1=\"350.0\" y1=\"120.0\" x2=\"350.0\" y2=\"260.0\"/><text class=\"dg-muted\" x=\"385.0\" y=\"138.0\" text-anchor=\"middle\">第 3 拍</text><line class=\"dg-grid\" x1=\"420.0\" y1=\"120.0\" x2=\"420.0\" y2=\"260.0\"/><text class=\"dg-muted\" x=\"455.0\" y=\"138.0\" text-anchor=\"middle\">第 4 拍</text><line class=\"dg-grid\" x1=\"490.0\" y1=\"120.0\" x2=\"490.0\" y2=\"260.0\"/><text class=\"dg-muted\" x=\"525.0\" y=\"138.0\" text-anchor=\"middle\">第 5 拍</text><line class=\"dg-grid\" x1=\"560.0\" y1=\"120.0\" x2=\"560.0\" y2=\"260.0\"/><text class=\"dg-muted\" x=\"595.0\" y=\"138.0\" text-anchor=\"middle\">第 6 拍</text><line class=\"dg-grid\" x1=\"630.0\" y1=\"120.0\" x2=\"630.0\" y2=\"260.0\"/><text class=\"dg-muted\" x=\"665.0\" y=\"138.0\" text-anchor=\"middle\">第 7 拍</text><text class=\"dg-mono\" x=\"20.0\" y=\"174.0\" text-anchor=\"start\">I1: lw r1,0(r2)</text><text class=\"dg-mono\" x=\"20.0\" y=\"229.0\" text-anchor=\"start\">I2: add r3,r1,r4</text><rect class=\"dg-fill-green\" x=\"213.0\" y=\"150\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"245.0\" y=\"175.0\" text-anchor=\"middle\">IF</text><rect class=\"dg-fill-green\" x=\"283.0\" y=\"150\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"315.0\" y=\"175.0\" text-anchor=\"middle\">ID</text><rect class=\"dg-fill-green\" x=\"353.0\" y=\"150\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"385.0\" y=\"175.0\" text-anchor=\"middle\">EX</text><rect class=\"dg-fill-green\" x=\"423.0\" y=\"150\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"455.0\" y=\"175.0\" text-anchor=\"middle\">MEM</text><rect class=\"dg-fill-green\" x=\"493.0\" y=\"150\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"525.0\" y=\"175.0\" text-anchor=\"middle\">WB</text><rect class=\"dg-fill-green\" x=\"283.0\" y=\"205\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"315.0\" y=\"230.0\" text-anchor=\"middle\">IF</text><rect class=\"dg-fill-green\" x=\"353.0\" y=\"205\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"385.0\" y=\"230.0\" text-anchor=\"middle\">ID</text><rect class=\"dg-fill-accent\" x=\"423.0\" y=\"205\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"455.0\" y=\"230.0\" text-anchor=\"middle\">气泡</text><rect class=\"dg-fill-green\" x=\"493.0\" y=\"205\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"525.0\" y=\"230.0\" text-anchor=\"middle\">EX</text><rect class=\"dg-fill-green\" x=\"563.0\" y=\"205\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"595.0\" y=\"230.0\" text-anchor=\"middle\">MEM</text><rect class=\"dg-fill-green\" x=\"633.0\" y=\"205\" width=\"64.0\" height=\"38\" rx=\"3\"/><text class=\"dg-text\" x=\"665.0\" y=\"230.0\" text-anchor=\"middle\">WB</text><text class=\"dg-muted\" x=\"20.0\" y=\"288.0\" text-anchor=\"start\">load-use 冒险：I2 的 EX 需要 I1 的 MEM 结果，即使有转发也要等 1 拍（第 4 拍气泡）。</text><text class=\"dg-muted\" x=\"20.0\" y=\"316.0\" text-anchor=\"start\">若源操作数来自 I1 的 ALU 结果，转发可消去气泡；结构冒险看资源冲突，控制冒险由分支引起。</text><text class=\"dg-muted\" x=\"20.0\" y=\"344.0\" text-anchor=\"start\">5 段流水线完成 n 条指令：T = (k + n − 1)·Δt，吞吐率 TP = n/T。</text></svg>"
+    },
+    {
+      "id": "control-hazard",
+      "term": "控制冒险",
+      "abbr": "Control Hazard",
+      "course": "计算机组成原理",
+      "brief": "分支指令改变 PC，使流水线已取入的后续指令可能作废。",
+      "detail": "解决方式：分支预测（静态/动态）、延迟槽、预测失败时冲刷流水线。控制冒险的代价取决于分支频率与预测准确率。",
+      "related": [
+        "pipeline-coa",
+        "branch-prediction",
+        "data-hazard"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "forwarding",
+      "term": "数据旁路（转发）",
+      "abbr": "Forwarding / Bypassing",
+      "course": "计算机组成原理",
+      "brief": "把 EX/MEM 或 MEM/WB 阶段的结果直接送到 ALU 输入端，避免等待写回。",
+      "detail": "转发可消除大多数 RAW 冒险；但 load-use 冒险中数据在 MEM 末才可用，仍必须停顿 1 拍。需要检测相关并选择转发来源。",
+      "related": [
+        "data-hazard",
+        "pipeline-coa",
+        "register-file"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "branch-prediction",
+      "term": "分支预测",
+      "abbr": "Branch Prediction",
+      "course": "计算机组成原理",
+      "brief": "在分支结果确定前预测跳转方向，按预测路径继续取指，以减少控制冒险。",
+      "detail": "静态预测（如总预测不跳转）实现简单；动态预测用历史信息（如两位饱和计数器、BTB）提高准确率。预测错误需冲刷错误路径指令并恢复 PC。",
+      "related": [
+        "control-hazard",
+        "pipeline-coa",
+        "cpu"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "superscalar",
+      "term": "超标量",
+      "abbr": "Superscalar",
+      "course": "计算机组成原理",
+      "brief": "每个时钟周期发射并执行多条指令的处理器结构，需多条流水线与指令级并行。",
+      "detail": "依靠硬件动态调度与多套功能部件提高 IPC；常与乱序执行、寄存器重命名配合。超标量与超流水线不同：前者并行多条指令，后者加深流水段提高主频。",
+      "related": [
+        "pipeline-coa",
+        "branch-prediction",
+        "cpu"
+      ],
+      "source": "王道《计算机组成原理》· CPU"
+    },
+    {
+      "id": "bus",
+      "term": "总线",
+      "abbr": "Bus",
+      "course": "计算机组成原理",
+      "brief": "连接多个部件的一组公共信号线，分数据总线、地址总线与控制总线。",
+      "detail": "总线是共享资源，同一时刻只能由一个主设备驱动。按层次分片内总线、系统总线、通信总线；按传送方式分串行与并行。总线宽度与频率决定带宽。",
+      "related": [
+        "system-bus",
+        "bus-bandwidth",
+        "bus-arbitration",
+        "bus-timing"
+      ],
+      "source": "王道《计算机组成原理》· 总线"
+    },
+    {
+      "id": "bus-arbitration",
+      "term": "总线仲裁",
+      "abbr": "Bus Arbitration",
+      "course": "计算机组成原理",
+      "brief": "多个主设备竞争总线时，决定谁获得总线控制权的机制。",
+      "detail": "集中式仲裁：链式查询（线少但优先级固定、对故障敏感）、计数器定时查询（较灵活）、独立请求（速度最快但线多）。分布式仲裁无中央仲裁器。",
+      "related": [
+        "bus",
+        "system-bus",
+        "bus-timing"
+      ],
+      "source": "王道《计算机组成原理》· 总线"
+    },
+    {
+      "id": "bus-timing",
+      "term": "总线定时",
+      "abbr": "Bus Timing",
+      "course": "计算机组成原理",
+      "brief": "规定总线通信双方何时发送、何时采样，分同步定时与异步定时。",
+      "detail": "同步定时共用统一时钟，速度快、协议简单，但需按最慢设备设计周期；异步定时用请求/应答握手，灵活可靠但开销大。另有半同步定时折中。",
+      "related": [
+        "bus",
+        "bus-arbitration",
+        "bus-bandwidth"
+      ],
+      "source": "王道《计算机组成原理》· 总线"
+    },
+    {
+      "id": "bus-bandwidth",
+      "term": "总线带宽",
+      "abbr": "Bus Bandwidth",
+      "course": "计算机组成原理",
+      "brief": "单位时间内总线可传送的数据量，等于总线宽度与传送频率的乘积。",
+      "detail": "带宽 = 数据线位数 × 总线频率（若每周期传送多次则再乘次数），单位 B/s。提高带宽可加宽数据线、提高时钟频率或采用双沿传输。",
+      "related": [
+        "bus",
+        "bus-timing",
+        "system-bus"
+      ],
+      "source": "王道《计算机组成原理》· 总线"
+    },
+    {
+      "id": "system-bus",
+      "term": "系统总线",
+      "abbr": "System Bus",
+      "course": "计算机组成原理",
+      "brief": "连接 CPU、主存与 I/O 接口的总线，通常分数据、地址、控制三组。",
+      "detail": "数据总线双向，位数决定一次传送的数据量；地址总线单向，位数决定寻址空间；控制总线传送读写、中断、仲裁等信号。现代计算机多用点对点高速互连替代共享系统总线。",
+      "related": [
+        "bus",
+        "bus-bandwidth",
+        "bus-arbitration"
+      ],
+      "source": "王道《计算机组成原理》· 总线"
+    },
+    {
+      "id": "io-interface",
+      "term": "I/O 接口",
+      "abbr": "I/O Interface",
+      "course": "计算机组成原理",
+      "brief": "连接 CPU 与外设的硬件电路，含数据、状态、控制寄存器，完成速度匹配与格式转换。",
+      "detail": "CPU 通过端口读写接口寄存器。端口编址分统一编址（与主存共用地址空间）与独立编址（专用 I/O 指令）。接口还负责中断与 DMA 握手。",
+      "related": [
+        "program-query-io",
+        "interrupt-driven-io",
+        "dma-controller",
+        "bus"
+      ],
+      "source": "王道《计算机组成原理》· I/O 系统"
+    },
+    {
+      "id": "program-query-io",
+      "term": "程序查询方式",
+      "abbr": "Programmed I/O",
+      "course": "计算机组成原理",
+      "brief": "CPU 循环读取外设状态寄存器，直到就绪后再传送数据。",
+      "detail": "实现简单、硬件少，但 CPU 忙等，效率低，无法与外设并行工作。适合外设少或对性能要求不高的场合。",
+      "related": [
+        "io-interface",
+        "interrupt-driven-io",
+        "dma-controller"
+      ],
+      "source": "王道《计算机组成原理》· I/O 系统"
+    },
+    {
+      "id": "interrupt-driven-io",
+      "term": "中断驱动 I/O（计组）",
+      "abbr": "Interrupt-driven I/O",
+      "course": "计算机组成原理",
+      "brief": "外设就绪时向 CPU 发中断请求，CPU 暂停当前程序转去执行中断服务程序完成数据传送。",
+      "detail": "CPU 不必忙等，可与外设并行；每次传送一个数据都要中断，开销较大。需处理中断请求、优先级、屏蔽、现场保护与返回。与 OS 的中断管理口径互补。",
+      "related": [
+        "interrupt-io",
+        "interrupt-os",
+        "interrupt-priority",
+        "io-interface"
+      ],
+      "source": "王道《计算机组成原理》· I/O 系统"
+    },
+    {
+      "id": "dma-controller",
+      "term": "DMA 控制器",
+      "abbr": "DMA Controller",
+      "course": "计算机组成原理",
+      "brief": "直接存储器访问的硬件控制器，接管总线在主存与外设之间成块传送数据，CPU 只做初始化与结束处理。",
+      "detail": "DMA 控制器含地址寄存器、计数寄存器与控制寄存器；传送方式有停止 CPU 访存、周期挪用、交替访问。每传送完一块才中断 CPU，适合高速块设备。",
+      "related": [
+        "dma-os",
+        "io-interface",
+        "interrupt-driven-io",
+        "channel-io"
+      ],
+      "source": "王道《计算机组成原理》· I/O 系统"
+    },
+    {
+      "id": "channel-io",
+      "term": "通道方式",
+      "abbr": "I/O Channel",
+      "course": "计算机组成原理",
+      "brief": "由通道处理器执行通道程序，独立管理多台外设的 I/O，进一步减少 CPU 干预。",
+      "detail": "通道是功能更强的 I/O 处理器，能执行通道指令、控制多台设备。分字节多路通道、数组多路通道与选择通道。CPU 只需发启动命令与处理结束中断。",
+      "related": [
+        "dma-controller",
+        "io-interface",
+        "interrupt-driven-io"
+      ],
+      "source": "王道《计算机组成原理》· I/O 系统"
+    },
+    {
+      "id": "interrupt-priority",
+      "term": "中断优先级",
+      "abbr": "Interrupt Priority",
+      "course": "计算机组成原理",
+      "brief": "多个中断源同时请求时，CPU 按优先级决定先响应哪一个。",
+      "detail": "优先级可由硬件排队器或软件查询确定。高优先级中断可打断低优先级服务程序；同级或低优先级通常被屏蔽。优先级与屏蔽字共同决定响应顺序。",
+      "related": [
+        "interrupt-driven-io",
+        "interrupt-nesting",
+        "interrupt-os"
+      ],
+      "source": "王道《计算机组成原理》· I/O 系统"
+    },
+    {
+      "id": "interrupt-nesting",
+      "term": "中断嵌套",
+      "abbr": "Interrupt Nesting",
+      "course": "计算机组成原理",
+      "brief": "高优先级中断打断正在执行的低优先级中断服务程序，形成多层嵌套。",
+      "detail": "实现需在响应中断时保护现场（PC、PSW、寄存器），并设置屏蔽字禁止同级或低级中断。嵌套深度受栈空间与屏蔽策略限制。",
+      "related": [
+        "interrupt-priority",
+        "interrupt-driven-io",
+        "interrupt-os"
+      ],
+      "source": "王道《计算机组成原理》· I/O 系统"
     }
   ]
 }

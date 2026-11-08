@@ -1108,10 +1108,167 @@ def heap_figure():
 
 
 # --------------------------------------------------------------------------
+# 计算机组成原理
+# --------------------------------------------------------------------------
+
+
+def number_codes_figure():
+    W, H = 760, 330
+    inner = [text(20, 28, "8 位原码 / 反码 / 补码 / 移码（以 +45、-45 为例）", "dg-text")]
+    cols = [20, 125, 275, 425, 575]
+    for x, h in zip(cols, ["真值", "原码", "反码", "补码", "移码"]):
+        inner.append(text(x, 62, h, "dg-text"))
+    inner.append(line(20, 74, 720, 74, "dg-axis"))
+    rows = [
+        ("+45", "0010 1101", "0010 1101", "0010 1101", "1010 1101"),
+        ("-45", "1010 1101", "1101 0010", "1101 0011", "0101 0011"),
+    ]
+    for r, row in enumerate(rows):
+        y = 100 + r * 38
+        for x, val in zip(cols, row):
+            inner.append(text(x, y, val, "dg-mono"))
+    inner.append(line(20, 150, 720, 150, "dg-axis"))
+    inner.append(text(20, 184, "补码 = 反码 + 1（负数最低位加 1）；移码 = 补码符号位取反（8 位偏置 128）。", "dg-muted"))
+    inner.append(text(20, 214, "原码、反码有 ±0 两种表示；补码与移码的 0 唯一。", "dg-muted"))
+    inner.append(text(20, 244, "n 位补码范围 -2^(n-1) ~ 2^(n-1)-1；8 位为 -128 ~ +127。", "dg-muted"))
+    inner.append(text(20, 274, "补码符号位权重为 -2^(n-1)：1101 0011₂ = -128+64+16+2+1 = -45。", "dg-muted"))
+    inner.append(text(20, 304, "移码把 8 位无符号数的零点平移到 128，便于浮点阶码比较大小。", "dg-muted"))
+    return svg(W, H, inner, "原码反码补码移码对照")
+
+
+def ieee754_figure():
+    W, H = 760, 360
+    inner = [text(20, 28, "IEEE 754 单精度（32 位）位域拆分：-12.5", "dg-text")]
+    x0, y, total = 40, 78, 680
+    widths = [22, 170, 488]
+    labels = ["1", "1000 0010", "1001 0000 0000 0000 0000 000"]
+    classes = ["dg-fill-accent", "dg-fill-green", "dg-fill"]
+    field_tips = ["符号 1 位", "阶码 8 位（偏置 127）", "尾数 23 位（隐含最高位 1）"]
+    xs = [x0, x0 + widths[0], x0 + widths[0] + widths[1]]
+    for cx, w, lab, cls, tip in zip(xs, widths, labels, classes, field_tips):
+        inner.append('<rect class="%s" x="%.1f" y="%d" width="%.1f" height="48" rx="3"/>'
+                     % (cls, cx, y, w))
+        inner.append(text(cx + w / 2, y + 30, lab, "dg-mono", "middle"))
+        inner.append(text(cx + w / 2, y - 10, tip, "dg-muted", "middle"))
+    inner.append(text(x0, y + 68, "第 31 位", "dg-muted"))
+    inner.append(text(xs[1] + widths[1] / 2, y + 68, "第 30–23 位", "dg-muted", "middle"))
+    inner.append(text(xs[2] + widths[2] / 2, y + 68, "第 22–0 位", "dg-muted", "middle"))
+    inner.append(text(20, 190, "真值 -12.5 = -1100.1₂ = -1.1001₂ × 2³。", "dg-text"))
+    inner.append(text(20, 220, "阶码 = 3 + 127 = 130 = 1000 0010₂；尾数去掉隐含的 1，只存 1001 及其后的 0。", "dg-muted"))
+    inner.append(text(20, 250, "还原：(-1)^1 × 1.1001₂ × 2^(130-127) = -1.5625 × 8 = -12.5。", "dg-muted"))
+    inner.append(text(20, 280, "阶码全 0：非规格化数（尾数非 0）或 ±0；阶码全 1：±∞（尾数 0）或 NaN。", "dg-muted"))
+    inner.append(text(20, 310, "双精度为 1 + 11 + 52 位，偏置 1023；单精度偏置 127。", "dg-muted"))
+    inner.append(text(20, 340, "规格化数的尾数最高位恒为 1，因此隐藏不存，可多存 1 位精度。", "dg-muted"))
+    return svg(W, H, inner, "IEEE 754 单精度位域")
+
+
+def cache_split_figure():
+    W, H = 380 + 0, 380
+    inner = [text(20, 28, "Cache 地址拆分：32 位地址、64 KB Cache、64 B 块、直接映射", "dg-text")]
+    x0, y, total = 40, 68, 680
+    widths = [340, 213, 127]
+    labels = ["Tag 0x1234（16 位）", "Index 0x159（10 位）", "Offset 0x38（6 位）"]
+    classes = ["dg-fill", "dg-fill-green", "dg-fill-accent"]
+    xs = [x0, x0 + widths[0], x0 + widths[0] + widths[1]]
+    for cx, w, lab, cls in zip(xs, widths, labels, classes):
+        inner.append('<rect class="%s" x="%.1f" y="%d" width="%.1f" height="46" rx="3"/>'
+                     % (cls, cx, y, w))
+        inner.append(text(cx + w / 2, y + 28, lab, "dg-mono", "middle"))
+    inner.append(text(x0, y + 64, "31 … 16", "dg-muted"))
+    inner.append(text(xs[1] + widths[1] / 2, y + 64, "15 … 6", "dg-muted", "middle"))
+    inner.append(text(xs[2] + widths[2] / 2, y + 64, "5 … 0", "dg-muted", "middle"))
+    inner.append(text(20, 158, "例：0x12345678 → Tag=0x1234，Index=0x159，Offset=0x38。", "dg-text"))
+    inner.append(text(20, 188, "64 KB / 64 B = 1024 行 = 2¹⁰，所以 Index 10 位、Offset 6 位、Tag 32−10−6=16 位。", "dg-muted"))
+    inner.append(text(20, 218, "直接映射：行号 = 块号 mod 1024；Tag 用来确认该行存的正是所需块。", "dg-muted"))
+    boxes = ["地址 0x12345678", "按 Index 选行", "Tag 比较 + 有效位", "命中？", "按 Offset 选字"]
+    bx, bw, gap = 30, 132, 12
+    for i, lab in enumerate(boxes):
+        x = bx + i * (bw + gap)
+        inner.append('<rect class="dg-fill" x="%d" y="250" width="%d" height="46" rx="4"/>'
+                     % (x, bw))
+        inner.append(text(x + bw / 2, 278, lab, "dg-text", "middle"))
+        if i < len(boxes) - 1:
+            inner.append(arrow(x + bw, 273, x + bw + gap - 2, 273))
+    inner.append(text(20, 330, "命中则按 Offset 在块内取字；缺失则访问主存并装入该行（替换算法见 Cache 替换）。", "dg-muted"))
+    inner.append(text(20, 360, "组相联把 Index 改为“组号”，组内多路并行比较 Tag；全相联没有 Index。", "dg-muted"))
+    return svg(760, H, inner, "Cache 地址 tag index offset 拆分")
+
+
+def interleave_figure():
+    W, H = 760, 400
+    inner = [text(20, 28, "四体低位交叉编址：连续地址分布在不同体，流水访问", "dg-text")]
+    x0, cw = 170, 44
+    top, bottom = 70, 300
+    for c in range(13):
+        x = x0 + c * cw
+        inner.append(line(x, top, x, bottom, "dg-grid"))
+        if c % 2 == 0:
+            inner.append(text(x, bottom + 22, str(c), "dg-muted", "middle"))
+    inner.append(line(x0, bottom, x0 + 12 * cw, bottom, "dg-axis"))
+    inner.append(text(x0 + 6 * cw, bottom + 46, "时钟拍（每拍启动一次访问；单次访问 4 拍）", "dg-muted", "middle"))
+    banks = [
+        ("体 0", [("w0", 0), ("w4", 4)]),
+        ("体 1", [("w1", 1), ("w5", 5)]),
+        ("体 2", [("w2", 2), ("w6", 6)]),
+        ("体 3", [("w3", 3), ("w7", 7)]),
+    ]
+    for b, (name, words) in enumerate(banks):
+        y = 90 + b * 50
+        inner.append(text(90, y + 20, name, "dg-text", "middle"))
+        inner.append(line(x0, y, x0 + 12 * cw, y, "dg-axis"))
+        for lab, s in words:
+            inner.append('<rect class="dg-fill-green" x="%.1f" y="%d" width="%.1f" height="30" rx="3"/>'
+                         % (x0 + s * cw + 2, y, 4 * cw - 4))
+            inner.append(text(x0 + (s + 2) * cw, y + 20, lab, "dg-mono", "middle"))
+    inner.append(line(x0 + 4 * cw, top, x0 + 4 * cw, bottom, "dg-accent"))
+    inner.append(text(x0 + 4 * cw + 6, 64, "t=4 首字可读", "dg-muted"))
+    inner.append(text(20, 350, "低 2 位选体：地址 0,1,2,3 落在体 0,1,2,3；各体独立、访问 4 拍时，第 8 字在 t=11 完成。", "dg-muted"))
+    inner.append(text(20, 378, "对照：单体串行 8 字需 8×4=32 拍；高位交叉把连续地址放在同一体，不能流水。", "dg-muted"))
+    return svg(W, H, inner, "四体低位交叉编址时序")
+
+
+def pipeline_figure():
+    W, H = 760, 360
+    inner = [text(20, 28, "五段流水线的 load-use 数据冒险（插入 1 个气泡）", "dg-text")]
+    stage_x, stage_y = 210, 50
+    for i, s in enumerate(["IF 取指", "ID 译码", "EX 执行", "MEM 访存", "WB 写回"]):
+        inner.append('<rect class="dg-fill" x="%d" y="%d" width="92" height="32" rx="3"/>'
+                     % (stage_x + i * 100, stage_y))
+        inner.append(text(stage_x + i * 100 + 46, stage_y + 21, s, "dg-text", "middle"))
+    x0, cw, y1, y2 = 210, 70, 150, 205
+    for c in range(1, 8):
+        cx = x0 + (c - 1) * cw
+        inner.append(line(cx, 120, cx, 260, "dg-grid"))
+        inner.append(text(cx + cw / 2, 138, "第 %d 拍" % c, "dg-muted", "middle"))
+    inner.append(text(20, y1 + 24, "I1: lw r1,0(r2)", "dg-mono"))
+    inner.append(text(20, y2 + 24, "I2: add r3,r1,r4", "dg-mono"))
+    i1 = ["IF", "ID", "EX", "MEM", "WB"]
+    i2 = ["IF", "ID", "气泡", "EX", "MEM", "WB"]
+    for r, (row, y) in enumerate([(i1, y1), (i2, y2)]):
+        start = 1 if r == 0 else 2
+        for k, lab in enumerate(row):
+            c = start + k
+            cx = x0 + (c - 1) * cw + 3
+            cls = "dg-fill-accent" if lab == "气泡" else "dg-fill-green"
+            inner.append('<rect class="%s" x="%.1f" y="%d" width="%.1f" height="38" rx="3"/>'
+                         % (cls, cx, y, cw - 6))
+            inner.append(text(cx + (cw - 6) / 2, y + 25, lab, "dg-text", "middle"))
+    inner.append(text(20, 288, "load-use 冒险：I2 的 EX 需要 I1 的 MEM 结果，即使有转发也要等 1 拍（第 4 拍气泡）。", "dg-muted"))
+    inner.append(text(20, 316, "若源操作数来自 I1 的 ALU 结果，转发可消去气泡；结构冒险看资源冲突，控制冒险由分支引起。", "dg-muted"))
+    inner.append(text(20, 344, "5 段流水线完成 n 条指令：T = (k + n − 1)·Δt，吞吐率 TP = n/T。", "dg-muted"))
+    return svg(W, H, inner, "五段流水线与 load-use 气泡")
+
+
+# --------------------------------------------------------------------------
 # 注册表
 # --------------------------------------------------------------------------
 
 DIAGRAMS = {
+    "coa-number-codes": number_codes_figure(),
+    "coa-ieee754": ieee754_figure(),
+    "coa-cache-split": cache_split_figure(),
+    "coa-interleave": interleave_figure(),
+    "coa-pipeline": pipeline_figure(),
     "net-nrz": encoding_figure("nrz"),
     "net-nrzi": encoding_figure("nrzi"),
     "net-manchester": encoding_figure("manchester"),
