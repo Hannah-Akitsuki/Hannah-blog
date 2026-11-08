@@ -12,7 +12,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 <script type="importmap">
 {
   "imports": {
@@ -81,6 +81,7 @@ document.documentElement.classList.add('booting');
   <!-- 首页 -->
   <section class="view" id="view-home" data-view="home">
     <div class="home-grid">
+      <div class="home-side">
       <aside class="profile-card">
         <div class="avatar-wrap">
           <img id="profileAvatar" class="profile-avatar" alt="个人头像">
@@ -94,6 +95,14 @@ document.documentElement.classList.add('booting');
         <button class="ghost-btn owner-only" id="customizeBtn">换头像 / 换背景</button>
         <p class="tiny owner-only">默认读取 config.json</p>
       </aside>
+
+      <a class="now-card" id="nowCard" href="#now">
+        <span class="num">NOW ／ 现在</span>
+        <b>现在</b>
+        <p id="nowCardLine">还没填</p>
+        <span class="now-card-meta" id="nowCardMeta"></span>
+      </a>
+      </div>
 
       <div class="feed">
         <div class="feed-head">
@@ -113,6 +122,20 @@ document.documentElement.classList.add('booting');
       </div>
       <div class="photo-grid small" id="homePhotos"></div>
     </div>
+  </section>
+
+  <!-- 现在 -->
+  <section class="view page" id="view-now" data-view="now">
+    <div class="page-head">
+      <div class="eyebrow">NOW</div>
+      <h1>现在</h1>
+      <p>在读、在追、在写，和最近打算做的事。 <span class="now-stamp" id="nowStamp"></span></p>
+    </div>
+    <div class="now-grid" id="nowBody"></div>
+    <details class="howto owner-only">
+      <summary>怎么更新这张「现在」页</summary>
+      <p>编辑仓库里的 <code>data/now.json</code>，或在 Pages CMS 后台打开「现在（Now）」集合。每项写 <code>title</code> 与可选的 <code>note</code>，保存提交即可；把 <code>updated</code> 改成本次填写的日期，页面会自动显示「最后更新于 X 天前」。</p>
+    </details>
   </section>
 
   <!-- 个人笔记 -->
@@ -347,7 +370,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=12"></script>
+<script src="app.js?v=13"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

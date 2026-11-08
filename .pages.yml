@@ -179,6 +179,72 @@ content:
             type: string
             required: true
 
+  - name: now
+    label: 现在（Now）
+    type: file
+    path: data/now.json
+    format: json
+    fields:
+      - name: updated
+        label: 最后更新日期（页面会显示「X 天前」）
+        type: date
+      - name: reading
+        label: 在读
+        type: object
+        list:
+          collapsible: true
+          summary: "{title}"
+        fields:
+          - name: title
+            label: 书名 / 内容
+            type: string
+            required: true
+          - name: note
+            label: 一句话说明
+            type: text
+      - name: watching
+        label: 在追
+        type: object
+        list:
+          collapsible: true
+          summary: "{title}"
+        fields:
+          - name: title
+            label: 剧名 / 番剧 / 内容
+            type: string
+            required: true
+          - name: note
+            label: 一句话说明
+            type: text
+      - name: writing
+        label: 在写
+        type: object
+        list:
+          collapsible: true
+          summary: "{title}"
+        fields:
+          - name: title
+            label: 正在写的东西
+            type: string
+            required: true
+          - name: note
+            label: 进度或一句话说明
+            type: text
+      - name: plans
+        label: 近期计划
+        type: object
+        list:
+          collapsible: true
+          summary: "{title}"
+        fields:
+          - name: title
+            label: 计划
+            type: string
+            required: true
+          - name: note
+            label: 补充说明
+            type: text
+
   - name: site
     label: 站点设置
     type: file

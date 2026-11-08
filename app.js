@@ -88,7 +88,7 @@ function legacyCopy(text) {
 
 
 const state = {
-  config: null, docs: [], photos: [], links: [], music: null, diary: [],
+  config: null, docs: [], photos: [], links: [], music: null, diary: [], now: null,
   current: -1, sourceText: '', photoShown: 0, track: 0, giscusLoaded: false
 };
 const PAGE_SIZE = 60;
@@ -178,13 +178,15 @@ async function loadJSON(path) {
 
 async function bootstrap() {
   try {
-    const [config, docs, photos, links, music, diary] = await Promise.all([
+    const [config, docs, photos, links, music, diary, now] = await Promise.all([
       loadJSON('config.json'), loadJSON('manifest.json'), loadJSON('data/photos.json'),
-      loadJSON('data/links.json'), loadJSON('data/music.json'), loadJSON('data/diary.json')
+      loadJSON('data/links.json'), loadJSON('data/music.json'), loadJSON('data/diary.json'),
+      loadJSON('data/now.json').catch(() => null)
     ]);
     state.config = config; state.docs = docs || [];
     state.photos = (photos && photos.photos) || [];
     state.links = links || []; state.music = music; state.diary = diary || [];
+    state.now = now || {};
   } catch (e) {
     console.error(e);
   }
@@ -253,6 +255,60 @@ function renderNavs() {
   }));
 }
 
+/* ---------------- 现在（Now） ---------------- */
+const NOW_SECTIONS = [
+  { key: 'reading', label: '在读', sub: 'READING' },
+  { key: 'watching', label: '在追', sub: 'WATCHING' },
+  { key: 'writing', label: '在写', sub: 'WRITING' },
+  { key: 'plans', label: '近期计划', sub: 'PLANS' }
+];
+function nowItems(now, key) {
+  const v = now && now[key];
+  if (!Array.isArray(v)) return [];
+  return v.map(x => (typeof x === 'string' ? { title: x, note: '' } : { title: (x && x.title) || '', note: (x && x.note) || '' }))
+    .filter(x => x.title);
+}
+function daysAgo(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(String(dateStr) + 'T00:00:00');
+  if (isNaN(d.getTime())) return null;
+  const n = new Date();
+  const today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  const diff = Math.round((today - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000);
+  return diff >= 0 ? diff : null;
+}
+function agoLabel(dateStr) {
+  const n = daysAgo(dateStr);
+  if (n == null) return '还没有填写更新日期';
+  if (n === 0) return '最后更新于今天';
+  return '最后更新于 ' + n + ' 天前';
+}
+function renderNowCard() {
+  const now = state.now || {};
+  const first = NOW_SECTIONS.map(s => nowItems(now, s.key)[0]).filter(Boolean)[0];
+  const line = $('#nowCardLine');
+  const meta = $('#nowCardMeta');
+  if (line) line.textContent = first ? first.title : '还没填';
+  if (meta) meta.textContent = now.updated ? agoLabel(now.updated) : '等你补上';
+}
+function renderNow() {
+  const now = state.now || {};
+  const stamp = $('#nowStamp');
+  if (stamp) stamp.textContent = agoLabel(now.updated);
+  const body = $('#nowBody');
+  if (!body) return;
+  const total = NOW_SECTIONS.reduce((n, s) => n + nowItems(now, s.key).length, 0);
+  body.innerHTML = NOW_SECTIONS.map(s => {
+    const list = nowItems(now, s.key);
+    return `<section class="now-sec">
+      <div class="now-sec-head"><span class="eyebrow">${s.sub}</span><h2>${s.label}</h2></div>
+      ${list.length ? `<ul class="now-list">${list.map(it =>
+        `<li><b>${esc(it.title)}</b>${it.note ? `<span>${esc(it.note)}</span>` : ''}</li>`).join('')}</ul>`
+        : '<p class="now-empty">还没填</p>'}
+    </section>`;
+  }).join('') + (total ? '' : '<p class="now-hint tiny owner-only">在 <code>data/now.json</code> 或 Pages CMS 的「现在（Now）」里填上几条，这里就会显示出来。</p>');
+}
+
 function renderHome() {
   const course = state.docs.filter(d => !isIntro(d));
   $('#homeCards').innerHTML = course.map(d => {
@@ -275,6 +331,7 @@ function renderHome() {
     const img = e.target.closest('img');
     if (img) openLightbox(img.src);
   });
+  renderNowCard();
 }
 
 /* ---------------- 归档 ---------------- */
@@ -789,7 +846,7 @@ function initArticleTools() {
 }
 
 /* ---------------- 视图路由 ---------------- */
-const VIEWS = ['home', 'notes', 'article', 'links', 'archive', 'music', 'photos', 'diary', 'guestbook', 'about'];
+const VIEWS = ['home', 'now', 'notes', 'article', 'links', 'archive', 'music', 'photos', 'diary', 'guestbook', 'about'];
 function showView(name, keepScroll) {
   if (VIEWS.indexOf(name) < 0) name = 'home';
   withVT(() => {
@@ -800,6 +857,7 @@ function showView(name, keepScroll) {
 
     if (name === 'about') renderAbout();
     if (name === 'guestbook') renderGuestbook();
+    if (name === 'now') renderNow();
 
     if (!keepScroll) window.scrollTo({ top: 0, behavior: 'auto' });
     document.body.classList.remove('mobile-open');

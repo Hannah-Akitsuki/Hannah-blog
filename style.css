@@ -172,6 +172,30 @@ html.ready .view.active:not(.initial){animation:fade .28s ease}
 .mc-play{width:44px;height:44px;border-radius:50%;border:none;background:var(--green);color:#fff;font-size:15px;display:grid;place-items:center}
 .mc-sub{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:13px}
 
+/* 左栏：个人卡 + Now（+ 书单） */
+.home-side{display:flex;flex-direction:column;gap:16px;align-self:start}
+/* 现在（Now） */
+.now-card{
+  display:block;align-self:start;text-decoration:none;color:var(--ink);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);transition:.22s;
+}
+.now-card:hover{border-color:var(--green);transform:translateY(-2px);box-shadow:0 10px 26px rgba(38,51,47,.10)}
+.now-card .num{font:10px 'DM Sans';letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+.now-card b{display:block;font:500 16px 'Noto Serif SC';margin:5px 0 5px}
+.now-card p{margin:0;font-size:12px;line-height:1.7;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.now-card-meta{display:block;margin-top:9px;font-size:10.5px;color:var(--accent)}
+.now-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.now-sec{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:22px 24px}
+.now-sec-head h2{font:500 20px 'Noto Serif SC';margin:6px 0 14px}
+.now-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.now-list li{display:flex;flex-direction:column;gap:2px;padding-left:14px;border-left:2px solid var(--green)}
+.now-list b{font-weight:500;font-size:14.5px}
+.now-list span{font-size:12.5px;color:var(--muted);line-height:1.75}
+.now-empty{margin:0;padding:14px;border:1px dashed var(--line);border-radius:10px;text-align:center;color:var(--muted);font-size:13px}
+.now-stamp{color:var(--accent);font-size:12px;white-space:nowrap}
+.now-hint{grid-column:1/-1;margin:0}
+
 /* 卡片 */
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .card{
@@ -339,6 +363,9 @@ dialog h3{font:500 19px 'Noto Serif SC';margin:0 0 8px}
   #notesNav,#articleNav{display:flex;overflow:auto;gap:4px}
   .side-link{white-space:nowrap}
   .side-group{border:none;padding:6px 10px}
+}
+@media(max-width:700px){
+  .now-grid{grid-template-columns:1fr}
 }
 @media(max-width:600px){
   .hero h1{letter-spacing:.04em}
