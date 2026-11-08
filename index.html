@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -6,13 +6,14 @@
 <title>寒鹤 · 个人博客</title>
 <meta name="description" content="寒鹤的个人博客：课程笔记、阅读归档、照片墙与自制小工具。">
 <meta name="theme-color" content="#f7f6f2">
+<link rel="alternate" type="application/rss+xml" title="寒鹤 · 个人博客 RSS" href="feed.xml">
 <script>
 /* 主题初始化：先于渲染执行，避免明暗闪烁 */
 (function(){try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}})();
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 <script type="importmap">
 {
   "imports": {
@@ -322,9 +323,19 @@ document.documentElement.classList.add('booting');
 </main>
 
 <footer class="site-foot">
-  <span>© <span id="year">2026</span> 寒鹤 · 用 Markdown 记录</span>
-  <span>GitHub Pages · 纯静态</span>
-  <span><a href="CREDITS.md">素材来源与许可</a></span>
+  <div class="foot-line">
+    <span>© <span id="year">2026</span> 寒鹤 · 用 Markdown 记录</span>
+    <span>GitHub Pages · 纯静态</span>
+    <span><a href="CREDITS.md">素材来源与许可</a></span>
+  </div>
+  <div class="foot-sub">
+    <a class="rss-link" href="feed.xml" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.18" cy="17.82" r="2.2"/><path d="M4 10.5a9.5 9.5 0 0 1 9.5 9.5h-3A6.5 6.5 0 0 0 4 13.5z"/><path d="M4 5.5A14.5 14.5 0 0 1 18.5 20h-3A11.5 11.5 0 0 0 4 8.5z"/></svg>
+      <span>RSS 订阅</span>
+    </a>
+    <button class="foot-copy" id="rssCopy" type="button">复制订阅链接</button>
+    <span class="foot-note">邮箱订阅需要第三方服务（如 follow.it），要注册账号；本站暂未接入。</span>
+  </div>
 </footer>
 
 <!-- 搜索面板 -->
@@ -370,7 +381,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

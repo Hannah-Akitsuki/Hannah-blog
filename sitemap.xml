@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- 站点是 hash 路由的单页应用，文章用 #note-<id> 表示；搜索引擎只收录入口页，
+       所以这里只列一个 URL，不伪造文章级地址。 -->
+  <url>
+    <loc>https://hannah-akitsuki.github.io/Hannah-blog/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>寒鹤 · 个人博客</title>
+    <link>https://hannah-akitsuki.github.io/Hannah-blog/</link>
+    <description>课程笔记、阅读归档、照片墙与自制小工具。</description>
+    <language>zh-CN</language>
+    <lastBuildDate>Thu, 05 Nov 2026 00:00:00 +0800</lastBuildDate>
+    <atom:link href="https://hannah-akitsuki.github.io/Hannah-blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>寒鹤</title>
+      <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-about</link>
+      <guid isPermaLink="false">hanhe:note:about</guid>
+      <pubDate>Thu, 05 Nov 2026 00:00:00 +0800</pubDate>
+      <description>寒鹤 你好，我是 寒鹤 ，一个还在读书的大学生，欢迎来到我的个人博客。 我把这里当作整理自己的地方：白天上课，课后把听过的、读过的、查到的零散内容收拢成一篇篇笔记。目前笔记以 FZU 课程为主：编译原理、系统架构、软件工程、操作系统、计算机…</description>
+    </item>
+    <item>
+      <title>系统架构</title>
+      <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-architecture</link>
+      <guid isPermaLink="false">hanhe:note:architecture</guid>
+      <pubDate>Thu, 05 Nov 2026 00:00:00 +0800</pubDate>
+      <description>系统结构 与同学 ibuki 共同整理 第一章 1. 计算机系统结构所包含的内容（选择）系统结构是程序员所看到的计算机的属性，即程序员编写出能在机器上正确运行的程序所必须了解到的 概念性结构和功能特性 。 1. 数据表示 1. 硬件能直接识…</description>
+    </item>
+    <item>
+      <title>编译原理</title>
+      <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-compiler</link>
+      <guid isPermaLink="false">hanhe:note:compiler</guid>
+      <pubDate>Thu, 05 Nov 2026 00:00:00 +0800</pubDate>
+      <description>编译原理 与同学 ibuki 共同整理 1、选择题 2分 5=10分 2、填空题 3分 5=15分 3、简答题 5分 7=35分 4、综合题 10+12+18=40分 第一章 1. 什么是编译程序：编译程序(compiler)： 把某一种高…</description>
+    </item>
+    <item>
+      <title>软件工程</title>
+      <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-software-engineering</link>
+      <guid isPermaLink="false">hanhe:note:software-engineering</guid>
+      <pubDate>Thu, 05 Nov 2026 00:00:00 +0800</pubDate>
+      <description>软件工程重点大全 与同学 ibuki 共同整理 考点： 20％选择题（10题） 30％简答题（5题） 50％综合题（5题） 五个模块要关注的部分： 用例图 类图和设计原则 判定表（条件、最右边、结果）会画 关键路径分析（什么是，如何选，如何…</description>
+    </item>
+  </channel>
+</rss>

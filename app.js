@@ -1138,6 +1138,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') { closeSearch(); closeLightbox(); }
   });
 
+  const rssCopy = $('#rssCopy');
+  if (rssCopy) rssCopy.addEventListener('click', () => {
+    const url = new URL('feed.xml', location.href).href;
+    copyText(url).then(ok => toast(ok ? '已复制订阅链接' : url));
+  });
+
   $('#photoMore').addEventListener('click', appendPhotos);
   $('#lightbox').addEventListener('click', e => {
     if (e.target.id === 'lightbox' || e.target.id === 'lbClose') closeLightbox();

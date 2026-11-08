@@ -9,6 +9,7 @@ on:
       - 'photos/**'
       - 'tools/build_manifest.py'
       - 'tools/build_photos.py'
+      - 'tools/build_feed.py'
       - '.github/workflows/build-data.yml'
   workflow_dispatch:
 
@@ -25,13 +26,14 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: 生成 manifest / 公开日记
+      - name: 生成 manifest / 公开日记 / RSS
         run: |
           python tools/build_manifest.py
           if [ -f tools/build_photos.py ]; then python tools/build_photos.py; fi
+          if [ -f tools/build_feed.py ]; then python tools/build_feed.py; fi
 
       - name: 提交生成结果
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 自动更新数据（manifest / 日记 / 相册）
-          file_pattern: manifest.json data/photos.json data/diary.json
+          commit_message: 自动更新数据（manifest / 日记 / 相册 / RSS）
+          file_pattern: manifest.json data/photos.json data/diary.json feed.xml

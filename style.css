@@ -338,7 +338,15 @@ dialog h3{font:500 19px 'Noto Serif SC';margin:0 0 8px}
 .cust-block b{font-size:13.5px}
 .file-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;margin-top:10px;color:var(--muted)}
 .cust-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
-.site-foot{max-width:1240px;margin:0 auto;padding:26px clamp(16px,4vw,40px) 40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;flex-wrap:wrap}
+.site-foot{max-width:1240px;margin:0 auto;padding:26px clamp(16px,4vw,40px) 40px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+.foot-line{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.foot-sub{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.rss-link{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 13px;color:var(--green);text-decoration:none;font-size:12px;transition:.2s}
+.rss-link:hover{border-color:var(--green);background:rgba(84,115,99,.08)}
+.rss-link svg{width:13px;height:13px;fill:currentColor}
+.foot-copy{border:1px solid var(--line);background:var(--card-2);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:11.5px;transition:.2s}
+.foot-copy:hover{color:var(--green);border-color:var(--green)}
+.foot-note{font-size:11px;color:var(--muted);line-height:1.7}
 
 /* ================= 响应式 ================= */
 @media(max-width:1120px){
