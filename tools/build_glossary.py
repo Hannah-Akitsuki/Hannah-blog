@@ -116,6 +116,35 @@ def main():
     print("验算差分曼彻斯特电平：%s" % " ".join(map(str, levels_for("diff-manchester", bits))))
     print("验算 NRZI：%s" % " ".join(map(str, levels_for("nrz-i", bits))))
 
+    # 数据结构：KMP next / 哈夫曼 WPL / 快排划分
+    pat = "ababaca"
+    pp = " " + pat
+    nxt = [0] * (len(pat) + 1)
+    for j in range(2, len(pat) + 1):
+        nxt[j] = max([k for k in range(2, j) if pp[1:k] == pp[j - k + 1:j]] or [1])
+    print("验算 KMP：P=%s → 王道 next=%s（next[1]=0）" % (pat, nxt[1:]))
+
+    import heapq
+    heap = [2, 4, 5, 7, 9]
+    heapq.heapify(heap)
+    wpl = 0
+    while len(heap) > 1:
+        a = heapq.heappop(heap)
+        b = heapq.heappop(heap)
+        wpl += a + b
+        heapq.heappush(heap, a + b)
+    print("验算哈夫曼：权值 2,4,5,7,9 → WPL=%d" % wpl)
+
+    arr = [49, 38, 65, 97, 76, 13, 27]
+    pivot = arr[-1]
+    i = -1
+    for j in range(len(arr) - 1):
+        if arr[j] <= pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i + 1], arr[-1] = arr[-1], arr[i + 1]
+    print("验算快排划分：枢轴 27 → %s" % arr)
+
 
 if __name__ == "__main__":
     main()

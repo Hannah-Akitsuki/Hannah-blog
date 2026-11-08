@@ -1,0 +1,821 @@
+{
+  "course": "数据结构",
+  "terms": [
+    {
+      "id": "time-complexity",
+      "term": "时间复杂度",
+      "abbr": "Time Complexity",
+      "course": "数据结构",
+      "brief": "算法执行时间随问题规模 n 增长的数量级，用渐进记号描述，忽略常数与低阶项。",
+      "detail": "常见量级由低到高：O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(n³) < O(2ⁿ) < O(n!)。分析时数最深层循环的执行次数；递归算法可用递推式或递归树。408 常考双重循环、递归与均摊分析。",
+      "related": ["space-complexity", "big-o-notation", "sort-comparison"],
+      "source": "王道《数据结构》· 绪论"
+    },
+    {
+      "id": "space-complexity",
+      "term": "空间复杂度",
+      "abbr": "Space Complexity",
+      "course": "数据结构",
+      "brief": "算法运行所需的辅助空间随规模 n 增长的数量级，不含输入数据本身。",
+      "detail": "递归算法的空间复杂度至少为递归深度（每层栈帧）。原地工作算法的辅助空间为 O(1)。注意教材口径：空间复杂度通常只统计辅助空间。",
+      "related": ["time-complexity", "big-o-notation", "stack-application"],
+      "source": "王道《数据结构》· 绪论"
+    },
+    {
+      "id": "big-o-notation",
+      "term": "大 O 记号",
+      "abbr": "Big-O",
+      "course": "数据结构",
+      "brief": "描述函数增长率的上界：f(n)=O(g(n)) 表示存在常数 c 与 n₀，使 n≥n₀ 时 f(n)≤c·g(n)。",
+      "detail": "另有 Ω 表示下界、Θ 表示紧确界。408 一般不做严格证明，只要求比较阶的大小。写复杂度时省略常数因子与低阶项，如 3n²+2n+1 记作 O(n²)。",
+      "related": ["time-complexity", "space-complexity", "sort-comparison"],
+      "source": "王道《数据结构》· 绪论"
+    },
+    {
+      "id": "adt",
+      "term": "抽象数据类型",
+      "abbr": "ADT",
+      "course": "数据结构",
+      "brief": "由数据对象、数据关系和一组基本操作组成的数学模型，与具体存储实现无关。",
+      "detail": "ADT 描述“做什么”，不描述“怎么做”。例如栈的 ADT 只规定 push/pop/top 的语义，顺序栈与链栈都是它的实现。逻辑结构与存储结构是两件事。",
+      "related": ["linear-list", "stack", "queue"],
+      "source": "王道《数据结构》· 绪论"
+    },
+    {
+      "id": "linear-list",
+      "term": "线性表",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "n 个同类型元素的有限序列；除首元素外每个元素有唯一前驱，除尾元素外有唯一后继。",
+      "detail": "线性表是逻辑结构，可用顺序存储（顺序表）或链式存储（链表）实现。基本操作包括按位序插入、删除、查找、求长度、遍历。",
+      "related": ["sequential-list", "linked-list", "adt"],
+      "source": "王道《数据结构》· 线性表"
+    },
+    {
+      "id": "sequential-list",
+      "term": "顺序表",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "用一段地址连续的存储单元依次存放线性表元素，逻辑相邻即物理相邻。",
+      "detail": "支持随机访问，按位序取值 O(1)。插入平均移动 n/2 个元素，删除平均移动 (n-1)/2 个，均为 O(n)。408 常算插入位置 i 的移动次数：表长 n 时在第 i 个位置插入需移动 n-i+1 个元素。",
+      "related": ["linear-list", "linked-list", "binary-search"],
+      "source": "王道《数据结构》· 线性表"
+    },
+    {
+      "id": "linked-list",
+      "term": "链表",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "结点由数据域与指针域组成，逻辑相邻的结点物理上不必相邻。",
+      "detail": "按位序查找需从头遍历，O(n)；已知某结点指针时，插入删除可 O(1)，但通常仍需找前驱。链表不支持随机访问，额外存储指针。",
+      "related": ["singly-linked-list", "doubly-linked-list", "circular-linked-list", "static-linked-list"],
+      "source": "王道《数据结构》· 线性表"
+    },
+    {
+      "id": "singly-linked-list",
+      "term": "单链表",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "每个结点只含一个 next 指针，只能沿一个方向遍历。",
+      "detail": "插入需先找前驱；删除结点通常要找前驱，若只给待删结点指针，可用“把后继数据复制过来再删后继”的技巧（限非尾结点）。尾插若维护尾指针可 O(1)。",
+      "related": ["linked-list", "doubly-linked-list", "head-node"],
+      "source": "王道《数据结构》· 线性表"
+    },
+    {
+      "id": "doubly-linked-list",
+      "term": "双链表",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "每个结点含 prior 与 next 两个指针，可双向遍历。",
+      "detail": "插入、删除需同时修改前后结点的指针（边界除外），操作时要防止断链。按位序查找仍是 O(n)，但已知结点时可 O(1) 找到前驱。",
+      "related": ["singly-linked-list", "circular-linked-list", "linked-list"],
+      "source": "王道《数据结构》· 线性表"
+    },
+    {
+      "id": "circular-linked-list",
+      "term": "循环链表",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "尾结点的指针指回头结点（或首结点），整个链表形成环，从任一结点都能遍历全表。",
+      "detail": "循环单链表常用尾指针标识：rear->next 即头结点，因此在表头、表尾插入都只需 O(1)。循环双链表判空条件为 head->next == head（带头结点时）。",
+      "related": ["singly-linked-list", "doubly-linked-list", "head-node"],
+      "source": "王道《数据结构》· 线性表"
+    },
+    {
+      "id": "static-linked-list",
+      "term": "静态链表",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "用数组模拟链表，结点用下标代替指针，next 域存下一个结点的数组下标。",
+      "detail": "插入删除不必移动元素，但容量固定；用 -1 或 0 表示链尾。适合不支持指针的程序设计语言。408 会考静态链表的插入与删除下标变化。",
+      "related": ["linked-list", "sequential-list", "singly-linked-list"],
+      "source": "王道《数据结构》· 线性表"
+    },
+    {
+      "id": "head-node",
+      "term": "头结点与头指针",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "头指针指向链表第一个结点；头结点是首元结点之前附加的结点，其数据域不存有效数据。",
+      "detail": "带头结点可统一空表与非空表、首元结点与其他位置的插入删除，减少边界判断。头指针必须存在，头结点可有可无。注意区分头结点与首元结点。",
+      "related": ["singly-linked-list", "circular-linked-list", "linked-list"],
+      "source": "王道《数据结构》· 线性表"
+    },
+    {
+      "id": "stack",
+      "term": "栈",
+      "abbr": "Stack",
+      "course": "数据结构",
+      "brief": "只允许在一端（栈顶）进行插入和删除的线性表，遵循后进先出（LIFO）。",
+      "detail": "基本操作：push 入栈、pop 出栈、取栈顶。可用顺序栈或链栈实现。n 个不同元素入栈后，合法的出栈序列个数为卡特兰数 C(2n,n)/(n+1)。",
+      "related": ["sequential-stack", "linked-stack", "stack-application", "queue"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "sequential-stack",
+      "term": "顺序栈",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "用数组存放栈元素，top 记录栈顶位置。",
+      "detail": "王道口径初始化 top=-1，top 指向栈顶元素；入栈 ++top 后存入，出栈取 top 再 --。栈满条件 top==MaxSize-1，栈空条件 top==-1。若 top 指向“栈顶的下一个空位”，条件要相应改变。",
+      "related": ["stack", "shared-stack", "linked-stack"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "shared-stack",
+      "term": "共享栈",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "两个顺序栈共享一个数组，栈底分别设在数组两端，栈顶向中间延伸。",
+      "detail": "栈满条件为 top0+1==top1（top0 从左端增长、top1 从右端增长）。只有在两个栈空间需求此消彼长时才能提高利用率，最多只适合两个栈。",
+      "related": ["sequential-stack", "stack", "queue"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "linked-stack",
+      "term": "链栈",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "用链表实现的栈，通常以表头为栈顶，入栈和出栈都在表头进行。",
+      "detail": "链栈一般不需要头结点，栈顶指针指向首元结点。push/pop 均 O(1)；只要内存足够就不会栈满。",
+      "related": ["stack", "sequential-stack", "singly-linked-list"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "queue",
+      "term": "队列",
+      "abbr": "Queue",
+      "course": "数据结构",
+      "brief": "只允许在队尾插入、在队头删除的线性表，遵循先进先出（FIFO）。",
+      "detail": "基本操作：入队 enqueue、出队 dequeue、取队头。可用顺序存储（循环队列）或链式存储（链队列）实现。",
+      "related": ["circular-queue", "linked-queue", "deque", "stack"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "circular-queue",
+      "term": "循环队列",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "把顺序队列的存储空间首尾相连，用取模运算让 front/rear 在数组中循环移动。",
+      "detail": "王道口径：front 指向队头元素，rear 指向队尾元素的下一个位置；队空 front==rear；为区分队满牺牲一个单元，队满 (rear+1)%MaxSize==front；队长 (rear-front+MaxSize)%MaxSize。也可用 size 变量或 tag 区分满/空。",
+      "related": ["queue", "linked-queue", "sequential-list"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "linked-queue",
+      "term": "链队列",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "用链表实现的队列，front 指向队头结点，rear 指向队尾结点。",
+      "detail": "入队在表尾插入，出队在表头删除，均 O(1)。出队到只剩一个元素时，必须让 rear 重新指向头结点（或空队列状态），否则 rear 悬空。",
+      "related": ["queue", "circular-queue", "singly-linked-list"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "deque",
+      "term": "双端队列",
+      "abbr": "Deque",
+      "course": "数据结构",
+      "brief": "两端都允许插入和删除的线性表；可限制只允许一端插入（输入受限）或只允许一端删除（输出受限）。",
+      "detail": "408 常考“输入受限的双端队列能否产生给定输出序列”，需按操作顺序逐步模拟。双端队列可用两端都有指针的顺序存储或双链表实现。",
+      "related": ["queue", "stack", "circular-queue"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "stack-application",
+      "term": "栈的典型应用",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "括号匹配、表达式求值、递归、函数调用、进制转换等，本质都是“后出现先处理”。",
+      "detail": "括号匹配遇左括号入栈、右括号与栈顶配对。中缀转后缀：操作数直接输出；运算符按优先级弹栈；左括号入栈，右括号弹到左括号；最后弹出剩余运算符。后缀求值遇操作数入栈、遇运算符弹出两个操作数计算后回栈。",
+      "related": ["stack", "sequential-stack", "linked-stack"],
+      "source": "王道《数据结构》· 栈与队列"
+    },
+    {
+      "id": "string",
+      "term": "串",
+      "abbr": "String",
+      "course": "数据结构",
+      "brief": "由零个或多个字符组成的有限序列，逻辑结构仍是线性表，但操作以子串为主。",
+      "detail": "空串长度为 0；空格串由一个或多个空格组成，长度不为 0。子串是串中连续的一段字符，空串是任意串的子串。",
+      "related": ["string-storage", "naive-match", "kmp"],
+      "source": "王道《数据结构》· 串"
+    },
+    {
+      "id": "string-storage",
+      "term": "串的存储结构",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "串可采用定长顺序存储、堆分配顺序存储或链式存储。",
+      "detail": "定长顺序存储用固定长度数组，超出会截断；堆分配用 malloc 动态申请连续空间，可存长串；链式存储每个结点存一个或多个字符，存储密度低。408 主要考定长顺序存储与模式匹配。",
+      "related": ["string", "sequential-list", "naive-match"],
+      "source": "王道《数据结构》· 串"
+    },
+    {
+      "id": "naive-match",
+      "term": "朴素模式匹配",
+      "abbr": "Brute Force",
+      "course": "数据结构",
+      "brief": "从主串每个位置起逐字符与模式串比较，失配则主串指针回退到本次起点的下一个位置。",
+      "detail": "主串长 n、模式串长 m 时，最坏比较次数为 (n-m+1)·m，即 O(nm)。实现简单，但在重复前缀多的串上效率低，因此引入 KMP。",
+      "related": ["kmp", "string", "next-array"],
+      "source": "王道《数据结构》· 串"
+    },
+    {
+      "id": "kmp",
+      "term": "KMP 算法",
+      "abbr": "KMP",
+      "course": "数据结构",
+      "brief": "利用模式串自身的最长相等前后缀信息，失配时只移动模式串、主串指针不回退的匹配算法。",
+      "detail": "匹配 O(n)，求 next 数组 O(m)，总 O(n+m)。核心是失配时 j←next[j]，跳过模式串中已经确定能匹配的前缀。next 数组的写法有 1 起（王道）与 0 起（LeetCode/CLRS）两种口径，做题先确认。",
+      "related": ["next-array", "naive-match", "string"],
+      "source": "王道《数据结构》· 串",
+      "diagram": "ds-kmp",
+      "caption": "模式串 ababaca 的王道 next 数组（1 起下标）：next[1]=0，next[j] 为 P[1..j-1] 最长相等前后缀长度 + 1，故 next=[0,1,1,2,3,4,1]。"
+    },
+    {
+      "id": "next-array",
+      "term": "next 数组",
+      "abbr": "next[]",
+      "course": "数据结构",
+      "brief": "KMP 中记录失配后模式串应跳到的位置；王道口径 next[1]=0，next[j] 为 P[1..j-1] 最长相等前后缀长度 + 1。",
+      "detail": "例：P=ababaca 的王道 next=[0,1,1,2,3,4,1]。注意与 LeetCode/CLRS 的 prefix function 差 1：后者 0 起下标，值表示“最长相等前后缀长度”。两种口径都正确，但同一题内必须统一。",
+      "related": ["kmp", "naive-match", "string"],
+      "source": "王道《数据结构》· 串"
+    },
+    {
+      "id": "tree",
+      "term": "树",
+      "abbr": "Tree",
+      "course": "数据结构",
+      "brief": "n 个结点的有限集合；n=0 为空树，否则有唯一根，其余结点分成互不相交的子树。",
+      "detail": "基本术语：结点的度（孩子数）、树的度（最大结点度）、叶结点（度 0）、分支结点、层次、深度/高度、路径长度。树中结点数 = 所有结点度数之和 + 1。",
+      "related": ["binary-tree", "tree-traversal", "tree-array-storage"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "binary-tree",
+      "term": "二叉树",
+      "abbr": "Binary Tree",
+      "course": "数据结构",
+      "brief": "每个结点至多有两棵子树，且左右子树有序、不能颠倒的树。",
+      "detail": "即使结点只有一棵子树，也要明确是左子树还是右子树。二叉树不是度为 2 的树的特例（有序性不同）。常见形态：满二叉树、完全二叉树、斜树。",
+      "related": ["tree", "binary-tree-properties", "full-binary-tree", "complete-binary-tree"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "binary-tree-properties",
+      "term": "二叉树的性质",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "非空二叉树第 i 层至多 2^{i-1} 个结点；深度 h 至多 2^h-1 个结点；叶结点数 n0 = n2 + 1。",
+      "detail": "完全二叉树 n 个结点按 1 起编号：i 的左孩子 2i、右孩子 2i+1、父结点 ⌊i/2⌋；最后一个非叶结点为 ⌊n/2⌋。若 n 为奇数，每个分支结点都有左右孩子；若 n 为偶数，只有一个度为 1 的结点。",
+      "related": ["binary-tree", "full-binary-tree", "complete-binary-tree"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "full-binary-tree",
+      "term": "满二叉树",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "深度为 h、含 2^h-1 个结点的二叉树，每一层都达到最大结点数。",
+      "detail": "满二叉树是特殊的完全二叉树。叶结点全在最后一层，n0=2^{h-1}，n2=2^{h-1}-1，满足 n0=n2+1。",
+      "related": ["binary-tree", "complete-binary-tree", "binary-tree-properties"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "complete-binary-tree",
+      "term": "完全二叉树",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "除最后一层外每层都满，最后一层结点集中在最左边的二叉树。",
+      "detail": "结点按层序编号后与同深度满二叉树的前 n 个结点一一对应，因此适合顺序存储。完全二叉树高度为 ⌈log2(n+1)⌉ 或 ⌊log2 n⌋+1。注意“完全”不是“满”，也不是二叉排序树。",
+      "related": ["binary-tree", "full-binary-tree", "tree-array-storage"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "tree-traversal",
+      "term": "二叉树的遍历",
+      "abbr": "Traversal",
+      "course": "数据结构",
+      "brief": "按某种次序访问每个结点一次且仅一次；分先序、中序、后序、层次四种。",
+      "detail": "先/中/后序由递归定义，均属深度优先；层次遍历借助队列，属广度优先。给定先序+中序、后序+中序或层次+中序可唯一确定二叉树；仅有先序+后序不能唯一确定。",
+      "related": ["preorder-traversal", "inorder-traversal", "postorder-traversal", "levelorder-traversal"],
+      "source": "王道《数据结构》· 树与二叉树",
+      "diagram": "ds-tree-traverse",
+      "caption": "同一棵二叉树的先序、中序、后序与层次遍历结果；先/中/后序由递归定义，层次遍历借助队列逐层访问。"
+    },
+    {
+      "id": "preorder-traversal",
+      "term": "先序遍历",
+      "abbr": "PreOrder",
+      "course": "数据结构",
+      "brief": "访问次序为“根 → 左子树 → 右子树”的深度优先遍历。",
+      "detail": "递归实现最简单，非递归用显式栈：访问根后先压右孩子、再压左孩子，保证左子树先出栈。可用于复制二叉树、生成表达式的前缀表示。",
+      "related": ["tree-traversal", "inorder-traversal", "postorder-traversal"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "inorder-traversal",
+      "term": "中序遍历",
+      "abbr": "InOrder",
+      "course": "数据结构",
+      "brief": "访问次序为“左子树 → 根 → 右子树”的深度优先遍历。",
+      "detail": "非递归时沿左链一路入栈，弹出访问后再转向右子树，空间 O(h)。二叉排序树的中序序列严格递增；用中序+先序/后序可还原二叉树。",
+      "related": ["tree-traversal", "preorder-traversal", "postorder-traversal", "bst"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "postorder-traversal",
+      "term": "后序遍历",
+      "abbr": "PostOrder",
+      "course": "数据结构",
+      "brief": "访问次序为“左子树 → 右子树 → 根”的深度优先遍历。",
+      "detail": "非递归实现需记录上一个访问的结点，判断右子树是否已完成。可用于求表达式后缀表示、释放二叉树所有结点（先释放孩子再释放根）。",
+      "related": ["tree-traversal", "preorder-traversal", "inorder-traversal"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "levelorder-traversal",
+      "term": "层次遍历",
+      "abbr": "LevelOrder",
+      "course": "数据结构",
+      "brief": "从根开始按层、每层从左到右访问结点，使用队列实现。",
+      "detail": "根入队；每次出队一个结点并访问，若其有左、右孩子则依次入队。可用于求二叉树宽度、判断完全二叉树、按层输出。",
+      "related": ["tree-traversal", "queue", "complete-binary-tree"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "tree-array-storage",
+      "term": "二叉树的存储结构",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "完全二叉树可用数组顺序存储；一般二叉树常用二叉链表，每个结点存数据域与 lchild、rchild 指针。",
+      "detail": "顺序存储按 1 起编号：i 的孩子为 2i、2i+1，父为 ⌊i/2⌋；非完全二叉树需补空位，最坏浪费 2^h-1 个位置。二叉链表有 n+1 个空指针域，可用于线索化。",
+      "related": ["complete-binary-tree", "threaded-binary-tree", "binary-tree"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "threaded-binary-tree",
+      "term": "线索二叉树",
+      "abbr": "Threaded Tree",
+      "course": "数据结构",
+      "brief": "利用二叉链表中的空指针域存放结点在某种遍历次序下的前驱与后继线索。",
+      "detail": "n 个结点的二叉链表有 n+1 个空指针域。用 ltag/rtag 区分“孩子指针”与“线索”。按遍历次序分先序、中序、后序线索二叉树；中序线索化后可不用栈完成中序遍历，找前驱/后继 O(1)。",
+      "related": ["tree-array-storage", "inorder-traversal", "binary-tree"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "bst",
+      "term": "二叉排序树",
+      "abbr": "BST",
+      "course": "数据结构",
+      "brief": "左子树所有结点关键字小于根、右子树所有结点关键字大于根，且左右子树也都是 BST 的二叉树。",
+      "detail": "中序序列递增。查找、插入平均 O(log n)，最坏（插入有序序列形成单支树）O(n)。删除分三种情况：叶结点直接删；只有一个孩子用孩子替代；有两个孩子用中序前驱或后继替代。",
+      "related": ["binary-tree", "avl", "inorder-traversal"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "avl",
+      "term": "AVL 树（平衡二叉树）",
+      "abbr": "AVL",
+      "course": "数据结构",
+      "brief": "任一结点左右子树高度差（平衡因子）绝对值不超过 1 的二叉排序树。",
+      "detail": "查找、插入、删除均为 O(log n)。失衡调整四种：LL 型右旋、RR 型左旋、LR 型先左旋后右旋、RL 型先右旋后左旋。删除后可能需沿路径向上多次调整，插入一般一次旋转即可。",
+      "related": ["bst", "binary-tree", "binary-tree-properties"],
+      "source": "王道《数据结构》· 查找",
+      "diagram": "ds-avl",
+      "caption": "依次插入 3、2、1 造成 LL 型失衡，对结点 3 右旋后恢复平衡；平衡因子按“左子树高 − 右子树高”计算。"
+    },
+    {
+      "id": "huffman",
+      "term": "哈夫曼树",
+      "abbr": "Huffman Tree",
+      "course": "数据结构",
+      "brief": "带权路径长度 WPL 最小的二叉树，又称最优二叉树。",
+      "detail": "构造：每次从森林中取权值最小的两棵树合并为一棵新树，直到只剩一棵。哈夫曼树没有度为 1 的结点；n 个叶结点共 2n-1 个结点。WPL = Σ(叶结点权值 × 叶结点深度)。",
+      "related": ["huffman-coding", "binary-tree", "tree"],
+      "source": "王道《数据结构》· 树与二叉树"
+    },
+    {
+      "id": "huffman-coding",
+      "term": "哈夫曼编码",
+      "abbr": "Huffman Coding",
+      "course": "数据结构",
+      "brief": "由哈夫曼树产生的前缀编码：左分支记 0、右分支记 1，叶结点对应字符的编码。",
+      "detail": "任一编码都不是另一编码的前缀，因此译码无歧义。哈夫曼编码是最优前缀码，WPL 即平均码长最小；但左右子树可交换，编码不唯一，最优 WPL 唯一。",
+      "related": ["huffman", "tree-traversal", "string"],
+      "source": "王道《数据结构》· 树与二叉树",
+      "diagram": "ds-huffman",
+      "caption": "权值 2、4、5、7、9 构造的哈夫曼树（左 0 右 1）；对应编码 2=010、4=011、5=00、7=10、9=11，WPL=60。"
+    },
+    {
+      "id": "union-find",
+      "term": "并查集",
+      "abbr": "Union-Find",
+      "course": "数据结构",
+      "brief": "管理不相交集合的数据结构，支持 Find 查根与 Union 合并两个集合。",
+      "detail": "用双亲表示法的数组实现：Find 沿 parent 找到根，Union 把一棵树根挂到另一棵根。按秩/大小合并加路径压缩后，单次操作近似 O(1)（反阿克曼函数）。408 常考连通分量个数、Kruskal 判环、等价类划分。",
+      "related": ["graph", "kruskal", "mst"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "graph",
+      "term": "图",
+      "abbr": "Graph",
+      "course": "数据结构",
+      "brief": "由顶点集合 V 与边集合 E 构成的结构，记作 G=(V,E)，结点之间多对多。",
+      "detail": "分有向图/无向图、简单图/多重图、连通图/强连通图。n 个顶点的无向完全图有 n(n-1)/2 条边，有向完全图有 n(n-1) 条弧。顶点的度、入度、出度、路径、回路、连通分量是常考概念。",
+      "related": ["adjacency-matrix", "adjacency-list", "bfs", "dfs"],
+      "source": "王道《数据结构》· 图",
+      "diagram": "ds-graph",
+      "caption": "无向图的邻接矩阵与邻接表；BFS 从 A 得 A B C D E，DFS 得 A B D C E。"
+    },
+    {
+      "id": "adjacency-matrix",
+      "term": "邻接矩阵",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "用二维数组 A[i][j] 表示顶点 i 与 j 之间是否有边（或边的权值）。",
+      "detail": "无向图矩阵对称，空间 O(n²)；判断两点是否相邻 O(1)，适合稠密图。带权图用 ∞ 表示无边，对角线为 0。无向图第 i 行非零元素个数等于顶点 i 的度。",
+      "related": ["graph", "adjacency-list", "bfs"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "adjacency-list",
+      "term": "邻接表",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "顶点数组 + 每个顶点一条边链表，链表中存该顶点的所有邻接点。",
+      "detail": "无向图每条边在两端各存一次，空间 O(n+e)；有向图存出边则空间 O(n+e)，求入度需遍历全表或另建逆邻接表。适合稀疏图；判断两点是否相邻需遍历链表，最坏 O(n)。",
+      "related": ["graph", "adjacency-matrix", "dfs"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "bfs",
+      "term": "广度优先搜索",
+      "abbr": "BFS",
+      "course": "数据结构",
+      "brief": "从源点出发按“先近后远”的层次扩展，用队列保存待访问顶点。",
+      "detail": "邻接表实现 O(n+e)，邻接矩阵 O(n²)。每个顶点入队一次，需 visited 标记。BFS 可求无权图的最短路径（边数最少），也可判断连通分量。",
+      "related": ["graph", "dfs", "queue"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "dfs",
+      "term": "深度优先搜索",
+      "abbr": "DFS",
+      "course": "数据结构",
+      "brief": "从源点沿一条路径尽量深入，无法继续时回退，递归或显式栈实现。",
+      "detail": "邻接表 O(n+e)，邻接矩阵 O(n²)。可用 visited 标记避免重复访问。DFS 可求连通分量、判断有无环；对 DAG 做 DFS 的逆后序可得到拓扑序列。",
+      "related": ["graph", "bfs", "topological-sort"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "spanning-tree",
+      "term": "生成树",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "连通无向图的生成树是包含全部 n 个顶点、恰好 n-1 条边的极小连通子图。",
+      "detail": "生成树再加一条边必成环，去掉一条边必不连通。生成树一般不唯一；深度优先生成树与广度优先生成树取决于遍历起点和邻接表顺序。",
+      "related": ["mst", "graph", "bfs", "dfs"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "mst",
+      "term": "最小生成树",
+      "abbr": "MST",
+      "course": "数据结构",
+      "brief": "带权连通无向图中，边权总和最小的生成树。",
+      "detail": "Prim 与 Kruskal 都基于贪心且正确。权值互不相同时 MST 唯一；存在相同权值时可能不唯一，但最小总权值唯一。",
+      "related": ["prim", "kruskal", "spanning-tree"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "prim",
+      "term": "Prim 算法",
+      "abbr": "Prim",
+      "course": "数据结构",
+      "brief": "从任一顶点开始，每次把与当前生成树相连的最小权边及其顶点加入树中。",
+      "detail": "朴素实现 O(n²)，适合稠密图；用邻接表 + 堆可到 O(e log n)。不依赖全图边排序，但每步只在“树内—树外”的割边中选最小。",
+      "related": ["mst", "kruskal", "graph"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "kruskal",
+      "term": "Kruskal 算法",
+      "abbr": "Kruskal",
+      "course": "数据结构",
+      "brief": "按边权从小到大选边，若两端不在同一连通分量就加入，直到选够 n-1 条边。",
+      "detail": "用并查集判环，时间复杂度 O(e log e)，适合稀疏图。若某条边加入会成环则跳过；选满 n-1 条边即得到 MST。",
+      "related": ["mst", "prim", "union-find"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "dijkstra",
+      "term": "Dijkstra 算法",
+      "abbr": "Dijkstra",
+      "course": "数据结构",
+      "brief": "单源最短路径算法：每次选当前距离最小且未确定的顶点，松弛它的出边。",
+      "detail": "要求边权非负；朴素 O(n²)，堆优化 O((n+e) log n)。负权边会破坏贪心正确性，此时用 Bellman-Ford（408 一般不考）。记录前驱可还原路径。",
+      "related": ["floyd", "graph", "prim"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "floyd",
+      "term": "Floyd 算法",
+      "abbr": "Floyd",
+      "course": "数据结构",
+      "brief": "求任意两点间最短路径的动态规划算法，依次允许以顶点 k 作为中间点松弛。",
+      "detail": "三重循环 O(n³)：d[i][j]=min(d[i][j], d[i][k]+d[k][j])。允许负权边，但不能有负权回路。适合求多源最短路径或传递闭包。",
+      "related": ["dijkstra", "graph", "aov-aoe"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "topological-sort",
+      "term": "拓扑排序",
+      "abbr": "Topological Sort",
+      "course": "数据结构",
+      "brief": "对有向无环图 DAG，每次输出一个入度为 0 的顶点并删除它的出边，得到拓扑序列。",
+      "detail": "可用栈或队列存放入度为 0 的顶点，O(n+e)。若最终输出顶点数少于 n，说明图中有环。拓扑序列一般不唯一。AOV 网用它判断工程活动顺序是否可行。",
+      "related": ["aov-aoe", "critical-path", "dfs"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "critical-path",
+      "term": "关键路径",
+      "abbr": "Critical Path",
+      "course": "数据结构",
+      "brief": "AOE 网中从源点到汇点的最长路径，其长度决定整个工程的最短工期。",
+      "detail": "先按拓扑序求事件最早发生时间 ve，再按逆拓扑序求最迟发生时间 vl；活动的最早开始 e 与最迟开始 l 相等者为关键活动。关键活动延长会拖长工期；缩短非关键活动不改变工期。",
+      "related": ["aov-aoe", "topological-sort", "graph"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "aov-aoe",
+      "term": "AOV 网与 AOE 网",
+      "abbr": "AOV / AOE",
+      "course": "数据结构",
+      "brief": "AOV 网用顶点表示活动、边表示优先关系；AOE 网用边表示活动、顶点表示事件。",
+      "detail": "AOV 网用于拓扑排序，判断活动先后关系是否有环；AOE 网用于关键路径，边上的权表示活动持续时间，源点与汇点分别表示工程开始与结束。两者不要混用。",
+      "related": ["topological-sort", "critical-path", "graph"],
+      "source": "王道《数据结构》· 图"
+    },
+    {
+      "id": "binary-search",
+      "term": "折半查找",
+      "abbr": "Binary Search",
+      "course": "数据结构",
+      "brief": "在有序顺序表中每次与中间元素比较，折半缩小查找区间，时间复杂度 O(log n)。",
+      "detail": "仅适用于有序且可随机访问的顺序表，链表不能高效折半。判定树高度为 ⌈log2(n+1)⌉，平均查找长度约 log2(n+1)−1。查找成功/失败的最大比较次数均不超过树高。",
+      "related": ["sequential-list", "bst", "b-tree"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "b-tree",
+      "term": "B 树",
+      "abbr": "B-Tree",
+      "course": "数据结构",
+      "brief": "多路平衡查找树；m 阶 B 树每个结点至多 m 棵子树、m-1 个关键字，所有叶结点在同一层。",
+      "detail": "除根外每个结点至少 ⌈m/2⌉ 棵子树（即至少 ⌈m/2⌉-1 个关键字）；根至少 2 棵子树（除非是叶子）。插入溢出则分裂，删除下溢则向兄弟借关键字或合并。用于磁盘索引，减少 I/O 次数。",
+      "related": ["b-plus-tree", "binary-search", "bst"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "b-plus-tree",
+      "term": "B+ 树",
+      "abbr": "B+ Tree",
+      "course": "数据结构",
+      "brief": "B 树的变体：内部结点只存索引，全部关键字与记录指针都在叶结点，叶结点按序链接。",
+      "detail": "查找必须走到叶结点，路径长度稳定；叶结点链表支持范围查询与顺序遍历，是数据库索引的常用结构。内部关键字通常取各子树的最小（或最大）关键字作分界，具体口径随实现而变。",
+      "related": ["b-tree", "binary-search", "hash-table"],
+      "source": "王道《数据结构》· 查找",
+      "diagram": "ds-bplus",
+      "caption": "4 阶 B+ 树示意：内部结点只存分界关键字（这里取各子树最小关键字），全部关键字在叶结点，叶结点顺序链接。"
+    },
+    {
+      "id": "hash-table",
+      "term": "散列表",
+      "abbr": "Hash Table",
+      "course": "数据结构",
+      "brief": "通过散列函数把关键字直接映射到存储位置，平均查找时间 O(1)。",
+      "detail": "不同关键字可能映射到同一地址，称为冲突，冲突不可避免。需选择散列函数与冲突处理方法，并控制装填因子。散列表的查找效率取决于散列函数、冲突处理与装填因子。",
+      "related": ["hash-function", "collision-handling", "load-factor"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "hash-function",
+      "term": "散列函数",
+      "abbr": "Hash Function",
+      "course": "数据结构",
+      "brief": "把关键字映射为存储地址的函数，应尽量均匀、计算简单。",
+      "detail": "常用构造法：除留余数法 H(key)=key mod p（p 取不大于表长的最大质数）、直接定址法、数字分析法、平方取中法。408 主要考除留余数法的地址计算与 ASL。",
+      "related": ["hash-table", "collision-handling", "load-factor"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "collision-handling",
+      "term": "冲突处理",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "处理不同关键字映射到同一散列地址的方法，分开放定址法与拉链法两大类。",
+      "detail": "开放定址法包括线性探测、平方探测、双散列；拉链法把同义词组织成链表。开放定址删除需标记墓碑，否则会截断后续查找链。两种方法的 ASL 计算口径不同，需按题目给定方法逐次模拟。",
+      "related": ["open-addressing", "chaining", "hash-table"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "open-addressing",
+      "term": "开放定址法",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "冲突时按探测序列在散列表内寻找下一个空位存放记录。",
+      "detail": "线性探测 d=1,2,3…易产生“堆积”；平方探测 d=1²,-1²,2²,-2²…可缓解堆积，但表长与探测序列受限；双散列用第二个散列函数决定步长。装填因子必须小于 1，删除要留墓碑。",
+      "related": ["collision-handling", "chaining", "load-factor"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "chaining",
+      "term": "拉链法",
+      "abbr": "Chaining",
+      "course": "数据结构",
+      "brief": "把散列到同一地址的所有记录存放在同一个单链表中，数组存各链表头指针。",
+      "detail": "装填因子可以大于 1；插入删除方便，不会产生堆积；查找需遍历同义词链表。ASL 与装填因子近似成线性关系，适合记录数不确定的场景。",
+      "related": ["collision-handling", "open-addressing", "hash-table"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "load-factor",
+      "term": "装填因子",
+      "abbr": "α",
+      "course": "数据结构",
+      "brief": "散列表中记录数 n 与表长 m 的比值 α=n/m，衡量表的装满程度。",
+      "detail": "α 越大冲突概率越高，平均查找长度越大。开放定址法要求 α<1（通常控制在 0.75 以下）；拉链法 α 可大于 1。408 常给 α 与冲突处理方法，要求计算查找成功/失败的平均查找长度。",
+      "related": ["hash-table", "open-addressing", "chaining"],
+      "source": "王道《数据结构》· 查找"
+    },
+    {
+      "id": "insertion-sort",
+      "term": "直接插入排序",
+      "abbr": "Insertion Sort",
+      "course": "数据结构",
+      "brief": "每次把无序区第一个元素插入前面已排好序的有序区，保持有序。",
+      "detail": "最好情况（已有序）比较 n-1 次、移动 0 次，O(n)；最坏与平均 O(n²)。稳定。折半插入只把比较次数降到 O(n log n)，移动次数仍为 O(n²)。适合小规模或基本有序的数据。",
+      "related": ["shell-sort", "bubble-sort", "sort-stability"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "shell-sort",
+      "term": "希尔排序",
+      "abbr": "Shell Sort",
+      "course": "数据结构",
+      "brief": "按增量 d 把序列分组做插入排序，增量逐步缩小到 1，又称缩小增量排序。",
+      "detail": "时间复杂度依赖增量序列，常见约 O(n^1.3)，最坏 O(n²)；不稳定；空间 O(1)。增量序列最后一个必须为 1，且各增量宜互质（如 n/2, n/4, …, 1）。",
+      "related": ["insertion-sort", "sort-stability", "sort-comparison"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "bubble-sort",
+      "term": "冒泡排序",
+      "abbr": "Bubble Sort",
+      "course": "数据结构",
+      "brief": "从前往后比较相邻元素，逆序则交换，每趟把当前最大元素“冒”到末尾。",
+      "detail": "带 flag 时，已有序可提前结束，最好 O(n)；平均与最坏 O(n²)；稳定；空间 O(1)。每趟结束后无序区减少一个元素，最多 n-1 趟。",
+      "related": ["insertion-sort", "selection-sort", "sort-stability"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "quick-sort",
+      "term": "快速排序",
+      "abbr": "Quick Sort",
+      "course": "数据结构",
+      "brief": "选一个枢轴把序列划分成“左小右大”两段，再递归排序两段。",
+      "detail": "平均 O(n log n)，最坏 O(n²)（序列已有序且取端点为枢轴）；不稳定；递归栈平均 O(log n)、最坏 O(n)。划分算法有 Hoare 与 Lomuto 等，408 常要求写出一次划分后的序列。",
+      "related": ["merge-sort", "heap-sort", "sort-comparison"],
+      "source": "王道《数据结构》· 内部排序",
+      "diagram": "ds-sort",
+      "caption": "以末元素 27 为枢轴做一次 Lomuto 划分：划分后 27 左侧均 ≤27、右侧均 ≥27。"
+    },
+    {
+      "id": "selection-sort",
+      "term": "简单选择排序",
+      "abbr": "Selection Sort",
+      "course": "数据结构",
+      "brief": "每趟从无序区选出最小元素，与无序区第一个元素交换。",
+      "detail": "比较次数固定为 n(n-1)/2，与初始状态无关；移动次数较少（最多 n-1 次）。时间 O(n²)，空间 O(1)，不稳定。",
+      "related": ["bubble-sort", "heap-sort", "sort-stability"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "heap",
+      "term": "堆",
+      "abbr": "Heap",
+      "course": "数据结构",
+      "brief": "完全二叉树形态的数据结构：大根堆任一结点不小于孩子，小根堆任一结点不大于孩子。",
+      "detail": "通常顺序存储。1 起下标时 i 的孩子为 2i、2i+1，父为 ⌊i/2⌋；0 起下标时孩子为 2i+1、2i+2，父为 ⌊(i-1)/2⌋。建堆 O(n)，插入与删除堆顶 O(log n)。",
+      "related": ["heap-sort", "complete-binary-tree", "tree-array-storage"],
+      "source": "王道《数据结构》· 内部排序",
+      "diagram": "ds-heap",
+      "caption": "大根堆 [90,70,80,30,60,50,40] 的完全二叉树形态与对应数组下标（0 起：孩子 2i+1、2i+2）。"
+    },
+    {
+      "id": "heap-sort",
+      "term": "堆排序",
+      "abbr": "Heap Sort",
+      "course": "数据结构",
+      "brief": "先建大根堆，再反复把堆顶与堆末尾交换、堆长减一、向下调整，得到升序序列。",
+      "detail": "时间复杂度 O(n log n)，空间 O(1)，不稳定。建堆本身 O(n)，不是 O(n log n)；之后 n-1 次调整每次 O(log n)。适合对空间要求严格且不要求稳定的场景。",
+      "related": ["heap", "selection-sort", "sort-comparison"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "merge-sort",
+      "term": "归并排序",
+      "abbr": "Merge Sort",
+      "course": "数据结构",
+      "brief": "把两个有序表合并为一个有序表；2-路归并排序递归划分到单元素再两两合并。",
+      "detail": "时间 O(n log n)，需要 O(n) 辅助空间，稳定。归并趟数为 ⌈log2 n⌉。适合外部排序与链表排序（链表归并可不额外申请结点）。",
+      "related": ["external-sort", "sort-stability", "sort-comparison"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "radix-sort",
+      "term": "基数排序",
+      "abbr": "Radix Sort",
+      "course": "数据结构",
+      "brief": "按关键字各位从低位到高位（LSD）依次分配与收集，最终得到有序序列。",
+      "detail": "d 位、基数 r 时，时间 O(d(n+r))，空间 O(n+r)，稳定。不基于关键字比较，因此不受比较排序 Ω(n log n) 下界限制。要求关键字可分位且位数固定。",
+      "related": ["sort-stability", "sort-comparison", "merge-sort"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "sort-stability",
+      "term": "排序稳定性",
+      "abbr": "Stability",
+      "course": "数据结构",
+      "brief": "排序前后关键字相同的元素相对次序不变，称该排序算法稳定。",
+      "detail": "稳定：直接插入、冒泡、归并、基数；不稳定：希尔、快速、简单选择、堆排序。稳定性是算法性质，不是某次运行结果；考试常以表格形式要求判断。",
+      "related": ["insertion-sort", "quick-sort", "merge-sort", "sort-comparison"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "sort-comparison",
+      "term": "内部排序方法比较",
+      "abbr": "",
+      "course": "数据结构",
+      "brief": "从时间、空间、稳定性、适用场景四方面比较各内部排序算法。",
+      "detail": "平均 O(n log n) 的有快排、堆排、归并；快排平均常数最小但最坏 O(n²)，堆排最坏仍 O(n log n) 但常数较大，归并稳定但需 O(n) 空间。比较排序的平均时间下界为 Ω(n log n)。",
+      "related": ["quick-sort", "heap-sort", "merge-sort", "sort-stability"],
+      "source": "王道《数据结构》· 内部排序"
+    },
+    {
+      "id": "external-sort",
+      "term": "外部排序",
+      "abbr": "External Sort",
+      "course": "数据结构",
+      "brief": "待排序数据量大于内存，需要多次在内存与外存之间交换数据的排序方法。",
+      "detail": "基本流程：先分段读入内存排序得到初始归并段，再多趟归并。总时间 = 读写外存时间 + 内部排序时间 + 归并比较时间，其中 I/O 占主导。减少归并趟数是优化重点，可用多路归并、败者树、置换-选择。",
+      "related": ["loser-tree", "replacement-selection", "merge-sort"],
+      "source": "王道《数据结构》· 外部排序"
+    },
+    {
+      "id": "loser-tree",
+      "term": "败者树",
+      "abbr": "Loser Tree",
+      "course": "数据结构",
+      "brief": "k 路归并时加速选最小值的完全二叉树结构，树中记录比较的“败者”，冠军在根的上方。",
+      "detail": "每次从 k 个归并段当前记录中选最小，比较次数由 k-1 降到 ⌈log2 k⌉。某个归并段输出新记录后，只需沿该叶子到根调整一条路径，O(log k)。",
+      "related": ["external-sort", "merge-sort", "heap"],
+      "source": "王道《数据结构》· 外部排序"
+    },
+    {
+      "id": "replacement-selection",
+      "term": "置换-选择排序",
+      "abbr": "Replacement Selection",
+      "course": "数据结构",
+      "brief": "在内存工作区未满时不断输出最小关键字并用新记录替换，从而生成更长的初始归并段。",
+      "detail": "若新读入记录的关键字小于刚输出的关键字，则暂时冻结，等本轮结束再参与下一段。平均归并段长度可达工作区容量的 2 倍，从而减少归并趟数。",
+      "related": ["external-sort", "loser-tree", "merge-sort"],
+      "source": "王道《数据结构》· 外部排序"
+    }
+  ]
+}

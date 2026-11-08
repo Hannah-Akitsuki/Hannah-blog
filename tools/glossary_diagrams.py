@@ -896,6 +896,218 @@ def disk_sched_figure():
 
 
 # --------------------------------------------------------------------------
+# 数据结构
+# --------------------------------------------------------------------------
+
+
+def _node(cx, cy, label, r=18, cls="dg-fill-green"):
+    return ('<circle cx="%.1f" cy="%.1f" r="%d" class="%s"/>%s'
+            % (cx, cy, r, cls, text(cx, cy + 4, label, "dg-text", "middle")))
+
+
+def tree_traverse_figure():
+    W, H = 760, 430
+    inner = [text(20, 26, "二叉树的四种遍历（同一棵树）", "dg-text")]
+    pos = {"A": (380, 60), "B": (230, 120), "C": (530, 120), "D": (135, 190),
+           "E": (310, 190), "F": (450, 190), "G": (630, 190)}
+    edges = [("A", "B"), ("A", "C"), ("B", "D"), ("B", "E"), ("C", "F"), ("C", "G")]
+    for a, b in edges:
+        inner.append(line(pos[a][0], pos[a][1] + 18, pos[b][0], pos[b][1] - 18, "dg-axis"))
+    for name, (x, y) in pos.items():
+        inner.append(_node(x, y, name))
+    rows = [
+        ("先序", "A B D E C F G", "根 → 左 → 右"),
+        ("中序", "D B E A F C G", "左 → 根 → 右"),
+        ("后序", "D E B F G C A", "左 → 右 → 根"),
+        ("层次", "A B C D E F G", "按层从左到右，用队列"),
+    ]
+    y = 250
+    for name, order, note in rows:
+        inner.append(text(50, y, name, "dg-text"))
+        inner.append(text(130, y, order, "dg-mono"))
+        inner.append(text(400, y, note, "dg-muted"))
+        y += 38
+    return svg(W, H, inner, "二叉树先序中序后序层次遍历顺序")
+
+
+def avl_figure():
+    W, H = 760, 400
+    inner = [text(20, 26, "AVL 树的 LL 失衡与右旋修复", "dg-text")]
+    # 失衡树：3 - 2 - 1
+    left = [(240, 80, "3"), (170, 150, "2"), (100, 220, "1")]
+    inner.append(text(100, 52, "插入 3、2、1 后（LL 型）", "dg-text"))
+    inner.append(line(240, 98, 170, 132, "dg-axis"))
+    inner.append(line(170, 168, 100, 202, "dg-axis"))
+    for x, y, name in left:
+        inner.append(_node(x, y, name, 20, "dg-fill-accent"))
+    inner.append(text(70, 260, "结点 3 的平衡因子 = 2（左高）", "dg-muted"))
+    # 右旋后：2 为根，1 左，3 右
+    inner.append(text(470, 52, "对结点 3 右旋", "dg-text"))
+    right = [(540, 100, "2"), (450, 190, "1"), (630, 190, "3")]
+    inner.append(line(540, 118, 450, 172, "dg-axis"))
+    inner.append(line(540, 118, 630, 172, "dg-axis"))
+    for x, y, name in right:
+        inner.append(_node(x, y, name, 20))
+    inner.append(text(430, 270, "平衡因子回到 0 / ±1", "dg-muted"))
+    inner.append(text(20, 330, "LL 型（左孩子的左子树过高）做一次右旋；RR 型做一次左旋；", "dg-muted"))
+    inner.append(text(20, 354, "LR 型先对左孩子左旋、再对根右旋；RL 型先右旋、再左旋。", "dg-muted"))
+    return svg(W, H, inner, "AVL 树 LL 旋转示意图")
+
+
+def bplus_figure():
+    W, H = 760, 360
+    inner = [text(20, 26, "B+ 树（4 阶）：内部结点只存索引，全部关键字在叶结点", "dg-text")]
+    # 根
+    inner.append('<rect class="dg-fill-green" x="300" y="60" width="160" height="40" rx="4"/>')
+    inner.append(text(340, 86, "15", "dg-mono"))
+    inner.append(text(410, 86, "25", "dg-mono"))
+    leaves = [([5, 8, 11], 130), ([15, 17, 19], 340), ([25, 27, 30], 550)]
+    for keys, x in leaves:
+        inner.append('<rect class="dg-fill" x="%d" y="190" width="150" height="40" rx="4"/>' % x)
+        for k, key in enumerate(keys):
+            inner.append(text(x + 28 + k * 44, 216, str(key), "dg-mono"))
+    # 根到叶
+    for x in (205, 415, 625):
+        inner.append(line(380, 100, x, 190, "dg-axis"))
+    # 叶链
+    inner.append(arrow(280, 250, 340, 250, ""))
+    inner.append(arrow(490, 250, 550, 250, ""))
+    inner.append(text(205, 285, "叶结点之间用指针顺序链接，支持范围查询", "dg-muted"))
+    inner.append(text(20, 330, "m 阶 B+ 树：每个结点最多 m 个孩子；叶结点包含全部关键字且按序链接；", "dg-muted"))
+    inner.append(text(20, 352, "内部结点中的关键字只作分界，查找必须走到叶结点，因此查找路径长度稳定。", "dg-muted"))
+    return svg(W, H, inner, "B+ 树结构与叶链")
+
+
+def huffman_figure():
+    weights = [5, 7, 2, 4, 9]
+    # 固定合并顺序：2+4=6, 5+6=11, 7+9=16, 11+16=27
+    nodes = {
+        "27": (380, 50), "11": (280, 120), "16": (480, 120),
+        "5": (220, 190), "6": (330, 190), "7": (430, 190), "9": (540, 190),
+        "2": (290, 260), "4": (370, 260),
+    }
+    edges = [("27", "11", "0"), ("27", "16", "1"), ("11", "5", "0"), ("11", "6", "1"),
+             ("6", "2", "0"), ("6", "4", "1"), ("16", "7", "0"), ("16", "9", "1")]
+    W, H = 760, 390
+    inner = [text(20, 26, "哈夫曼树与编码：权值 2、4、5、7、9（左 0 右 1）", "dg-text")]
+    for a, b, bit in edges:
+        x1, y1 = nodes[a]
+        x2, y2 = nodes[b]
+        inner.append(line(x1, y1 + 18, x2, y2 - 18, "dg-axis"))
+        inner.append(text((x1 + x2) / 2 + (8 if bit == "1" else -12), (y1 + y2) / 2, bit, "dg-muted"))
+    for name, (x, y) in nodes.items():
+        inner.append(_node(x, y, name, 18, "dg-fill-green" if name in ("27", "11", "16", "6") else "dg-fill"))
+    inner.append(text(620, 200, "WPL = 2×3 + 4×3 + 5×2 + 7×2 + 9×2 = 60", "dg-text"))
+    inner.append(text(20, 330, "权值最小者先合并；权值越大离根越近，编码越短。", "dg-muted"))
+    inner.append(text(20, 354, "前缀编码：任一编码都不是另一编码的前缀，译码无歧义。", "dg-muted"))
+    inner.append(text(20, 378, "哈夫曼编码不唯一（左右子树可交换），但 WPL 最优值唯一。", "dg-muted"))
+    return svg(W, H, inner, "哈夫曼树与编码示例")
+
+
+def kmp_figure():
+    pat = "ababaca"
+    # 王道口径（1 起下标）：next[1]=0；next[j] = P[1..j-1] 最长相等前后缀长度 + 1
+    nxt = [0, 1, 1, 2, 3, 4, 1]
+    W, H = 760, 320
+    inner = [text(20, 26, "KMP 的 next 数组（1 起下标，王道口径）", "dg-text")]
+    cw, left = 62, 100
+    for i, ch in enumerate(pat):
+        inner.append('<rect class="dg-fill" x="%d" y="60" width="%d" height="34" rx="2"/>'
+                     % (left + i * cw, cw - 6))
+        inner.append(text(left + i * cw + (cw - 6) / 2, 82, ch, "dg-mono", "middle"))
+        inner.append(text(left + i * cw + (cw - 6) / 2, 54, "j=%d" % (i + 1), "dg-muted", "middle"))
+        inner.append('<rect class="dg-fill-green" x="%d" y="110" width="%d" height="30" rx="2"/>'
+                     % (left + i * cw, cw - 6))
+        inner.append(text(left + i * cw + (cw - 6) / 2, 130, str(nxt[i]), "dg-mono", "middle"))
+    inner.append(text(30, 130, "next", "dg-text"))
+    inner.append(text(left - 30, 170, "模式串 P = %s" % pat, "dg-text"))
+    inner.append(text(30, 220, "例：j = 6 时，P[1..5] = ababa 的最长相等前后缀是 aba，长度 3，所以 next[6] = 4。", "dg-muted"))
+    inner.append(text(30, 244, "失配时 j ← next[j]，主串指针 i 不回退；next[1] = 0 时主串指针后移一位、j 回到 1。", "dg-muted"))
+    inner.append(text(30, 268, "next[j] = P[1..j-1] 最长相等前后缀长度 + 1；求 next 是模式串与自身匹配，O(m)，匹配 O(n)。", "dg-muted"))
+    return svg(W, H, inner, "KMP next 数组")
+
+
+def sort_figure():
+    arr = [49, 38, 65, 97, 76, 13, 27]
+    W, H = 760, 330
+    inner = [text(20, 26, "快速排序一次划分（Lomuto：取末元素 27 为枢轴）", "dg-text")]
+    cw, left = 72, 60
+    for i, v in enumerate(arr):
+        cls = "dg-fill-accent" if i == len(arr) - 1 else "dg-fill"
+        inner.append('<rect class="%s" x="%d" y="60" width="%d" height="40" rx="3"/>'
+                     % (cls, left + i * cw, cw - 10))
+        inner.append(text(left + i * cw + (cw - 10) / 2, 85, str(v), "dg-mono", "middle"))
+    inner.append(text(20, 128, "划分前", "dg-muted"))
+    after = [13, 27, 65, 97, 76, 49, 38]
+    for i, v in enumerate(after):
+        cls = "dg-fill-green" if i == 1 else "dg-fill"
+        inner.append('<rect class="%s" x="%d" y="160" width="%d" height="40" rx="3"/>'
+                     % (cls, left + i * cw, cw - 10))
+        inner.append(text(left + i * cw + (cw - 10) / 2, 185, str(v), "dg-mono", "middle"))
+    inner.append(text(20, 228, "划分后", "dg-muted"))
+    inner.append(text(left, 230, "≤ 27", "dg-muted"))
+    inner.append(text(left + 1 * cw, 230, "27", "dg-text"))
+    inner.append(text(left + 2 * cw, 230, "≥ 27", "dg-muted"))
+    inner.append(text(20, 270, "枢轴 27 到位后，左右两段递归排序；平均 O(n log n)，最坏（已有序）O(n²)。", "dg-muted"))
+    inner.append(text(20, 294, "快速排序不稳定；递归栈平均 O(log n)，最坏 O(n)。", "dg-muted"))
+    return svg(W, H, inner, "快速排序一次划分")
+
+
+def graph_repr_figure():
+    W, H = 760, 400
+    inner = [text(20, 26, "图的邻接矩阵与邻接表（无向图）", "dg-text")]
+    pos = {"A": (110, 90), "B": (210, 60), "C": (210, 130), "D": (310, 90), "E": (410, 90)}
+    edges = [("A", "B"), ("A", "C"), ("B", "D"), ("C", "D"), ("D", "E")]
+    for a, b in edges:
+        inner.append(line(pos[a][0] + 16, pos[a][1], pos[b][0] - 16, pos[b][1], "dg-axis"))
+    for name, (x, y) in pos.items():
+        inner.append(_node(x, y, name, 16))
+    inner.append(text(20, 180, "邻接矩阵：A[i][j] = 1 表示有边，空间 O(n²)", "dg-muted"))
+    mat = [
+        [0, 1, 1, 0, 0],
+        [1, 0, 0, 1, 0],
+        [1, 0, 0, 1, 0],
+        [0, 1, 1, 0, 1],
+        [0, 0, 0, 1, 0],
+    ]
+    names = ["A", "B", "C", "D", "E"]
+    for i, name in enumerate(names):
+        inner.append(text(40 + i * 46, 210, name, "dg-muted"))
+        inner.append(text(40 + i * 46, 232, " ".join(map(str, mat[i])), "dg-mono-muted"))
+    inner.append(text(470, 210, "邻接表：顶点数组 + 边链表，空间 O(n+e)", "dg-muted"))
+    adj = {"A": "B → C", "B": "A → D", "C": "A → D", "D": "B → C → E", "E": "D"}
+    y = 240
+    for name in names:
+        inner.append(text(470, y, name, "dg-mono"))
+        inner.append(text(500, y, adj[name], "dg-mono-muted"))
+        y += 24
+    inner.append(text(20, 330, "BFS（从 A，按字母序）：A B C D E；DFS：A B D C E。", "dg-muted"))
+    inner.append(text(20, 354, "邻接矩阵适合稠密图，判断两点是否有边 O(1)；邻接表适合稀疏图，遍历邻居高效。", "dg-muted"))
+    return svg(W, H, inner, "邻接矩阵与邻接表示意")
+
+
+def heap_figure():
+    arr = [90, 70, 80, 30, 60, 50, 40]
+    W, H = 760, 330
+    inner = [text(20, 26, "大根堆：完全二叉树的数组表示", "dg-text")]
+    pos = [(380, 60), (230, 130), (530, 130), (135, 200), (310, 200), (450, 200), (630, 200)]
+    for i in range(1, len(arr)):
+        parent = (i - 1) // 2
+        inner.append(line(pos[parent][0], pos[parent][1] + 18, pos[i][0], pos[i][1] - 18, "dg-axis"))
+    for i, v in enumerate(arr):
+        inner.append(_node(pos[i][0], pos[i][1], str(v), 20))
+    inner.append(text(20, 280, "数组下标：", "dg-muted"))
+    cw = 62
+    for i, v in enumerate(arr):
+        inner.append('<rect class="dg-fill" x="%d" y="290" width="%d" height="28" rx="2"/>'
+                     % (80 + i * cw, cw - 8))
+        inner.append(text(80 + i * cw + (cw - 8) / 2, 309, str(v), "dg-mono", "middle"))
+        inner.append(text(80 + i * cw + (cw - 8) / 2, 284, str(i), "dg-muted", "middle"))
+    inner.append(text(560, 280, "父 i → 子 2i+1、2i+2", "dg-muted"))
+    return svg(W, H, inner, "大根堆树与数组对应")
+
+
+# --------------------------------------------------------------------------
 # 注册表
 # --------------------------------------------------------------------------
 
@@ -924,4 +1136,12 @@ DIAGRAMS = {
     "os-replace": page_replace_figure(),
     "os-disk-time": disk_time_figure(),
     "os-disk-sched": disk_sched_figure(),
+    "ds-tree-traverse": tree_traverse_figure(),
+    "ds-avl": avl_figure(),
+    "ds-bplus": bplus_figure(),
+    "ds-huffman": huffman_figure(),
+    "ds-kmp": kmp_figure(),
+    "ds-sort": sort_figure(),
+    "ds-graph": graph_repr_figure(),
+    "ds-heap": heap_figure(),
 }
