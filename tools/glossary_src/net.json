@@ -328,6 +328,18 @@
       "source": "谢希仁《计算机网络》· 数据链路层"
     },
     {
+      "id": "csma-cd",
+      "term": "载波监听多点接入/碰撞检测（CSMA/CD）",
+      "abbr": "CSMA/CD",
+      "course": "计算机网络",
+      "brief": "发送前先监听信道，边发送边检测碰撞，检测到碰撞就停止发送并退避重试。",
+      "detail": "该协议用于半双工以太网，各站共享总线，靠争用方式占用信道。最迟冲突检测时间为 2τ（争用期），最小帧长必须保证发送端在发完之前能收到冲突信号：10 Mbps 以太网为 51.2 μs，对应 64 B。",
+      "related": ["data-link-layer", "contention-period", "min-frame", "hub", "binary-backoff"],
+      "source": "计算机网络.md · 数据链路层",
+      "diagram": "net-csma-cd",
+      "caption": "A 在 t=0 发送，B 在 τ−ε 发送，τ 处冲突；A 最迟在 2τ 收到冲突信号，这段窗口就是争用期。"
+    },
+    {
       "id": "binary-backoff",
       "term": "二进制指数退避",
       "abbr": "",

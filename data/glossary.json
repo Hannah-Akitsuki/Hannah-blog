@@ -201,14 +201,17 @@
       "abbr": "CSMA/CD",
       "course": "计算机网络",
       "brief": "发送前先监听信道，边发送边检测碰撞，检测到碰撞就停止发送并退避重试。",
-      "detail": "该协议用于半双工以太网，各站共享总线，靠争用方式占用信道。",
+      "detail": "该协议用于半双工以太网，各站共享总线，靠争用方式占用信道。最迟冲突检测时间为 2τ（争用期），最小帧长必须保证发送端在发完之前能收到冲突信号：10 Mbps 以太网为 51.2 μs，对应 64 B。",
       "related": [
         "data-link-layer",
         "contention-period",
         "min-frame",
-        "hub"
+        "hub",
+        "binary-backoff"
       ],
-      "source": "计算机网络.md · 数据链路层"
+      "source": "计算机网络.md · 数据链路层",
+      "caption": "A 在 t=0 发送，B 在 τ−ε 发送，τ 处冲突；A 最迟在 2τ 收到冲突信号，这段窗口就是争用期。",
+      "diagram": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 760 380\" role=\"img\" aria-label=\"CSMA/CD 冲突窗口示意图\" preserveAspectRatio=\"xMidYMid meet\"><text class=\"dg-text\" x=\"20.0\" y=\"26.0\" text-anchor=\"start\">CSMA/CD 争用期：最坏冲突往返 2τ</text><line class=\"dg-axis\" x1=\"120.0\" y1=\"250.0\" x2=\"720.0\" y2=\"250.0\"/><text class=\"dg-muted\" x=\"720.0\" y=\"272.0\" text-anchor=\"end\">时间 t</text><line class=\"dg-grid\" x1=\"120.0\" y1=\"70.0\" x2=\"120.0\" y2=\"250.0\"/><line class=\"dg-grid\" x1=\"720.0\" y1=\"70.0\" x2=\"720.0\" y2=\"250.0\"/><text class=\"dg-text\" x=\"120.0\" y=\"60.0\" text-anchor=\"middle\">站 A</text><text class=\"dg-text\" x=\"720.0\" y=\"60.0\" text-anchor=\"middle\">站 B</text><text class=\"dg-text\" x=\"130.0\" y=\"96.0\" text-anchor=\"start\">t = 0：A 开始发送</text><path class=\"dg-green\" d=\"M 120,110 L 720,110\"/><text class=\"dg-text\" x=\"710.0\" y=\"150.0\" text-anchor=\"end\">t = τ−ε：B 也发送（此前未听到 A）</text><line class=\"dg-accent\" x1=\"120\" y1=\"164\" x2=\"720\" y2=\"164\"/><text class=\"dg-text\" x=\"420.0\" y=\"196.0\" text-anchor=\"middle\">τ 处冲突</text><circle cx=\"420\" cy=\"164\" r=\"4\" class=\"dg-accent\"/><rect class=\"dg-fill\" x=\"120\" y=\"224\" width=\"300\" height=\"12\" rx=\"2\"/><text class=\"dg-muted\" x=\"270.0\" y=\"216.0\" text-anchor=\"middle\">争用期 2τ</text><text class=\"dg-muted\" x=\"130.0\" y=\"290.0\" text-anchor=\"start\">A 最迟在 t = 2τ 收到冲突信号；若此时帧已发完，就无法检测，</text><text class=\"dg-muted\" x=\"130.0\" y=\"312.0\" text-anchor=\"start\">所以最小帧长 = 2τ × 数据率。10 Mbps 以太网：2τ = 51.2 μs → 512 bit = 64 B。</text><text class=\"dg-muted\" x=\"130.0\" y=\"340.0\" text-anchor=\"start\">检测到冲突后发强化冲突信号（jam），再按二进制指数退避重传。</text></svg>"
     },
     {
       "id": "contention-period",
