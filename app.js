@@ -89,7 +89,7 @@ function legacyCopy(text) {
 
 const state = {
   config: null, docs: [], photos: [], links: [], music: null, diary: [], now: null, books: null,
-  current: -1, sourceText: '', photoShown: 0, track: 0, giscusLoaded: false
+  glossary: null, current: -1, sourceText: '', photoShown: 0, track: 0, giscusLoaded: false
 };
 const PAGE_SIZE = 60;
 
@@ -396,6 +396,161 @@ function closeBookDrawer() {
   if (!d || d.hidden) return;
   d.hidden = true;
   $('#bookMask').hidden = true;
+}
+
+/* ---------------- 术语速查 ----------------
+   数据来自 data/glossary.json，只收笔记正文明确讲过的词条；支持课程分组、
+   中英文/缩写搜索、键盘上下选择、抽屉详情与 #term-<id> 深链。 */
+const COURSE_ORDER = ['计算机组成原理', '计算机网络', '数据结构', '操作系统', '系统架构', '编译原理'];
+const COURSE_PENDING = {
+  '计算机组成原理': '这门课还没有对应笔记，词条待补，不编造定义。',
+  '数据结构': '这门课还没有对应笔记，词条待补，不编造定义。'
+};
+let termCourse = '全部';
+let termQuery = '';
+let termResults = [];
+let termCursor = -1;
+let termOpenId = '';
+let glossaryLoading = null;
+
+/* 懒加载：术语表不进首屏 bootstrap，第一次打开术语视图/搜索时才拉取 */
+function ensureGlossary() {
+  if (state.glossary) return Promise.resolve();
+  if (!glossaryLoading) {
+    glossaryLoading = loadJSON('data/glossary.json')
+      .then(g => { state.glossary = g; })
+      .catch(() => { state.glossary = {}; })
+      .then(() => { glossaryLoading = null; });
+  }
+  return glossaryLoading;
+}
+function glossaryTerms() {
+  const g = state.glossary || {};
+  return Array.isArray(g.terms) ? g.terms : [];
+}
+function termById(id) {
+  return glossaryTerms().find(t => t.id === id) || null;
+}
+function termMatch(t, key) {
+  if (!key) return true;
+  return [t.term, t.abbr, t.brief, t.detail, t.source].join(' ').toLowerCase().indexOf(key) >= 0;
+}
+function filterTerms() {
+  const key = termQuery.trim().toLowerCase();
+  return glossaryTerms().filter(t => (termCourse === '全部' || t.course === termCourse) && termMatch(t, key));
+}
+function termHref(id) {
+  return '#term-' + encodeURIComponent(id);
+}
+function renderGlossary() {
+  const box = $('#glossaryList');
+  if (!box) return;
+  if (!state.glossary) { ensureGlossary().then(() => renderGlossary()); return; }
+  const all = glossaryTerms();
+  const count = $('#glossaryCount');
+  const courses = COURSE_ORDER.concat(all.map(t => t.course).filter(c => COURSE_ORDER.indexOf(c) < 0));
+  const chips = ['全部'].concat(courses).map(c => {
+    const n = c === '全部' ? all.length : all.filter(t => t.course === c).length;
+    return `<button class="course-chip${c === termCourse ? ' on' : ''}" type="button" role="tab"
+      aria-selected="${c === termCourse}" data-course="${esc(c)}">${esc(c)}<span class="n">${n}</span></button>`;
+  }).join('');
+  const results = filterTerms();
+  if (count) count.textContent = all.length ? ' 共 ' + all.length + ' 条' : ' 暂无词条';
+  const chipBox = $('#glossaryCourses');
+  if (chipBox) chipBox.innerHTML = chips;
+
+  termResults = results;
+  termCursor = -1;
+  if (!termResults.length) {
+    box.innerHTML = '';
+    const empty = $('#glossaryEmpty');
+    if (empty) {
+      empty.hidden = false;
+      empty.textContent = termQuery.trim()
+        ? '没有匹配的术语，换个关键词试试。'
+        : (COURSE_PENDING[termCourse] || '这门课暂时没有可查的词条。');
+    }
+    return;
+  }
+  const empty = $('#glossaryEmpty');
+  if (empty) empty.hidden = true;
+  const groups = [];
+  termResults.forEach(t => {
+    let g = groups.find(x => x.course === t.course);
+    if (!g) { g = { course: t.course, items: [] }; groups.push(g); }
+    g.items.push(t);
+  });
+  box.innerHTML = groups.map(g => `<section class="glossary-group">
+      <h2>${esc(g.course)}<span>${g.items.length} TERMS</span></h2>
+      ${g.items.map(t => `<button class="term-item" type="button" data-id="${esc(t.id)}">
+        <span class="term-abbr">${esc(t.abbr || '·')}</span>
+        <span class="term-main"><b>${esc(t.term || t.id)}</b><span>${esc(t.brief || '')}</span></span>
+      </button>`).join('')}
+    </section>`).join('');
+  syncTermHighlight();
+}
+/* 抽屉打开期间重绘列表（视图切换动画、筛选、搜索）时保持当前词条高亮 */
+function syncTermHighlight() {
+  $$('#glossaryList .term-item').forEach(el => el.classList.toggle('on', !!termOpenId && el.dataset.id === termOpenId));
+}
+async function openTerm(id, fromHash) {
+  await ensureGlossary();
+  const t = termById(id);
+  if (!t) return;
+  /* 深链可能指向当前筛选/搜索之外的词条：先取消过滤，保证列表里能找到它 */
+  if (!filterTerms().some(x => x.id === id)) {
+    termCourse = '全部';
+    termQuery = '';
+    const si = $('#glossarySearch');
+    if (si) si.value = '';
+  }
+  termOpenId = id;
+  renderGlossary();
+  const relIds = Array.isArray(t.related) ? t.related : String(t.related || '').split(/[,，]/);
+  const rel = relIds.map(x => termById(String(x).trim())).filter(Boolean);
+  $('#termDrawerBody').innerHTML = `
+    <div class="book-drawer-head">
+      <div>
+        <p class="eyebrow">${esc(t.course || 'TERM')}</p>
+        <h2>${esc(t.term || t.id)}</h2>
+        <p class="tiny">${t.abbr ? esc(t.abbr) + ' · ' : ''}${esc(t.source || '')}</p>
+      </div>
+    </div>
+    <p class="book-review">${esc(t.brief || '')}</p>
+    ${t.detail ? `<p class="term-detail">${esc(t.detail)}</p>` : ''}
+    ${rel.length ? `<div class="term-rel"><b>相关术语</b><div class="term-related">
+      ${rel.map(r => `<button type="button" data-term="${esc(r.id)}">${esc(r.term || r.id)}</button>`).join('')}
+    </div></div>` : ''}
+    <button class="ghost-btn term-copy" id="termCopy" type="button">复制这条链接</button>`;
+  $('#termMask').hidden = false;
+  $('#termDrawer').hidden = false;
+  if (!fromHash) history.replaceState(null, '', termHref(id));
+  syncTermHighlight();
+  const target = $$('#glossaryList .term-item').find(el => el.dataset.id === id);
+  termCursor = termResults.findIndex(x => x.id === id);
+  if (target) target.scrollIntoView({ block: 'center', behavior: reduceMotion() ? 'auto' : 'smooth' });
+}
+function closeTerm() {
+  const d = $('#termDrawer');
+  if (!d || d.hidden) return;
+  d.hidden = true;
+  $('#termMask').hidden = true;
+  termOpenId = '';
+  $$('#glossaryList .term-item').forEach(el => el.classList.remove('on'));
+  if ((location.hash || '').indexOf('#term-') === 0) history.replaceState(null, '', '#glossary');
+}
+function moveTermCursor(delta) {
+  if (!termResults.length) return;
+  termCursor = (termCursor + delta + termResults.length) % termResults.length;
+  const items = $$('#glossaryList .term-item');
+  items.forEach((el, i) => el.classList.toggle('on', i === termCursor));
+  if (items[termCursor]) items[termCursor].scrollIntoView({ block: 'nearest' });
+}
+function renderDemos() {
+  /* 第二批：交互演示。骨架与深链在 #vis-<id> 中接入。 */
+}
+function openDemo(id, fromHash) {
+  /* 第二批：根据 #vis-<id> 打开对应演示。 */
 }
 
 /* ---------------- 笔记知识图谱 ----------------
@@ -1195,7 +1350,7 @@ function initArticleTools() {
 }
 
 /* ---------------- 视图路由 ---------------- */
-const VIEWS = ['home', 'now', 'books', 'notes', 'article', 'links', 'archive', 'music', 'photos', 'diary', 'guestbook', 'about'];
+const VIEWS = ['home', 'now', 'books', 'notes', 'article', 'glossary', 'demos', 'links', 'archive', 'music', 'photos', 'diary', 'guestbook', 'about'];
 function showView(name, keepScroll) {
   if (VIEWS.indexOf(name) < 0) name = 'home';
   withVT(() => {
@@ -1208,6 +1363,9 @@ function showView(name, keepScroll) {
     if (name === 'guestbook') renderGuestbook();
     if (name === 'now') renderNow();
     if (name === 'books') renderBooks();
+    if (name === 'glossary') renderGlossary();
+    if (name !== 'glossary') closeTerm();
+    if (name === 'demos') renderDemos();
     if (name !== 'notes') stopGraph();
     if (name === 'notes' && graphMode) {
       if (!graphData) renderGraph();
@@ -1222,6 +1380,18 @@ function showView(name, keepScroll) {
 }
 function route() {
   const h = (location.hash || '#home').replace(/^#/, '');
+  if (h.indexOf('term-') === 0) {
+    const id = safeDecode(h.slice(5));
+    showView('glossary');
+    openTerm(id, true);
+    return;
+  }
+  if (h.indexOf('vis-') === 0) {
+    const id = safeDecode(h.slice(4));
+    showView('demos');
+    openDemo(id, true);
+    return;
+  }
   if (h.indexOf('note-') === 0) {
     const rest = h.slice(5);
     const cut = rest.indexOf('/');
@@ -1290,15 +1460,73 @@ function searchDocs(q) {
     (d.excerpt || '').toLowerCase().includes(key)
   );
 }
+let searchHits = [];
+let searchCursor = -1;
+function searchSections(key) {
+  const out = [];
+  state.docs.forEach((d, i) => {
+    if (locked(d)) return;
+    (d.sections || []).forEach(s => {
+      if (s && s.t && s.t.toLowerCase().indexOf(key) >= 0) out.push({ i, d, s });
+    });
+  });
+  return out.slice(0, 8);
+}
+function searchTerms(key) {
+  return glossaryTerms().filter(t => termMatch(t, key)).slice(0, 8);
+}
+function resetSearchCursor() {
+  searchHits = $$('#searchResults a');
+  searchCursor = -1;
+  searchHits.forEach(a => a.classList.remove('on'));
+}
+function moveSearchCursor(delta) {
+  if (!searchHits.length) return;
+  searchCursor = (searchCursor + delta + searchHits.length) % searchHits.length;
+  searchHits.forEach((a, i) => a.classList.toggle('on', i === searchCursor));
+  searchHits[searchCursor].scrollIntoView({ block: 'nearest' });
+}
+function activateSearchHit(a) {
+  if (!a) return;
+  closeSearch();
+  const kind = a.dataset.kind;
+  if (kind === 'term') { showView('glossary'); openTerm(a.dataset.id); return; }
+  openDoc(+a.dataset.i, kind === 'sec' ? (a.dataset.sec || '') : '');
+}
 function paintSearch(q) {
   const box = $('#searchResults');
   const key = q.trim();
-  if (!key) { box.innerHTML = ''; return; }
-  const hits = searchDocs(key);
-  box.innerHTML = hits.length
-    ? hits.map(d => { const i = state.docs.indexOf(d); return `<a href="#note-${docRef(d, i)}" data-i="${i}">
-        <span>${esc(d.title)}</span><span class="lock-label">${locked(d) ? '未公开' : (d.date || '')}</span></a>`; }).join('')
-    : '<div class="empty">没有匹配的笔记</div>';
+  if (!key) { box.innerHTML = ''; searchHits = []; searchCursor = -1; return; }
+  if (!state.glossary) {
+    ensureGlossary().then(() => {
+      const input = $('#searchInput');
+      if (input && input.value === q) paintSearch(q);
+    });
+  }
+  const lk = key.toLowerCase();
+  const docs = searchDocs(key).slice(0, 6);
+  const secs = searchSections(lk);
+  const terms = searchTerms(lk);
+  let html = '';
+  if (docs.length) {
+    html += '<div class="search-group-label">笔记</div>' + docs.map(d => {
+      const i = state.docs.indexOf(d);
+      return `<a href="#note-${docRef(d, i)}" data-kind="doc" data-i="${i}">
+        <span>${esc(d.title)}</span><span class="lock-label">${locked(d) ? '未公开' : (d.date || '')}</span></a>`;
+    }).join('');
+  }
+  if (secs.length) {
+    html += '<div class="search-group-label">章节</div>' + secs.map(x =>
+      `<a href="#note-${docRef(x.d, x.i)}/${encodeURIComponent(x.s.slug)}" data-kind="sec" data-i="${x.i}" data-sec="${esc(x.s.slug)}">
+        <span>${esc(x.s.t)}</span><span class="lock-label">${esc(x.d.title)}</span></a>`).join('');
+  }
+  if (terms.length) {
+    html += '<div class="search-group-label">术语</div>' + terms.map(t =>
+      `<a href="${termHref(t.id)}" data-kind="term" data-id="${esc(t.id)}">
+        <span>${esc(t.term || t.id)}</span><span class="lock-label">${esc(t.course || '')}</span></a>`).join('');
+  }
+  box.innerHTML = html || '<div class="empty">没有匹配的笔记、章节或术语</div>';
+  resetSearchCursor();
 }
 function openSearch(prefill) {
   const p = $('#searchPanel');
@@ -1472,15 +1700,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   $('#searchInput').addEventListener('input', e => paintSearch(e.target.value));
   $('#searchInput').addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveSearchCursor(1); return; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); moveSearchCursor(-1); return; }
     if (e.key === 'Enter') {
-      const hits = searchDocs(e.target.value);
-      if (hits.length) { closeSearch(); openDoc(state.docs.indexOf(hits[0])); }
+      e.preventDefault();
+      activateSearchHit(searchHits[searchCursor] || searchHits[0]);
     }
     if (e.key === 'Escape') closeSearch();
   });
   $('#searchResults').addEventListener('click', e => {
-    const a = e.target.closest('[data-i]');
-    if (a) { e.preventDefault(); closeSearch(); openDoc(+a.dataset.i); }
+    const a = e.target.closest('[data-kind]');
+    if (a) { e.preventDefault(); activateSearchHit(a); }
   });
   $('#heroSearch').addEventListener('focus', () => openSearch($('#heroSearch').value));
   $('#heroSearch').addEventListener('keydown', e => {
@@ -1490,7 +1720,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault(); openSearch('');
     }
-    if (e.key === 'Escape') { closeSearch(); closeLightbox(); closeBookDrawer(); }
+    if (e.key === 'Escape') { closeSearch(); closeLightbox(); closeBookDrawer(); closeTerm(); }
   });
 
   const notesModeCards = $('#notesModeCards');
@@ -1582,6 +1812,53 @@ document.addEventListener('DOMContentLoaded', () => {
   }));
   $('#bookClose').addEventListener('click', closeBookDrawer);
   $('#bookMask').addEventListener('click', closeBookDrawer);
+
+  const gSearch = $('#glossarySearch');
+  if (gSearch) {
+    gSearch.addEventListener('input', e => { termQuery = e.target.value; renderGlossary(); });
+    gSearch.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); moveTermCursor(1); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); moveTermCursor(-1); return; }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const t = termResults[termCursor >= 0 ? termCursor : 0];
+        if (t) openTerm(t.id);
+      }
+      if (e.key === 'Escape') { e.target.value = ''; termQuery = ''; renderGlossary(); }
+    });
+  }
+  const gClear = $('#glossaryClear');
+  if (gClear) gClear.addEventListener('click', () => {
+    if (gSearch) gSearch.value = '';
+    termQuery = '';
+    renderGlossary();
+    if (gSearch) gSearch.focus();
+  });
+  const gCourses = $('#glossaryCourses');
+  if (gCourses) gCourses.addEventListener('click', e => {
+    const btn = e.target.closest('[data-course]');
+    if (!btn) return;
+    termCourse = btn.dataset.course;
+    renderGlossary();
+  });
+  const gList = $('#glossaryList');
+  if (gList) gList.addEventListener('click', e => {
+    const item = e.target.closest('.term-item');
+    if (item) openTerm(item.dataset.id);
+  });
+  const termClose = $('#termClose');
+  if (termClose) termClose.addEventListener('click', closeTerm);
+  const termMask = $('#termMask');
+  if (termMask) termMask.addEventListener('click', closeTerm);
+  const termBody = $('#termDrawerBody');
+  if (termBody) termBody.addEventListener('click', e => {
+    const rel = e.target.closest('[data-term]');
+    if (rel) { openTerm(rel.dataset.term); return; }
+    if (e.target.closest('#termCopy') && termOpenId) {
+      const url = location.origin + location.pathname + termHref(termOpenId);
+      copyText(url).then(ok => toast(ok ? '已复制术语链接' : url));
+    }
+  });
 
   const rssCopy = $('#rssCopy');
   if (rssCopy) rssCopy.addEventListener('click', () => {

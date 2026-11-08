@@ -330,6 +330,58 @@ content:
                 label: 摘抄内容
                 type: text
 
+  - name: glossary
+    label: 术语速查
+    type: file
+    path: data/glossary.json
+    format: json
+    fields:
+      - name: updated
+        label: 最后更新日期
+        type: date
+      - name: terms
+        label: 词条
+        type: object
+        list:
+          collapsible: true
+          summary: "{term}"
+        fields:
+          - name: id
+            label: ID（深链 #term-<id>，英文小写，不要重复）
+            type: string
+            required: true
+          - name: term
+            label: 术语（中文 / 英文）
+            type: string
+            required: true
+          - name: abbr
+            label: 缩写
+            type: string
+          - name: course
+            label: 课程
+            type: select
+            options:
+              values:
+                - 计算机组成原理
+                - 计算机网络
+                - 数据结构
+                - 操作系统
+                - 系统架构
+                - 编译原理
+          - name: brief
+            label: 一句话定义
+            type: text
+            required: true
+          - name: detail
+            label: 展开说明（可选）
+            type: text
+          - name: related
+            label: 相关术语 id（英文逗号分隔）
+            type: string
+          - name: source
+            label: 来源（笔记文件名 · 章节）
+            type: string
+
   - name: site
     label: 站点设置
     type: file

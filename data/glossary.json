@@ -1,0 +1,638 @@
+{
+  "updated": "2026-11-08",
+  "terms": [
+    {
+      "id": "process",
+      "term": "进程（Process）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "一道程序在一个数据集上的一次执行过程，具有动态性、并发性、独立性、结构性和异步性。",
+      "detail": "进程有就绪、运行、阻塞三种基本状态；系统用进程控制块记录其信息，并按就绪队列、等待队列组织。",
+      "related": [
+        "pcb",
+        "thread",
+        "process-scheduling"
+      ],
+      "source": "操作系统.md · 进程管理"
+    },
+    {
+      "id": "pcb",
+      "term": "进程控制块（PCB）",
+      "abbr": "PCB",
+      "course": "操作系统",
+      "brief": "操作系统为每个进程建立的数据结构，记录进程的基本描述、管理和控制信息。",
+      "detail": "PCB 中的页表基址与页表长度指向该进程的页表，是进程存在的重要标志。",
+      "related": [
+        "process",
+        "page-table"
+      ],
+      "source": "操作系统.md · 进程管理"
+    },
+    {
+      "id": "thread",
+      "term": "线程（Thread）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "进程内部可独立运行的实体，比进程更轻，切换开销更小。",
+      "detail": "笔记把线程分为系统级线程和用户级线程，二者由操作系统或线程库负责调度。",
+      "related": [
+        "process",
+        "pcb"
+      ],
+      "source": "操作系统.md · 进程管理"
+    },
+    {
+      "id": "process-scheduling",
+      "term": "进程调度",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "决定就绪进程谁先占用处理器，调度参数包括优先级、运行时间等。",
+      "detail": "并发执行在微观上表现为轮流交替，进程调度负责安排这种交替。",
+      "related": [
+        "process",
+        "timeslice"
+      ],
+      "source": "操作系统.md · 进程管理"
+    },
+    {
+      "id": "timeslice",
+      "term": "时间片（Timeslice）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "分时系统把处理器时间切成很短的时间片，按顺序轮流分给各终端用户。",
+      "detail": "时间片用完即切换，保证每个用户都能及时得到响应。",
+      "related": [
+        "process-scheduling"
+      ],
+      "source": "操作系统.md · 操作系统概述"
+    },
+    {
+      "id": "primitive",
+      "term": "原语（Primitive）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "由若干条机器指令构成、用于完成特定功能的原子操作程序段，执行不可中断。",
+      "detail": "信号量上的 P 操作与 V 操作就是典型的原语。",
+      "related": [
+        "semaphore",
+        "critical-section"
+      ],
+      "source": "操作系统.md · 进程同步"
+    },
+    {
+      "id": "critical-section",
+      "term": "临界区（Critical Section）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "进程中访问临界资源的那段代码，同一时刻只允许一个进程进入。",
+      "detail": "临界区的使用应遵循互斥进入、空闲让进、有限等待、让权等待等准则。",
+      "related": [
+        "semaphore",
+        "deadlock"
+      ],
+      "source": "操作系统.md · 进程同步"
+    },
+    {
+      "id": "semaphore",
+      "term": "信号量（Semaphore）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "用于进程同步与互斥的整型变量，只能通过 P、V 原语访问。",
+      "detail": "信号量大于 0 表示资源可用；小于 0 时其绝对值表示等待进程数，P 操作可能阻塞、V 操作负责唤醒。",
+      "related": [
+        "critical-section",
+        "deadlock",
+        "primitive"
+      ],
+      "source": "操作系统.md · 进程同步"
+    },
+    {
+      "id": "deadlock",
+      "term": "死锁（Deadlock）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "多个并发进程互相等待对方持有的资源，导致谁都无法继续推进的僵局。",
+      "detail": "死锁是并发执行中需要分析并解决的一种错误现象，常与信号量使用不当有关。",
+      "related": [
+        "semaphore",
+        "critical-section"
+      ],
+      "source": "操作系统.md · 进程同步"
+    },
+    {
+      "id": "page-table",
+      "term": "页表（Page Table）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "记录进程各页在内存中对应块号的数据结构，供地址转换使用。",
+      "detail": "页表基址与页表长度登记在进程控制块中，地址转换时据此查表。",
+      "related": [
+        "pcb"
+      ],
+      "source": "操作系统.md · 存储管理"
+    },
+    {
+      "id": "file-system",
+      "term": "文件系统",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "操作系统管理文件与存储空间的功能模块。",
+      "detail": "它属于操作系统的五大基本功能之一，与处理器管理、存储器管理、设备管理、操作接口并列。",
+      "related": [],
+      "source": "操作系统.md · 操作系统概述"
+    },
+    {
+      "id": "tcp",
+      "term": "传输控制协议（TCP）",
+      "abbr": "TCP",
+      "course": "计算机网络",
+      "brief": "传输层面向连接的协议，提供可靠交付，数据单位是报文段。",
+      "detail": "传输层面向连接的协议，提供可靠交付，数据单位是报文段；建立连接用三报文握手（常称三次握手），释放连接用四报文握手（常称四次挥手）。",
+      "related": [
+        "udp",
+        "network-layer"
+      ],
+      "source": "计算机网络.md · 传输层"
+    },
+    {
+      "id": "udp",
+      "term": "用户数据报协议（UDP）",
+      "abbr": "UDP",
+      "course": "计算机网络",
+      "brief": "传输层无连接的协议，尽最大努力交付，数据单位是用户数据报。",
+      "detail": "UDP 不保证可靠，开销与延迟较小，适合对实时性要求高的场景。",
+      "related": [
+        "tcp",
+        "network-layer"
+      ],
+      "source": "计算机网络.md · 传输层"
+    },
+    {
+      "id": "network-layer",
+      "term": "网络层",
+      "abbr": "",
+      "course": "计算机网络",
+      "brief": "为分组交换网上的不同主机提供通信服务，把传输层报文段封装成分组。",
+      "detail": "网络层使用 IP 协议，并配合路由选择协议决定分组转发的路径。",
+      "related": [
+        "data-link-layer",
+        "tcp",
+        "udp"
+      ],
+      "source": "计算机网络.md · 网络层"
+    },
+    {
+      "id": "data-link-layer",
+      "term": "数据链路层",
+      "abbr": "",
+      "course": "计算机网络",
+      "brief": "把网络层交下来的 IP 数据报组装成帧，在相邻结点间传送，检出差错就丢弃。",
+      "detail": "主要解决封装成帧、透明传输和差错检测三个问题。",
+      "related": [
+        "network-layer",
+        "csma-cd",
+        "switch"
+      ],
+      "source": "计算机网络.md · 数据链路层"
+    },
+    {
+      "id": "csma-cd",
+      "term": "载波监听多点接入/碰撞检测（CSMA/CD）",
+      "abbr": "CSMA/CD",
+      "course": "计算机网络",
+      "brief": "发送前先监听信道，边发送边检测碰撞，检测到碰撞就停止发送并退避重试。",
+      "detail": "该协议用于半双工以太网，各站共享总线，靠争用方式占用信道。",
+      "related": [
+        "data-link-layer",
+        "contention-period",
+        "min-frame",
+        "hub"
+      ],
+      "source": "计算机网络.md · 数据链路层"
+    },
+    {
+      "id": "contention-period",
+      "term": "争用期（碰撞窗口）",
+      "abbr": "",
+      "course": "计算机网络",
+      "brief": "发送数据后最多经过争用期就能知道是否发生碰撞。",
+      "detail": "10 Mbit/s 以太网取 512 比特时间为争用期，即 51.2 μs。",
+      "related": [
+        "csma-cd",
+        "min-frame"
+      ],
+      "source": "计算机网络.md · 数据链路层"
+    },
+    {
+      "id": "min-frame",
+      "term": "最短帧长",
+      "abbr": "",
+      "course": "计算机网络",
+      "brief": "为保证碰撞能被检测到而规定的最小帧长，10 Mbit/s 以太网为 64 字节。",
+      "detail": "帧太短会在发送结束后才发生碰撞，发送方已停止监听而无法察觉，因此要限制最短帧长。",
+      "related": [
+        "csma-cd",
+        "contention-period"
+      ],
+      "source": "计算机网络.md · 数据链路层"
+    },
+    {
+      "id": "switch",
+      "term": "交换机（Switch）",
+      "abbr": "",
+      "course": "计算机网络",
+      "brief": "工作在数据链路层的多端口网桥，按 MAC 地址转发帧，端口可独占带宽并全双工工作。",
+      "detail": "交换机通过自学习建立端口与 MAC 地址的交换表，避免像集线器那样所有站共享带宽。",
+      "related": [
+        "data-link-layer",
+        "hub",
+        "vlan"
+      ],
+      "source": "计算机网络.md · 数据链路层"
+    },
+    {
+      "id": "vlan",
+      "term": "虚拟局域网（VLAN）",
+      "abbr": "VLAN",
+      "course": "计算机网络",
+      "brief": "把一个物理局域网划分成多个逻辑上独立的广播域。",
+      "detail": "802.1Q 在帧中插入 4 字节标签，其中 12 位 VID 标识该帧所属的 VLAN。",
+      "related": [
+        "switch"
+      ],
+      "source": "计算机网络.md · 数据链路层"
+    },
+    {
+      "id": "hub",
+      "term": "集线器（Hub）",
+      "abbr": "",
+      "course": "计算机网络",
+      "brief": "工作在物理层的多端口转发器，各端口共享同一总线，仍使用 CSMA/CD。",
+      "detail": "集线器不做地址识别，收到信号就向所有其他端口转发，所有站共享带宽。",
+      "related": [
+        "switch",
+        "csma-cd"
+      ],
+      "source": "计算机网络.md · 数据链路层"
+    },
+    {
+      "id": "delay",
+      "term": "时延",
+      "abbr": "",
+      "course": "计算机网络",
+      "brief": "数据从网络一端传送到另一端所需的时间，由发送、传播、处理和排队时延组成。",
+      "detail": "发送时延取决于数据长度与发送速率，传播时延取决于链路长度与信号传播速率。",
+      "related": [],
+      "source": "计算机网络.md · 概述"
+    },
+    {
+      "id": "computer-architecture",
+      "term": "计算机系统结构",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "程序员所看到的计算机属性，即编写正确运行的程序必须了解的概念性结构和功能特性。",
+      "detail": "它包含数据表示、寻址方式、寄存器组织、指令系统等内容，与具体硬件实现无关。",
+      "related": [
+        "data-representation",
+        "addressing-mode",
+        "isa"
+      ],
+      "source": "系统结构笔记飞书.md · 第一章"
+    },
+    {
+      "id": "data-representation",
+      "term": "数据表示",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "硬件能直接识别和处理的数据类型与格式。",
+      "detail": "数据表示决定哪些数据类型由硬件实现，是系统结构研究的基础内容之一。",
+      "related": [
+        "computer-architecture"
+      ],
+      "source": "系统结构笔记飞书.md · 第一章"
+    },
+    {
+      "id": "addressing-mode",
+      "term": "寻址方式",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "指令中给出操作数地址的方式，涉及最小寻址单位、寻址种类和地址计算。",
+      "detail": "寻址方式越丰富，指令系统越灵活，但也会增加硬件复杂度。",
+      "related": [
+        "computer-architecture",
+        "isa"
+      ],
+      "source": "系统结构笔记飞书.md · 第一章"
+    },
+    {
+      "id": "isa",
+      "term": "指令系统",
+      "abbr": "ISA",
+      "course": "系统架构",
+      "brief": "机器指令的格式、类型和使用方法的总和，是系统结构的重要内容。",
+      "detail": "指令系统决定机器能直接完成的操作，也影响编译器和操作系统的设计。",
+      "related": [
+        "computer-architecture",
+        "cisc",
+        "risc",
+        "addressing-mode"
+      ],
+      "source": "系统结构笔记飞书.md · 第一章"
+    },
+    {
+      "id": "amdahl",
+      "term": "Amdahl 定律",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "描述部件加速后系统整体性能改进程度的定律，改进受该部件使用频率和加速比限制。",
+      "detail": "系统加速比 = 1 / ((1 - f) + f / r)，f 为部件使用比例，r 为部件加速比。",
+      "related": [
+        "parallelism",
+        "locality"
+      ],
+      "source": "系统结构笔记飞书.md · 性能分析"
+    },
+    {
+      "id": "locality",
+      "term": "程序局部性原理",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "程序在一段时间内只访问局部范围的指令和数据，分为时间局部性和空间局部性。",
+      "detail": "时间局部性指刚访问过的内容很可能再次访问，空间局部性指相邻地址的内容很可能被一起访问。",
+      "related": [
+        "amdahl"
+      ],
+      "source": "系统结构笔记飞书.md · 存储层次"
+    },
+    {
+      "id": "parallelism",
+      "term": "并行性",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "同一时刻或同一时间间隔内完成两种以上工作的性质，分为同时性与并发性。",
+      "detail": "同时性指两个以上事件在同一时刻发生，并发性指在同一时间间隔内发生。",
+      "related": [
+        "flynn",
+        "pipeline",
+        "amdahl"
+      ],
+      "source": "系统结构笔记飞书.md · 并行处理"
+    },
+    {
+      "id": "flynn",
+      "term": "Flynn 分类法",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "按指令流和数据流的多倍性把计算机分为 SISD、SIMD、MISD、MIMD 四类。",
+      "detail": "SISD 是单指令流单数据流，SIMD 是单指令流多数据流，MISD 是多指令流单数据流，MIMD 是多指令流多数据流。",
+      "related": [
+        "parallelism"
+      ],
+      "source": "系统结构笔记飞书.md · 并行处理"
+    },
+    {
+      "id": "cisc",
+      "term": "复杂指令系统计算机（CISC）",
+      "abbr": "CISC",
+      "course": "系统架构",
+      "brief": "通过增强指令功能、增加寻址方式来减少程序指令条数的指令系统设计路线。",
+      "detail": "CISC 指令功能复杂、格式多样，可减轻编译负担，但硬件实现更复杂。",
+      "related": [
+        "risc",
+        "isa"
+      ],
+      "source": "系统结构笔记飞书.md · 指令系统"
+    },
+    {
+      "id": "risc",
+      "term": "精简指令系统计算机（RISC）",
+      "abbr": "RISC",
+      "course": "系统架构",
+      "brief": "减少指令总数和寻址方式、提高指令执行速度的指令系统设计路线。",
+      "detail": "RISC 指令规整、便于流水线实现，把复杂操作交给多条简单指令组合完成。",
+      "related": [
+        "cisc",
+        "isa",
+        "pipeline"
+      ],
+      "source": "系统结构笔记飞书.md · 指令系统"
+    },
+    {
+      "id": "overlap",
+      "term": "重叠",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "在第 k 条指令完成之前就开始第 k+1 条指令的重叠执行方式。",
+      "detail": "一次重叠使相邻两条指令并行工作，是流水线思想的基础。",
+      "related": [
+        "pipeline"
+      ],
+      "source": "系统结构笔记飞书.md · 流水线"
+    },
+    {
+      "id": "pipeline",
+      "term": "流水线（Pipeline）",
+      "abbr": "",
+      "course": "系统架构",
+      "brief": "把一次重叠进一步分解为取指、译码、取操作数、执行等子过程，使多条指令在不同子过程同时工作。",
+      "detail": "流水线通过时间重叠提高吞吐率，但会遇到结构冒险、数据冒险和控制冒险。",
+      "related": [
+        "overlap",
+        "risc",
+        "parallelism"
+      ],
+      "source": "系统结构笔记飞书.md · 流水线"
+    },
+    {
+      "id": "lexical-analysis",
+      "term": "词法分析",
+      "abbr": "",
+      "course": "编译原理",
+      "brief": "从左到右逐个扫描源程序字符，识别单词并转换成词法单元，同时建立符号表、处理错误。",
+      "detail": "词法分析是编译过程的第一步，输出供语法分析使用的 token 序列。",
+      "related": [
+        "token",
+        "regex",
+        "fa"
+      ],
+      "source": "编译原理.md · 词法分析"
+    },
+    {
+      "id": "token",
+      "term": "词法单元（Token）",
+      "abbr": "Token",
+      "course": "编译原理",
+      "brief": "词法分析输出的、具有独立含义的最小语法单位。",
+      "detail": "一个 token 通常由种别码和属性值组成，供后续语法分析使用。",
+      "related": [
+        "lexical-analysis"
+      ],
+      "source": "编译原理.md · 词法分析"
+    },
+    {
+      "id": "regex",
+      "term": "正规式（Regular Expression）",
+      "abbr": "RE",
+      "course": "编译原理",
+      "brief": "用于描述单词模式的规则表达式，由字母表上的字符和闭包、连接、选择等运算构成。",
+      "detail": "正规式与有穷自动机等价，可用于生成词法分析器。",
+      "related": [
+        "fa",
+        "lexical-analysis",
+        "nfa"
+      ],
+      "source": "编译原理.md · 词法分析"
+    },
+    {
+      "id": "fa",
+      "term": "有穷自动机（Finite Automaton）",
+      "abbr": "FA",
+      "course": "编译原理",
+      "brief": "识别输入串是否属于某正规式的数学模型，由有穷状态和状态转移组成。",
+      "detail": "有穷自动机分为确定的 DFA 与不确定的 NFA 两类。",
+      "related": [
+        "dfa",
+        "nfa",
+        "regex"
+      ],
+      "source": "编译原理.md · 词法分析"
+    },
+    {
+      "id": "dfa",
+      "term": "确定的有穷自动机（DFA）",
+      "abbr": "DFA",
+      "course": "编译原理",
+      "brief": "每个状态对每个输入符号最多只有一条转移边的有穷自动机。",
+      "detail": "DFA 状态转移确定，便于直接驱动词法分析程序。",
+      "related": [
+        "nfa",
+        "fa",
+        "subset-construction"
+      ],
+      "source": "编译原理.md · 词法分析"
+    },
+    {
+      "id": "nfa",
+      "term": "不确定的有穷自动机（NFA）",
+      "abbr": "NFA",
+      "course": "编译原理",
+      "brief": "可有多个初态、转移弧上可标记串、同一状态对同一输入可有多条弧的有穷自动机。",
+      "detail": "NFA 允许 ε 转移，描述能力与 DFA 等价，但需要确定化后才能直接执行。",
+      "related": [
+        "dfa",
+        "fa",
+        "epsilon-closure"
+      ],
+      "source": "编译原理.md · 词法分析"
+    },
+    {
+      "id": "epsilon-closure",
+      "term": "ε-闭包",
+      "abbr": "ε-closure",
+      "course": "编译原理",
+      "brief": "从某状态出发只经过 ε 弧可达的所有状态组成的集合。",
+      "detail": "子集构造法中每次求 move 后都要再求 ε-闭包，才能得到完整的 DFA 状态。",
+      "related": [
+        "nfa",
+        "subset-construction"
+      ],
+      "source": "编译原理.md · 词法分析"
+    },
+    {
+      "id": "subset-construction",
+      "term": "子集构造法",
+      "abbr": "",
+      "course": "编译原理",
+      "brief": "把 NFA 转成 DFA 的方法：DFA 的每个状态对应 NFA 状态集合的一个子集。",
+      "detail": "算法从 ε-closure(初态) 开始，对每个输入符号求 move 与 ε-闭包，直到不再产生新集合。",
+      "related": [
+        "nfa",
+        "dfa",
+        "epsilon-closure"
+      ],
+      "source": "编译原理.md · 词法分析"
+    },
+    {
+      "id": "syntax-analysis",
+      "term": "语法分析",
+      "abbr": "",
+      "course": "编译原理",
+      "brief": "按文法规则识别语法成分并检查语法正确性，生成语法分析树。",
+      "detail": "语法分析在词法分析之后进行，判断 token 序列是否符合文法。",
+      "related": [
+        "cfg",
+        "derivation",
+        "parse-tree",
+        "ll1"
+      ],
+      "source": "编译原理.md · 语法分析"
+    },
+    {
+      "id": "cfg",
+      "term": "上下文无关文法（CFG）",
+      "abbr": "CFG",
+      "course": "编译原理",
+      "brief": "由非终结符、终结符、产生式和开始符号组成的文法，产生式左部是单个非终结符。",
+      "detail": "上下文无关文法可写成四元式 G = (VT, VN, S, P)。",
+      "related": [
+        "syntax-analysis",
+        "derivation",
+        "parse-tree"
+      ],
+      "source": "编译原理.md · 语法分析"
+    },
+    {
+      "id": "derivation",
+      "term": "推导",
+      "abbr": "",
+      "course": "编译原理",
+      "brief": "从文法开始符号出发，反复用产生式右部替换非终结符，得到句子的过程。",
+      "detail": "最左推导每次替换最左边的非终结符，最右推导则替换最右边的非终结符。",
+      "related": [
+        "cfg",
+        "parse-tree"
+      ],
+      "source": "编译原理.md · 语法分析"
+    },
+    {
+      "id": "parse-tree",
+      "term": "语法分析树",
+      "abbr": "",
+      "course": "编译原理",
+      "brief": "用图形表示推导过程的树，内部结点是产生式应用，叶子标号组成句型。",
+      "detail": "同一句型若对应两棵不同的语法分析树，则说明该文法存在二义性。",
+      "related": [
+        "cfg",
+        "derivation",
+        "ambiguity"
+      ],
+      "source": "编译原理.md · 语法分析"
+    },
+    {
+      "id": "ll1",
+      "term": "LL(1) 分析法",
+      "abbr": "LL(1)",
+      "course": "编译原理",
+      "brief": "从左到右扫描输入、按最左推导、只需向前看一个输入符号的自顶向下分析方法。",
+      "detail": "要求同一非终结符各候选式的 FIRST 集不相交，含 ε 时 FOLLOW 集也不相交。",
+      "related": [
+        "syntax-analysis",
+        "cfg"
+      ],
+      "source": "编译原理.md · 语法分析"
+    },
+    {
+      "id": "ambiguity",
+      "term": "二义性",
+      "abbr": "",
+      "course": "编译原理",
+      "brief": "同一句子存在两棵不同语法分析树（两种不同推导）的文法性质。",
+      "detail": "二义性文法会让语法分析结果不唯一，通常需要改写文法或增加优先级规则。",
+      "related": [
+        "parse-tree",
+        "cfg"
+      ],
+      "source": "编译原理.md · 语法分析"
+    }
+  ]
+}

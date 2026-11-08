@@ -116,6 +116,49 @@ def extract_wikilinks(body):
     return out
 
 
+HEADING = re.compile(r"^(#{1,4})\s+(.+?)\s*#*\s*$")
+SLUG_STRIP = re.compile(r"[，。！？、：；（）【】《》「」『』“”‘’\"'!?,.:;()\[\]<>/\\|@#$%^&*+=~`]")
+
+
+def slugify(text):
+    """与 app.js 的标题 slug 规则保持一致。"""
+    s = re.sub(r"\*\*|__", "", text)
+    s = re.sub(r"[\s\u3000]+", "-", s)
+    s = SLUG_STRIP.sub("", s)
+    s = re.sub(r"-{2,}", "-", s).strip("-")
+    return s or "section"
+
+
+def extract_sections(body, title=""):
+    """只读解析正文标题，供命令面板搜索与跳转（不改正文）。"""
+    out = []
+    used = {}
+    first = True
+    for line in body.splitlines():
+        m = HEADING.match(line.strip())
+        if not m:
+            continue
+        level = len(m.group(1))
+        text = m.group(2)
+        text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text)
+        text = re.sub(r"\*\*|__|`", "", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            continue
+        if first:
+            first = False
+            if level == 1 and title and (title in text or text in title):
+                continue
+        slug = slugify(text)
+        if slug in used:
+            used[slug] += 1
+            slug = "%s-%d" % (slug, used[slug])
+        else:
+            used[slug] = 1
+        out.append({"t": text, "slug": slug})
+    return out
+
+
 def as_list(value):
     if isinstance(value, list):
         return [str(x).strip() for x in value if str(x).strip()]
@@ -192,6 +235,9 @@ def build_manifest():
         links = extract_wikilinks(body)
         if links:
             entry["links"] = links
+        sections = extract_sections(body, title)
+        if sections:
+            entry["sections"] = sections
         entries.append(entry)
 
     # 新文章（无 legacyIndex）按日期倒序在前，旧文章按 legacyIndex 稳定排序在后

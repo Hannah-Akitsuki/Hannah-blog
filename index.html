@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=18">
+<link rel="stylesheet" href="style.css?v=19">
 <script type="importmap">
 {
   "imports": {
@@ -123,6 +123,26 @@ document.documentElement.classList.add('booting');
       <aside class="music-card" id="miniMusic"></aside>
     </div>
 
+    <div class="home-study">
+      <div class="feed-head">
+        <h2>学习工具 <span class="study-en">/ STUDY</span></h2>
+      </div>
+      <div class="study-grid">
+        <a class="study-card" href="#glossary">
+          <span class="study-kicker">GLOSSARY</span>
+          <b>术语速查</b>
+          <p>按课程翻词条，支持中英文与缩写搜索；每条都能复制深链发给同学。</p>
+          <span class="study-go">打开 →</span>
+        </a>
+        <a class="study-card" href="#demos">
+          <span class="study-kicker">PLAYGROUND</span>
+          <b>交互演示</b>
+          <p>浮点拆位、TCP 状态机、排序、页面置换、流水线、NFA→DFA，一步一步看。</p>
+          <span class="study-go">打开 →</span>
+        </a>
+      </div>
+    </div>
+
     <div class="home-photos">
       <div class="feed-head">
         <h2>照片墙</h2>
@@ -183,6 +203,8 @@ document.documentElement.classList.add('booting');
         <div class="notes-mode" role="tablist" aria-label="笔记显示方式">
           <button class="seg-btn on" id="notesModeCards" type="button" role="tab" aria-selected="true">卡片</button>
           <button class="seg-btn" id="notesModeGraph" type="button" role="tab" aria-selected="false">知识图谱</button>
+          <a class="seg-btn seg-link" href="#glossary" role="tab">术语速查</a>
+          <a class="seg-btn seg-link" href="#demos" role="tab">交互演示</a>
         </div>
         <div class="cards" id="notesCards"></div>
         <div class="graph-wrap" id="graphWrap" hidden>
@@ -194,6 +216,37 @@ document.documentElement.classList.add('booting');
           <div class="graph-list" id="graphList"></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- 术语速查 -->
+  <section class="view page" id="view-glossary" data-view="glossary">
+    <div class="page-head">
+      <div class="eyebrow">GLOSSARY</div>
+      <h1>术语速查</h1>
+      <p>从现有课程笔记里摘出来的词条，按课程分组。中文、英文或缩写都能搜；点开词条可复制深链。<span id="glossaryCount"></span></p>
+    </div>
+    <div class="glossary-panel">
+      <div class="glossary-search-row">
+        <input id="glossarySearch" type="search" placeholder="搜术语、英文或缩写…" autocomplete="off" aria-label="搜索术语">
+        <button class="ghost-btn" id="glossaryClear" type="button">清空</button>
+      </div>
+      <div class="glossary-courses" id="glossaryCourses" role="tablist" aria-label="课程筛选"></div>
+    </div>
+    <div class="glossary-list" id="glossaryList"></div>
+    <div class="empty" id="glossaryEmpty" hidden>没有匹配的术语，换个关键词试试。</div>
+    <p class="tiny glossary-note">只收录笔记正文里明确讲过的术语。计算机组成原理、数据结构两门暂时没有对应笔记，标为「待补」，不编造定义。</p>
+  </section>
+
+  <!-- 交互演示 -->
+  <section class="view page" id="view-demos" data-view="demos">
+    <div class="page-head">
+      <div class="eyebrow">PLAYGROUND</div>
+      <h1>交互演示</h1>
+      <p>把课堂上的过程一步一步放慢看。每个演示都能单步、重置，并带可分享深链。</p>
+    </div>
+    <div class="demo-list" id="demoList">
+      <div class="empty">六个演示正在搭建：浮点拆位、TCP 状态机、排序、页面置换、流水线、NFA→DFA。稍后上线。</div>
     </div>
   </section>
 
@@ -386,7 +439,7 @@ document.documentElement.classList.add('booting');
 <div class="search-panel" id="searchPanel" hidden>
   <div class="search-box">
     <span class="hs-icon">⌕</span>
-    <input id="searchInput" type="search" placeholder="搜索笔记标题…" autocomplete="off">
+    <input id="searchInput" type="search" placeholder="搜索笔记、章节或术语…（Ctrl+K）" autocomplete="off">
     <button class="icon-btn" id="searchClose" aria-label="关闭">×</button>
   </div>
   <div id="searchResults"></div>
@@ -425,6 +478,13 @@ document.documentElement.classList.add('booting');
   <div id="bookDrawerBody"></div>
 </aside>
 
+<!-- 术语详情抽屉 -->
+<div class="drawer-mask" id="termMask" hidden></div>
+<aside class="book-drawer term-drawer" id="termDrawer" hidden aria-label="术语详情">
+  <button class="book-drawer-close" id="termClose" aria-label="关闭">×</button>
+  <div id="termDrawerBody"></div>
+</aside>
+
 <!-- 图片灯箱 -->
 <div class="lightbox" id="lightbox" hidden>
   <button class="lb-close" id="lbClose" aria-label="关闭">×</button>
@@ -435,7 +495,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=18"></script>
+<script src="app.js?v=19"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

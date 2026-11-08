@@ -407,6 +407,72 @@ dialog h3{font:500 19px 'Noto Serif SC';margin:0 0 8px}
 .foot-copy:hover{color:var(--green);border-color:var(--green)}
 .foot-note{font-size:11px;color:var(--muted);line-height:1.7}
 
+/* ================= 学习工具 / 术语速查 ================= */
+.home-study{max-width:1240px;margin:54px auto 0;padding:0 clamp(16px,4vw,40px)}
+.study-en{font:11px 'DM Sans',sans-serif;letter-spacing:1.6px;color:var(--muted)}
+.study-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.study-card{
+  display:flex;flex-direction:column;gap:5px;text-decoration:none;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 22px 16px;box-shadow:var(--shadow);transition:transform .22s,border-color .22s,box-shadow .22s;
+}
+.study-card:hover{transform:translateY(-3px);border-color:var(--green);box-shadow:var(--shadow-lg)}
+.study-kicker{font:10px 'DM Sans',sans-serif;letter-spacing:2.2px;color:var(--muted)}
+.study-card b{font:500 20px 'Noto Serif SC',serif}
+.study-card p{margin:2px 0 9px;font-size:12.5px;color:var(--muted);line-height:1.75}
+.study-go{font-size:12px;color:var(--green)}
+a.seg-btn{display:inline-flex;align-items:center;text-decoration:none}
+.glossary-panel{margin:0 0 18px}
+.glossary-search-row{display:flex;gap:10px;margin:0 0 12px}
+.glossary-search-row input{
+  flex:1;min-width:0;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:10px;padding:11px 15px;font-size:14px;outline:none;
+}
+.glossary-search-row input:focus{border-color:var(--green)}
+.glossary-courses{display:flex;flex-wrap:wrap;gap:8px}
+.course-chip{
+  border:1px solid var(--line);background:var(--card);color:var(--muted);
+  border-radius:999px;padding:6px 13px;font-size:12.5px;transition:.18s;
+}
+.course-chip:hover{border-color:var(--green);color:var(--green)}
+.course-chip.on{background:var(--green);border-color:var(--green);color:#fff}
+.course-chip .n{opacity:.72;margin-left:4px;font-size:11px}
+.glossary-group{margin:0 0 22px}
+.glossary-group h2{display:flex;align-items:baseline;gap:8px;font:500 16px 'Noto Serif SC',serif;margin:0 0 10px}
+.glossary-group h2 span{font:10px 'DM Sans',sans-serif;letter-spacing:1.2px;color:var(--muted)}
+.term-item{
+  display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+  border:1px solid var(--line);background:var(--card);border-radius:12px;
+  padding:12px 16px;margin:0 0 8px;color:var(--ink);font-family:inherit;transition:.18s;
+}
+.term-item:hover,.term-item.on{border-color:var(--green);background:var(--card-2)}
+.term-item.on{box-shadow:inset 3px 0 0 var(--green)}
+.term-abbr{
+  flex:0 0 auto;min-width:38px;text-align:center;margin-top:2px;
+  font:10px 'DM Sans',sans-serif;letter-spacing:.8px;color:var(--green);
+  border:1px solid var(--line);border-radius:6px;padding:2px 6px;
+}
+.term-main{min-width:0}
+.term-main b{display:block;font:500 14.5px 'Noto Serif SC',serif;line-height:1.5}
+.term-main span{display:block;font-size:12px;color:var(--muted);line-height:1.7;margin-top:2px}
+.term-pending{border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:12.5px;line-height:1.8;color:var(--muted);background:var(--card-2)}
+.glossary-note{margin:8px 0 0}
+.term-detail{margin:10px 0 0;font-size:13px;line-height:1.9;color:var(--ink)}
+.term-rel{margin:20px 0 0}
+.term-rel>b{display:block;font-size:12px;color:var(--muted);margin:0 0 8px}
+.term-related{display:flex;flex-wrap:wrap;gap:6px}
+.term-related button{
+  border:1px solid var(--line);background:var(--card-2);color:var(--ink);
+  border-radius:999px;padding:5px 12px;font-size:12px;
+}
+.term-related button:hover{border-color:var(--green);color:var(--green)}
+.term-copy{margin:20px 0 0}
+#searchResults .search-group-label{
+  padding:10px 18px 6px;background:var(--card-2);
+  font:10px 'DM Sans',sans-serif;letter-spacing:2px;color:var(--muted);
+}
+#searchResults a.on{background:var(--card-2);color:var(--green)}
+
 /* ================= 笔记知识图谱 ================= */
 .notes-mode{display:inline-flex;gap:4px;margin:0 0 18px;padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
 .seg-btn{border:none;background:transparent;color:var(--muted);font-size:12.5px;padding:6px 16px;border-radius:999px;transition:.2s}
@@ -465,6 +531,11 @@ dialog h3{font:500 19px 'Noto Serif SC';margin:0 0 8px}
 }
 @media(max-width:700px){
   .now-grid{grid-template-columns:1fr}
+  .study-grid{grid-template-columns:1fr}
+  .glossary-search-row{flex-wrap:wrap}
+  .glossary-search-row input{flex:1 1 100%}
+  .course-chip{min-height:40px;display:inline-flex;align-items:center}
+  .term-drawer .book-drawer-close{width:40px;height:40px}
   .graph-canvas,.graph-bar{display:none}
   .graph-list{display:flex;flex-direction:column;gap:10px}
 }
