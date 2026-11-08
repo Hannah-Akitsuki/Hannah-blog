@@ -23,6 +23,7 @@ content:
     path: articles
     format: yaml-frontmatter
     filename: "{primary}.md"
+    exclude: ["操作系统_pdf_new.md", "README.md"]
     view:
       fields: [title, date, category, public]
       primary: title
