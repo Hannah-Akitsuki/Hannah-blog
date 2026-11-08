@@ -1,0 +1,26 @@
+{
+  "site": {
+    "brandMark": "寒",
+    "brandName": "寒鹤",
+    "brandSub": "HANHE BLOG",
+    "heroTitle": "寒鹤",
+    "heroSubtitle": "鹤鸣于九皋，声闻于天。",
+    "heroEyebrow": "PERSONAL NOTES & TOOLS",
+    "avatar": "assets/avatar.jpg",
+    "heroImage": "assets/hero.jpg",
+    "nickname": "寒鹤",
+    "signature": "记录课堂与生活，也做一点小工具。"
+  },
+  "giscus": {
+    "enabled": false,
+    "repo": "Hannah-Akitsuki/Hannah-blog",
+    "repoId": "",
+    "category": "Announcements",
+    "categoryId": "",
+    "mapping": "pathname",
+    "reactionsEnabled": "1",
+    "emitMetadata": "0",
+    "inputPosition": "top",
+    "lang": "zh-CN"
+  }
+}

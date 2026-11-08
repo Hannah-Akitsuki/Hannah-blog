@@ -1,4 +1,299 @@
-﻿<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f3ee"><title>纸间 · 学习档案</title><link rel="stylesheet" href="style.css?v=2"></head><body><header><a class="brand" href="#"><span class="brand-mark">知</span><span>纸间<small>STUDY JOURNAL</small></span></a><button id="searchOpen">⌕　搜索笔记　<kbd>Ctrl K</kbd></button><nav><a href="#home">首页</a><a href="#library">学习档案</a><a href="#about">关于</a></nav><div class="avatar">H</div></header><section class="hero" id="home"><div class="hero-copy"><div class="eyebrow">PERSONAL KNOWLEDGE LIBRARY　/　2026</div><h1>把学过的，<br><em>慢慢变成自己的。</em></h1><p>课程笔记、复习提纲与灵感片段。<br>在这里，给每一次认真学习留个位置。</p><a href="#library" class="hero-cta">探索学习档案 <span>↘</span></a></div><div class="hero-art"><div class="sun"></div><div class="orbit o1"></div><div class="orbit o2"></div><div class="paper">NOTES<br><b>整理 · 理解 · 记住</b><span>EST. 2026</span></div><div class="float-tag">✳ 学习是慢一点的抵达</div></div><div class="hero-index">01 / 08　　A PERSONAL STUDY JOURNAL</div></section><div class="layout" id="library"><aside><div class="side-title">学习档案 <span>08</span></div><div id="nav"></div><div class="hint">Markdown 写作 · 图片支持<br>可下载编辑后的文章</div></aside><main><div class="section-head"><div><div class="eyebrow">THE COLLECTION</div><h2>课程笔记<span> / Library</span></h2></div><span class="collection-count">08 篇笔记</span></div><div class="toolbar"><span id="status">选择一篇笔记开始阅读</span><div><button id="edit">编辑文章</button><button id="save" hidden>下载 Markdown</button><button id="cancel" hidden>取消</button></div></div><div class="welcome" id="welcome"><section class="hub"><div class="hub-intro"><div class="welcome-label">寒鹤 · HANHE</div><h2>你好，我是寒鹤</h2><p>这是我的个人博客，收集学习途中整理的笔记与小工具。鹤鸣于九皋，声闻于天。</p><a id="introLink" href="#">阅读完整介绍 →</a></div><div class="hub-tiles"><a class="hub-tile" id="tileFzu"><b>FZU 课程笔记</b><span>编译原理 · 系统架构 · 软件工程 · 操作系统 · 计算机网络</span><i>进入 →</i></a><div class="hub-tile muted"><b>其他笔记整理</b><span>整理中，敬请期待。</span></div><a class="hub-tile" href="https://hannah-akitsuki.github.io/plot-editor/" target="_blank" rel="noopener"><b>开发工具</b><span>Plot Editor —— 浏览器里的绘图编辑器</span><i>直达 ↗</i></a></div></section><div id="cards" class="cards" hidden></div></div><article id="content" hidden></article><section id="writer" hidden><div class="writer-tools"><span>Markdown 编辑器</span><button id="insertImage">插入图片</button><input id="imageFile" type="file" accept="image/*" hidden></div><div class="writer-grid"><textarea id="source" spellcheck="false"></textarea><div id="preview" class="preview"></div></div><p class="writer-note">粘贴图片会生成本地预览；下载文章后，请将图片也上传到仓库并改用相对路径（例如 <code>images/photo.png</code>），才能在线显示。</p></section><div class="bottom" id="about">收集知识，也收集一路走来的自己　·　MADE WITH CARE</div></main><aside class="toc"><b>本篇目录</b><div id="toc"></div></aside></div><dialog id="search"><div class="search-bar"><input id="query" placeholder="搜索笔记标题，回车外的点击结果即可跳转"><button id="searchClose" title="关闭">×</button></div><div id="results"></div></dialog><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="app.js?v=7"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寒鹤 · 个人博客</title>
+<meta name="description" content="寒鹤的个人博客：课程笔记、阅读归档、照片墙与自制小工具。">
+<meta name="theme-color" content="#f7f6f2">
+<script>
+/* 主题初始化：先于渲染执行，避免明暗闪烁 */
+(function(){try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}})();
+</script>
+<link rel="stylesheet" href="style.css?v=8">
+</head>
+<body>
 
-<!-- site assets are versioned to avoid stale browser cache -->
+<header class="topbar">
+  <a class="brand" href="#home">
+    <span class="brand-mark" id="brandMark">寒</span>
+    <span class="brand-text"><b id="brandName">寒鹤</b><small id="brandSub">HANHE BLOG</small></span>
+  </a>
+  <nav class="main-nav" id="mainNav">
+    <a href="#home">首页</a>
+    <a href="#links">个人工具Links</a>
+    <a href="#notes">个人笔记</a>
+    <a href="#archive">归档</a>
+    <a href="#music">音乐</a>
+    <a href="#photos">照片墙</a>
+    <a href="#diary">个人日记</a>
+    <a href="#guestbook">留言榜</a>
+    <a href="#about">关于</a>
+  </nav>
+  <div class="top-actions">
+    <button class="icon-btn" id="searchOpen" title="搜索（Ctrl+K）" aria-label="搜索">⌕</button>
+    <button class="icon-btn" id="themeToggle" title="切换明暗" aria-label="切换明暗">☾</button>
+    <button class="icon-btn menu-btn" id="menuToggle" title="菜单" aria-label="菜单">☰</button>
+  </div>
+</header>
 
+<div class="drawer-mask" id="drawerMask" hidden></div>
+
+<section class="hero" id="hero">
+  <div class="hero-media"><img id="heroImg" alt=""></div>
+  <div class="hero-veil"></div>
+  <div class="hero-inner">
+    <p class="hero-eyebrow" id="heroEyebrow">PERSONAL NOTES &amp; TOOLS</p>
+    <h1 id="heroTitle">寒鹤</h1>
+    <p class="hero-sub" id="heroSub"></p>
+    <div class="hero-search">
+      <span class="hs-icon">⌕</span>
+      <input id="heroSearch" type="search" placeholder="搜索笔记标题、关键词…" autocomplete="off">
+    </div>
+  </div>
+</section>
+
+<main id="app">
+
+  <!-- 首页 -->
+  <section class="view" id="view-home" data-view="home">
+    <div class="home-grid">
+      <aside class="profile-card">
+        <div class="avatar-wrap">
+          <img id="profileAvatar" class="profile-avatar" alt="个人头像">
+        </div>
+        <h3 id="profileName">寒鹤</h3>
+        <p id="profileSign"></p>
+        <div class="profile-actions">
+          <a class="chip" href="#about">关于我</a>
+          <a class="chip" href="#guestbook">留言</a>
+        </div>
+        <button class="ghost-btn" id="customizeBtn">换头像 / 换背景</button>
+        <p class="tiny">默认读取 config.json</p>
+      </aside>
+
+      <div class="feed">
+        <div class="feed-head">
+          <h2>最新笔记</h2>
+          <a href="#notes">全部 →</a>
+        </div>
+        <div class="cards" id="homeCards"></div>
+      </div>
+
+      <aside class="music-card" id="miniMusic"></aside>
+    </div>
+
+    <div class="home-photos">
+      <div class="feed-head">
+        <h2>照片墙</h2>
+        <a href="#photos">全部 →</a>
+      </div>
+      <div class="photo-grid small" id="homePhotos"></div>
+    </div>
+  </section>
+
+  <!-- 个人笔记 -->
+  <section class="view" id="view-notes" data-view="notes">
+    <div class="layout">
+      <aside class="side">
+        <div class="side-title">个人笔记 <span id="notesCount">00</span></div>
+        <div id="notesNav"></div>
+      </aside>
+      <div class="main-col">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">THE COLLECTION</div>
+            <h2>课程笔记 <span>/ Notes</span></h2>
+          </div>
+          <span class="collection-count" id="notesTotal">00 篇笔记</span>
+        </div>
+        <div class="cards" id="notesCards"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 文章 -->
+  <section class="view" id="view-article" data-view="article">
+    <div class="layout">
+      <aside class="side">
+        <div class="side-title">个人笔记 <span id="articleCount"></span></div>
+        <div id="articleNav"></div>
+      </aside>
+      <div class="main-col">
+        <div class="toolbar">
+          <span id="status">选择一篇笔记开始阅读</span>
+          <div>
+            <button id="edit">编辑文章</button>
+            <button id="save" hidden>下载 Markdown</button>
+            <button id="cancel" hidden>取消</button>
+          </div>
+        </div>
+        <article id="content" hidden></article>
+        <section id="writer" hidden>
+          <div class="writer-tools">
+            <span>Markdown 编辑器</span>
+            <button id="insertImage">插入图片</button>
+            <input id="imageFile" type="file" accept="image/*" hidden>
+          </div>
+          <div class="writer-grid">
+            <textarea id="source" spellcheck="false"></textarea>
+            <div id="preview" class="preview"></div>
+          </div>
+          <p class="writer-note">粘贴图片会生成本地预览；下载文章后，请将图片也上传到仓库并改用相对路径（例如 <code>images/photo.png</code>），才能在线显示。</p>
+        </section>
+      </div>
+      <aside class="toc-col">
+        <b>本篇目录</b>
+        <div id="toc"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 个人工具 Links -->
+  <section class="view page" id="view-links" data-view="links">
+    <div class="page-head">
+      <div class="eyebrow">LINKS</div>
+      <h1>个人工具 Links</h1>
+      <p>常用站点与自建工具。列表由 <code>data/links.json</code> 驱动，改文件即可增删。</p>
+    </div>
+    <div class="link-grid" id="linkGrid"></div>
+    <details class="howto">
+      <summary>怎么编辑这个列表</summary>
+      <p>打开仓库里的 <code>data/links.json</code>，按现有格式添加一条：</p>
+<pre><code>{
+  "name": "显示名称",
+  "url": "https://example.com",
+  "desc": "一句话说明",
+  "tag": "分类"
+}</code></pre>
+      <p>保存后提交推送即可，无需改代码。</p>
+    </details>
+  </section>
+
+  <!-- 归档 -->
+  <section class="view page" id="view-archive" data-view="archive">
+    <div class="page-head">
+      <div class="eyebrow">ARCHIVE</div>
+      <h1>归档</h1>
+      <p>按年份倒序排列。日期取自 <code>manifest.json</code> 的 <code>date</code> 字段。</p>
+    </div>
+    <div id="archiveList"></div>
+  </section>
+
+  <!-- 音乐 -->
+  <section class="view page" id="view-music" data-view="music">
+    <div class="page-head">
+      <div class="eyebrow">MUSIC</div>
+      <h1>音乐</h1>
+      <p>纯本地播放器，歌单来自 <code>data/music.json</code>，音频文件放在仓库里。</p>
+    </div>
+    <div class="player" id="player"></div>
+  </section>
+
+  <!-- 照片墙 -->
+  <section class="view page" id="view-photos" data-view="photos">
+    <div class="page-head">
+      <div class="eyebrow">GALLERY</div>
+      <h1>照片墙</h1>
+      <p>来自站内 <code>images/</code> 目录，共 <b id="photoTotal">0</b> 张。点击可放大。新增图片后运行 <code>python tools/build_photos.py</code> 更新索引。</p>
+    </div>
+    <div class="photo-grid" id="photoGrid"></div>
+    <div class="more-wrap"><button class="ghost-btn" id="photoMore" hidden>加载更多</button></div>
+  </section>
+
+  <!-- 个人日记 -->
+  <section class="view page" id="view-diary" data-view="diary">
+    <div class="page-head">
+      <div class="eyebrow">DIARY</div>
+      <h1>个人日记</h1>
+      <p>只有标记为 <code>public: true</code> 的条目才会被构建进页面。</p>
+    </div>
+    <div class="notice warn">
+      <b>隐私边界（请先读）</b>
+      <p>GitHub Pages 是公开站点，写进仓库的文件任何人都能下载查看，包括被页面隐藏的文件。所以：</p>
+      <ul>
+        <li>私密日记不要提交到仓库（<code>data/diary-all.json</code> 已被 <code>.gitignore</code> 忽略）；</li>
+        <li>构建期过滤：<code>python tools/filter_diary.py</code> 只会把 <code>public: true</code> 的条目写进 <code>data/diary.json</code>；</li>
+        <li>页面下方的「本地草稿」只存在你这台电脑的浏览器里，别人看不到，也不会上传——要长期保存请导出 Markdown。</li>
+      </ul>
+    </div>
+    <div id="diaryList" class="diary-list"></div>
+    <div class="local-draft">
+      <div class="feed-head"><h2>仅自己看 · 本地草稿</h2><span class="tiny">存在浏览器 localStorage</span></div>
+      <textarea id="draftBox" placeholder="在这里写点不想公开的东西……（只保存在本机浏览器）"></textarea>
+      <div class="draft-actions">
+        <button class="ghost-btn" id="draftSave">保存到本地</button>
+        <button class="ghost-btn" id="draftExport">导出 Markdown</button>
+        <button class="ghost-btn" id="draftClear">清空</button>
+        <span class="tiny" id="draftStatus"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 留言榜 -->
+  <section class="view page" id="view-guestbook" data-view="guestbook">
+    <div class="page-head">
+      <div class="eyebrow">GUESTBOOK</div>
+      <h1>留言榜</h1>
+      <p>基于 GitHub Discussions 的 Giscus 评论系统，与本站同源同账号，无需额外后端。</p>
+    </div>
+    <div id="giscusWrap"></div>
+  </section>
+
+  <!-- 关于 -->
+  <section class="view page" id="view-about" data-view="about">
+    <div class="page-head">
+      <div class="eyebrow">ABOUT</div>
+      <h1>关于</h1>
+    </div>
+    <div id="aboutBody" class="about-body"></div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <span>© <span id="year">2026</span> 寒鹤 · 用 Markdown 记录</span>
+  <span>GitHub Pages · 纯静态</span>
+</footer>
+
+<!-- 搜索面板 -->
+<div class="search-panel" id="searchPanel" hidden>
+  <div class="search-box">
+    <span class="hs-icon">⌕</span>
+    <input id="searchInput" type="search" placeholder="搜索笔记标题…" autocomplete="off">
+    <button class="icon-btn" id="searchClose" aria-label="关闭">×</button>
+  </div>
+  <div id="searchResults"></div>
+</div>
+
+<!-- 换头像 / 换背景 -->
+<dialog id="customize">
+  <h3>换头像 / 换背景</h3>
+  <p class="tiny">两种方式，效果范围不同：</p>
+  <div class="cust-block">
+    <b>① 永久（所有人可见）</b>
+    <p class="tiny">把新图覆盖仓库里的 <code>assets/avatar.jpg</code> 或 <code>assets/hero.jpg</code>，再改 <code>config.json</code> 里的路径（换成别的文件名时）。提交推送后全站生效。</p>
+  </div>
+  <div class="cust-block">
+    <b>② 临时预览（只在本浏览器）</b>
+    <p class="tiny">选一张图试试效果，只存在 localStorage，别人看不到，也不会改变仓库文件。</p>
+    <label class="file-row">头像 <input type="file" id="pickAvatar" accept="image/*"></label>
+    <label class="file-row">背景 <input type="file" id="pickHero" accept="image/*"></label>
+  </div>
+  <div class="cust-actions">
+    <button class="ghost-btn" id="custReset">恢复默认</button>
+    <button class="primary-btn" id="custClose">完成</button>
+  </div>
+  <p class="tiny" id="custStatus"></p>
+</dialog>
+
+<!-- 图片灯箱 -->
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lb-close" id="lbClose" aria-label="关闭">×</button>
+  <img id="lightboxImg" alt="">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="app.js?v=8"></script>
+</body>
+</html>
