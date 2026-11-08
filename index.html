@@ -12,7 +12,15 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.min.js",
+    "three/addons/": "./vendor/three/"
+  }
+}
+</script>
 </head>
 <body>
 
@@ -51,6 +59,11 @@ document.documentElement.classList.add('booting');
 
 <section class="hero" id="hero">
   <div class="hero-media"><img id="heroImg" alt=""></div>
+  <div class="hero-3d" id="hero3d" data-scene="hero" hidden>
+    <div class="hero-sky" aria-hidden="true"></div>
+    <img class="hero-poster" id="heroPoster" alt="纸鹤与浮空地形的三维静帧" decoding="async">
+    <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true" hidden></canvas>
+  </div>
   <div class="hero-veil"></div>
   <div class="hero-inner">
     <p class="hero-eyebrow" id="heroEyebrow">PERSONAL NOTES &amp; TOOLS</p>
@@ -209,6 +222,11 @@ document.documentElement.classList.add('booting');
       <h1>音乐</h1>
       <p>随手放几首正在听的歌。</p>
     </div>
+    <div class="scene-3d" data-scene="music">
+      <div class="scene-sky" aria-hidden="true"></div>
+      <img class="scene-poster" src="assets/3d/music.webp" alt="低模黑胶唱片与唱臂的三维静帧" width="1200" height="760" loading="lazy" decoding="async">
+      <canvas class="scene-canvas" aria-hidden="true" hidden></canvas>
+    </div>
     <div class="player" id="player"></div>
   </section>
 
@@ -218,6 +236,11 @@ document.documentElement.classList.add('booting');
       <div class="eyebrow">GALLERY</div>
       <h1>照片墙</h1>
       <p>来自独立相册目录 <code>photos/</code>，共 <b id="photoTotal">0</b> 张。点击可放大。<span class="owner-only">新增照片后运行 <code>python tools/build_photos.py</code> 更新索引。</span></p>
+    </div>
+    <div class="scene-3d" data-scene="wall">
+      <div class="scene-sky" aria-hidden="true"></div>
+      <img class="scene-poster" src="assets/3d/wall.webp" alt="漂浮空相框墙的三维静帧" width="1200" height="760" loading="lazy" decoding="async">
+      <canvas class="scene-canvas" aria-hidden="true" hidden></canvas>
     </div>
     <div class="photo-grid" id="photoGrid"></div>
     <div class="more-wrap"><button class="ghost-btn" id="photoMore" hidden>加载更多</button></div>
@@ -278,6 +301,7 @@ document.documentElement.classList.add('booting');
 <footer class="site-foot">
   <span>© <span id="year">2026</span> 寒鹤 · 用 Markdown 记录</span>
   <span>GitHub Pages · 纯静态</span>
+  <span><a href="CREDITS.md">素材来源与许可</a></span>
 </footer>
 
 <!-- 搜索面板 -->
@@ -323,6 +347,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=11"></script>
+<script src="app.js?v=12"></script>
+<script type="module" src="scene3d.js?v=12"></script>
 </body>
 </html>

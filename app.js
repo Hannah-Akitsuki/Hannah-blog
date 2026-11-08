@@ -195,6 +195,9 @@ async function bootstrap() {
   renderLinks();
   renderMusic();
   renderPhotos();
+  /* 把照片数据交给 3D 相框墙（scene3d.js 按需使用） */
+  window.HanheBlog = { photos: state.photos };
+  window.dispatchEvent(new Event('hanhe:photos'));
   renderDiary();
   initArticleTools();
   route();
@@ -916,7 +919,7 @@ function initCustomize() {
     const data = await readFile(f);
     localStorage.setItem('custom:hero', data);
     $('#heroImg').src = data;
-    $('#custStatus').textContent = '背景已在本浏览器生效；要发布请替换 assets/hero.jpg。';
+    $('#custStatus').textContent = '背景已在本浏览器生效；要发布请替换 assets/hero.webp。';
   });
   $('#custReset').addEventListener('click', () => {
     localStorage.removeItem('custom:avatar');

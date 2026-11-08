@@ -20,7 +20,7 @@ import os
 import sys
 
 import bpy
-from mathutils import Euler
+from mathutils import Euler, Matrix, Vector
 
 
 # ---------------------------------------------------------------- 基础工具
@@ -123,6 +123,26 @@ def add_ico(name, loc, scale, mat, rot=(0, 0, 0), subdiv=1):
     return ob
 
 
+def add_cone(name, loc, r1, r2, depth, mat, rot=(0, 0, 0), verts=8):
+    bpy.ops.mesh.primitive_cone_add(vertices=verts, radius1=r1, radius2=r2, depth=depth, location=loc)
+    ob = bpy.context.active_object
+    ob.name = name
+    ob.rotation_euler = Euler(rot)
+    ob.data.materials.append(mat)
+    for p in ob.data.polygons:
+        p.use_smooth = False
+    return ob
+
+
+def paint_faces(ob, mats, pick):
+    """按面法线给同一个网格分配不同材质（用来做绿顶/土色岩体）"""
+    ob.data.materials.clear()
+    for m in mats:
+        ob.data.materials.append(m)
+    for p in ob.data.polygons:
+        p.material_index = pick(p.normal)
+
+
 def add_cylinder(name, loc, radius, depth, mat, rot=(0, 0, 0), verts=64):
     bpy.ops.mesh.primitive_cylinder_add(vertices=verts, radius=radius, depth=depth, location=loc)
     ob = bpy.context.active_object
@@ -132,6 +152,31 @@ def add_cylinder(name, loc, radius, depth, mat, rot=(0, 0, 0), verts=64):
     for p in ob.data.polygons:
         p.use_smooth = False
     return ob
+
+
+def add_rod(name, p0, p1, radius, mat, verts=12):
+    """两点之间的圆柱（唱臂、连杆等）"""
+    a, b = Vector(p0), Vector(p1)
+    d = b - a
+    ob = add_cylinder(name, tuple((a + b) / 2.0), radius, d.length, mat, verts=verts)
+    ob.rotation_euler = d.to_track_quat("Z", "Y").to_euler()
+    return ob
+
+
+def add_planar_uv(ob):
+    """给平面网格加 UV（X→u，Z→v），前端才能把照片贴上去"""
+    me = ob.data
+    me.uv_layers.new(name="UVMap")
+    ax = [v.co.x for v in me.vertices]
+    az = [v.co.z for v in me.vertices]
+    x0, x1, z0, z1 = min(ax), max(ax), min(az), max(az)
+    uv = me.uv_layers.active.data
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            co = me.vertices[me.loops[li].vertex_index].co
+            u = 0.0 if x1 == x0 else (co.x - x0) / (x1 - x0)
+            v = 0.0 if z1 == z0 else (co.z - z0) / (z1 - z0)
+            uv[li].uv = (u, v)
 
 
 def add_camera(loc, look_at, lens=50.0):
@@ -217,94 +262,126 @@ def palette():
         "sage": make_mat("Sage", "#93A890", 0.85),
         "sage_dark": make_mat("SageDark", "#6E8470", 0.85),
         "sand": make_mat("Sand", "#D9C4A3", 0.9),
-        "mist": make_mat("Mist", "#E9E5D8", 0.95),
+        "mist": make_mat("Mist", "#F7F4EA", 1.0),
         "brass": make_mat("Brass", "#C79A55", 0.34, metal=0.75),
         "vinyl": make_mat("Vinyl", "#26332D", 0.36, metal=0.15),
-        "clay": make_mat("Clay", "#C0633F", 0.7),
-        "wood": make_mat("Wood", "#B78E63", 0.72),
+        "clay": make_mat("Clay", "#B4684C", 0.72),
+        "wood": make_mat("Wood", "#C9B69B", 0.74),
         "matboard": make_mat("MatBoard", "#F8F4E9", 0.95),
         "glow": make_mat("Glow", "#F6E3C2", 0.9, emit="#F6E3C2", emit_strength=1.2),
     }
 
 
 # ---------------------------------------------------------------- 场景一：首页 hero
+def cloud_cluster(name, loc, parts, mats, rot=(0, 0, 0)):
+    """由几个压扁的低模球拼成一朵云，join 成一个物体便于整体漂移"""
+    from mathutils import Matrix
+    spheres = []
+    for (dx, dy, dz, sx, sy, sz) in parts:
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1.0, location=(dx, dy, dz))
+        ob = bpy.context.active_object
+        # 先把非等比缩放烘进网格，join 时才不会被主子物体的缩放带偏
+        ob.data.transform(Matrix.Diagonal((sx, sy, sz, 1.0)))
+        ob.data.materials.append(mats["mist"])
+        for p in ob.data.polygons:
+            p.use_smooth = True   # 云做平滑着色，避免看成石头
+        spheres.append(ob)
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in spheres:
+        ob.select_set(True)
+    bpy.context.view_layer.objects.active = spheres[0]
+    bpy.ops.object.join()
+    cloud = bpy.context.active_object
+    cloud.name = name
+    cloud.location = loc
+    cloud.rotation_euler = Euler(rot)
+    return cloud
+
+
+def floating_island(name, loc, radius, depth, mats, rot=(0, 0, 0)):
+    """经典浮空岛：多边形草顶 + 锥形岩体，比压扁的球更像地形"""
+    n = 9
+    verts = [(0.0, 0.0, 0.16)]
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        r = radius * (0.84 if i % 2 else 1.0)
+        verts.append((math.cos(a) * r, math.sin(a) * r, 0.0))
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        r = radius * (0.78 if i % 2 else 0.93)
+        verts.append((math.cos(a) * r, math.sin(a) * r, -0.10))
+    verts.append((0.0, 0.0, -depth))
+    apex = len(verts) - 1
+    faces, fmats = [], []
+    for i in range(n):
+        j = (i + 1) % n
+        faces.append((0, 1 + i, 1 + j)); fmats.append(1)                       # 草顶
+        faces.append((1 + i, 1 + j, 1 + n + j)); fmats.append(0)               # 土皮
+        faces.append((1 + i, 1 + n + j, 1 + n + i)); fmats.append(0)
+        faces.append((1 + n + i, 1 + n + j, apex)); fmats.append(2)            # 岩体
+    ob = add_mesh(name, verts, faces, [mats["sand"], mats["sage"], mats["sage_dark"]], fmats)
+    ob.location = loc
+    ob.rotation_euler = Euler(rot)
+    return ob
+
+
 def build_hero(mats):
-    # —— 纸鹤（折纸低模，机身 + 展开双翼 + 长颈 + 尾）——
+    # —— 纸鹤：八面体机身 + 折面双翼 + 锥形长颈 / 喙 / 尾 ——
     P = mats["paper"]
-    S = mats["paper_shade"]
     body_v = [
-        (0.00, 0.62, 0.10), (-0.26, 0.02, 0.04), (0.26, 0.02, 0.04),
-        (0.00, -0.58, 0.14), (0.00, 0.00, -0.16),
+        (0.00, 0.62, 0.08), (-0.30, 0.05, -0.04), (0.30, 0.05, -0.04),
+        (0.00, -0.68, 0.16), (0.00, -0.02, 0.30), (0.00, -0.02, -0.20),
     ]
-    body_f = [(0, 1, 3), (0, 3, 2), (0, 4, 1), (0, 2, 4), (3, 4, 2), (3, 1, 4)]
+    body_f = [(0, 1, 4), (0, 4, 2), (3, 4, 1), (3, 2, 4), (0, 5, 1), (0, 2, 5), (3, 5, 1), (3, 2, 5)]
     body = add_mesh("CraneBody", body_v, body_f, [P])
 
+    # 左翼：四个三角面构成带折痕的斜上掠翼
     wing_v = [
-        (0.00, 0.34, 0.08), (0.00, -0.28, 0.12),
-        (-1.30, -0.18, 0.62), (-1.12, 0.42, 0.42),
+        (-0.16, 0.34, 0.26), (-0.16, -0.30, 0.22), (-0.78, 0.02, 0.70),
+        (-1.62, 0.26, 0.92), (-1.35, -0.40, 0.80),
     ]
-    wing_f = [(0, 1, 2), (0, 2, 3)]
-    wing_l = add_mesh("CraneWingL", wing_v, wing_f, [S])
-    wing_r = add_mesh("CraneWingR", [(-x, y, z) for (x, y, z) in wing_v], [(0, 2, 1), (0, 3, 2)], [S])
+    wing_f = [(0, 1, 2), (0, 2, 3), (1, 4, 2), (2, 4, 3)]
+    wing_l = add_mesh("CraneWingL", wing_v, wing_f, [P])
+    wing_r = add_mesh("CraneWingR", [(-x, y, z) for (x, y, z) in wing_v],
+                      [(0, 2, 1), (0, 3, 2), (1, 2, 4), (2, 3, 4)], [P])
 
-    neck_v = [
-        (0.10, 0.56, 0.10), (-0.10, 0.56, 0.10),
-        (-0.035, 0.95, 0.72), (0.035, 0.95, 0.72),
-    ]
-    neck_f = [(0, 1, 2), (0, 2, 3)]
-    neck = add_mesh("CraneNeck", neck_v, neck_f, [P])
+    neck = add_cone("CraneNeck", (0.0, 0.60, 0.58), 0.14, 0.075, 0.86, P,
+                    rot=(math.radians(-35), 0, 0), verts=6)
+    head = add_ico("CraneHead", (0.0, 0.86, 0.94), (0.15, 0.16, 0.14), P, subdiv=1)
+    beak = add_cone("CraneBeak", (0.0, 1.05, 0.92), 0.055, 0.004, 0.28, mats["sage_dark"],
+                    rot=(math.radians(-90), 0, 0), verts=6)
+    tail = add_cone("CraneTail", (0.0, -1.02, 0.40), 0.10, 0.012, 1.05, P,
+                    rot=(math.radians(66), 0, 0), verts=6)
 
-    head_v = [
-        (0.035, 0.95, 0.72), (-0.035, 0.95, 0.72),
-        (0.00, 1.16, 0.62), (0.00, 1.02, 0.84),
-    ]
-    head_f = [(0, 1, 2), (0, 2, 3), (0, 3, 1)]
-    head = add_mesh("CraneHead", head_v, head_f, [S])
-
-    tail_v = [
-        (-0.09, -0.54, 0.10), (0.09, -0.54, 0.10),
-        (0.03, -1.02, 0.52), (-0.03, -1.02, 0.52),
-    ]
-    tail_f = [(0, 1, 2), (0, 2, 3)]
-    tail = add_mesh("CraneTail", tail_v, tail_f, [P])
-
-    crane_parts = [body, wing_l, wing_r, neck, head, tail]
-    for part in crane_parts:
+    crane_parts = [body, wing_l, wing_r, neck, head, beak, tail]
+    for part in crane_parts[1:]:
         part.parent = body
-    body.location = (-1.75, 0.0, 1.05)
-    body.rotation_euler = Euler((0.06, 0.10, -0.10))
-    body.scale = (1.18, 1.18, 1.18)
+    body.location = (-1.95, 0.0, 1.13)
+    body.rotation_euler = Euler((0.05, 0.16, -0.14))
+    body.scale = (1.02, 1.02, 1.02)
 
-    # —— 云带（三层低模）——
-    cloud_objs = [
-        add_ico("CloudA", (-3.30, 1.10, 0.02), (1.55, 0.62, 0.28), mats["mist"], (0.0, 0.2, 0.1)),
-        add_ico("CloudB", (0.35, 2.30, -0.35), (1.85, 0.55, 0.22), mats["mist"], (0.0, -0.1, 0.0)),
-        add_ico("CloudC", (3.05, 0.55, -0.62), (1.30, 0.70, 0.20), mats["mist"], (0.0, 0.1, -0.05)),
-    ]
+    # —— 三层云带（多球堆叠，避免压成薄片）——
+    cloud_a = cloud_cluster("CloudA", (-3.35, 1.15, -0.05),
+                            [(0, 0, 0, 0.90, 0.55, 0.42), (0.95, 0.03, -0.02, 0.76, 0.48, 0.36),
+                             (-0.95, -0.02, -0.04, 0.72, 0.45, 0.34), (0.34, 0.08, 0.30, 0.70, 0.42, 0.32),
+                             (-0.36, 0.05, 0.28, 0.64, 0.40, 0.30)], mats, (0, 0.18, 0.06))
+    cloud_b = cloud_cluster("CloudB", (2.05, 1.95, -1.25),
+                            [(0, 0, 0, 1.05, 0.52, 0.40), (1.05, 0.03, -0.02, 0.86, 0.46, 0.34),
+                             (-1.02, 0.02, -0.03, 0.82, 0.44, 0.32), (0.40, 0.07, 0.26, 0.76, 0.40, 0.28),
+                             (-0.42, 0.05, 0.24, 0.70, 0.38, 0.27)], mats, (0, -0.10, 0))
+    # —— 浮空地形 ——
+    island = floating_island("Island", (2.85, 0.55, -0.35), 0.82, 0.58, mats, (0.05, 0, 0.1))
+    shard1 = floating_island("ShardA", (-0.65, 0.30, -1.55), 0.24, 0.20, mats, (0.2, 0.3, 0.4))
+    shard2 = floating_island("ShardB", (1.35, 0.40, -2.10), 0.15, 0.13, mats, (0.1, 0.2, 0.6))
 
-    # —— 浮空地形：绿顶 + 土色岩体 + 两个碎块 ——
-    rock_v = [
-        (-0.95, 0.10, -0.48), (0.92, 0.15, -0.52), (1.10, -0.30, -0.10),
-        (-1.05, -0.25, -0.05), (0.05, 0.20, 0.42), (0.10, -0.55, 0.10),
-    ]
-    rock_f = [(0, 1, 4), (1, 2, 4), (2, 3, 4), (3, 0, 4), (1, 0, 5), (2, 1, 5), (3, 2, 5), (0, 3, 5)]
-    island = add_mesh("Island", rock_v, rock_f, [mats["sand"]], [0, 0, 0, 0, 1, 1, 1, 1])
-    island.location = (2.35, 0.55, -0.55)
-    island.rotation_euler = Euler((0.0, 0.0, 0.12))
+    geoms = crane_parts + [cloud_a, cloud_b, island, shard1, shard2]
 
-    cap = add_ico("IslandCap", (2.35, 0.57, -0.30), (0.92, 0.80, 0.16), mats["sage"], (0.0, 0.0, 0.12))
-    cap.scale = (0.92, 0.80, 0.16)
-
-    shard1 = add_ico("ShardA", (-0.25, 0.20, -1.30), (0.22, 0.18, 0.12), mats["sage_dark"], (0.4, 0.2, 0))
-    shard2 = add_ico("ShardB", (1.55, 0.35, -1.85), (0.14, 0.12, 0.10), mats["sand"], (0.2, 0.5, 0))
-
-    geoms = [body] + crane_parts[1:] + cloud_objs + [island, cap, shard1, shard2]
-
-    world_ambient(0.45, "#FBFAF4")
-    add_area("Key", (-4.5, -5.0, 5.0), 900, 5.0, (1.0, 0.97, 0.92), (-1.2, 0.2, 0.9))
-    add_area("Fill", (5.0, -3.5, 2.6), 320, 6.0, (0.92, 0.96, 1.0), (0.5, 0, 0.6))
-    add_area("Rim", (1.5, 6.0, 4.5), 500, 4.0, (1.0, 0.95, 0.85), (0, 0, 0.5))
-    add_camera((0.0, -13.2, 1.10), (0.0, 0.0, 1.02), 52.0)
+    world_ambient(0.55, "#FBFAF4")
+    add_area("Key", (-4.5, -5.0, 5.0), 260, 5.0, (1.0, 0.97, 0.92), (-1.2, 0.2, 0.9))
+    add_area("Fill", (5.0, -3.5, 2.6), 90, 6.0, (0.92, 0.96, 1.0), (0.5, 0, 0.6))
+    add_area("Rim", (1.5, 6.0, 4.5), 140, 4.0, (1.0, 0.95, 0.85), (0, 0, 0.5))
+    bpy.context.scene.view_settings.exposure = -0.35
+    add_camera((0.0, -13.4, 3.85), (0.0, 0.0, 0.95), 52.0)
     return geoms, (1600, 700)
 
 
@@ -318,30 +395,39 @@ def build_music(mats):
     label = add_cylinder("Label", (0, 0, -0.168), 0.42, 0.012, mats["clay"], (0, 0, 0), 40)
     labelring = add_cylinder("LabelRing", (0, 0, -0.160), 0.30, 0.008, mats["matboard"], (0, 0, 0), 32)
     hole = add_cylinder("Hole", (0, 0, -0.150), 0.055, 0.010, mats["ink"], (0, 0, 0), 16)
-    # 标签上的记号：让转动看得出来
-    marker = add_box("Marker", (0.055, 0.30, 0.012), (0, 0.30, -0.146), mats["paper"], (0, 0, 0))
-    marker.parent = label
 
-    # 唱臂：立柱 + 横臂 + 唱头 + 配重
-    post = add_cylinder("ArmPost", (1.52, -0.92, 0.16), 0.075, 0.62, mats["brass"], (0, 0, 0), 20)
-    arm = add_cylinder("Tonearm", (0, -0.52, 0.40), 0.045, 2.10, mats["brass"], (0, 0, 0), 16)
-    arm.rotation_euler = Euler((math.radians(84), 0.0, math.radians(-18)))
-    arm.location = (0.70, -0.47, 0.40)
-    head = add_box("Cartridge", (0.16, 0.34, 0.14), (-0.28, 0.32, 0.30), mats["ink"], (0, 0.35, 0.1), bevel=0.02)
-    weight = add_cylinder("Counterweight", (1.62, -0.92, 0.52), 0.13, 0.18, mats["ink"], (0, 0.52, 0))
+    # 唱片上的三处浅色刻度：让匀速转动看得出来
+    marks = []
+    for i in range(3):
+        a = 2 * math.pi * i / 3 + 0.4
+        m = add_box("DiscMark%d" % i, (0.055, 0.26, 0.010),
+                    (math.cos(a) * 0.72, math.sin(a) * 0.72, -0.172), mats["paper"], (0, 0, a))
+        marks.append(m)
+    bpy.context.view_layer.update()
+    for ob in [label, labelring, hole] + marks:
+        ob.parent = disc
+        # 直接赋 parent 不会自动补 parent_inverse，不设会让子物体被父物体的位置二次偏移
+        ob.matrix_parent_inverse = disc.matrix_world.inverted()
 
-    geoms = [base, rim, platter, disc, label, labelring, hole, marker, post, arm, head, weight]
+    # 唱臂：立柱 + 连杆 + 唱头 + 配重（全部连在一起，不再悬空）
+    post = add_cylinder("ArmPost", (1.62, -0.95, 0.07), 0.075, 0.80, mats["brass"], (0, 0, 0), 20)
+    arm = add_rod("Tonearm", (1.60, -0.93, 0.50), (-0.18, 0.34, 0.28), 0.045, mats["brass"], 14)
+    head = add_box("Cartridge", (0.15, 0.30, 0.12), (-0.19, 0.36, 0.26), mats["ink"], (0, 0.2, 0.52), bevel=0.02)
+    weight = add_rod("Counterweight", (1.68, -1.02, 0.50), (2.02, -1.16, 0.46), 0.13, mats["ink"], 16)
+
+    geoms = [base, rim, platter, disc, label, labelring, hole] + marks + [post, arm, head, weight]
 
     world_ambient(0.5, "#FBFAF4")
-    add_area("Key", (-3.2, -4.0, 4.6), 620, 4.5, (1.0, 0.97, 0.9), (0, 0, 0.1))
-    add_area("Fill", (4.2, -2.4, 2.0), 220, 5.0, (0.9, 0.95, 1.0), (0, 0, 0.2))
-    add_area("Top", (0.0, 1.2, 6.0), 260, 3.5, (1.0, 1.0, 0.96), (0, 0, 0))
-    add_camera((0.35, -5.2, 3.05), (0.0, 0.0, -0.05), 50.0)
+    add_area("Key", (-3.2, -4.0, 4.6), 520, 4.5, (1.0, 0.97, 0.9), (0, 0, 0.1))
+    add_area("Fill", (4.2, -2.4, 2.0), 190, 5.0, (0.9, 0.95, 1.0), (0, 0, 0.2))
+    add_area("Top", (0.0, 1.2, 6.0), 230, 3.5, (1.0, 1.0, 0.96), (0, 0, 0))
+    bpy.context.scene.view_settings.exposure = -0.25
+    add_camera((2.55, -5.15, 3.35), (0.0, 0.0, -0.28), 44.0)
     return geoms, (1200, 760)
 
 
 # ---------------------------------------------------------------- 场景三：照片墙
-def frame_mesh(name, w, h, depth, mats):
+def frame_mesh(name, w, h, depth, mats, frame_mat):
     """一根框条围成的相框 + 内衬板，一个 mesh（两种材质）"""
     t = 0.075           # 框条宽度
     verts, faces, fmats = [], [], []
@@ -360,36 +446,37 @@ def frame_mesh(name, w, h, depth, mats):
     push_box(0, 0, -(h / 2 - t / 2), w - 2 * t, depth, t, 0)
     # 内衬板（背面）
     push_box(0, depth / 2 - 0.01, 0, w - 2 * t, 0.02, h - 2 * t, 1)
-    return add_mesh(name, verts, faces, [mats["wood"], mats["matboard"]], fmats)
+    return add_mesh(name, verts, faces, [frame_mat, mats["matboard"]], fmats)
 
 
 def build_wall(mats):
     geoms = []
     # 3 x 3，尺寸与高度略有差异，轻微旋转
     layout = [
-        (-2.15, 1.62, 1.42, 1.86, 0.10, -0.06),
-        (0.00, 1.52, 1.52, 1.96, 0.06, 0.04),
-        (2.18, 1.60, 1.34, 1.82, 0.08, 0.07),
-        (-2.20, -0.08, 1.30, 1.44, -0.07, 0.03),
-        (0.02, -0.02, 1.44, 1.52, -0.05, -0.05),
-        (2.12, -0.10, 1.38, 1.48, -0.09, 0.05),
-        (-2.10, -1.72, 1.36, 1.42, 0.09, 0.02),
-        (0.04, -1.78, 1.48, 1.54, 0.07, 0.06),
-        (2.16, -1.70, 1.42, 1.48, 0.11, -0.04),
+        (-2.15, 1.75, 1.42, 1.86, 0.10, -0.06),
+        (0.00, 1.72, 1.52, 1.90, 0.06, 0.04),
+        (2.18, 1.73, 1.34, 1.82, 0.08, 0.07),
+        (-2.20, -0.05, 1.30, 1.44, -0.07, 0.03),
+        (0.02, -0.10, 1.44, 1.48, -0.05, -0.05),
+        (2.12, -0.02, 1.38, 1.48, -0.09, 0.05),
+        (-2.10, -1.80, 1.36, 1.42, 0.09, 0.02),
+        (0.04, -1.90, 1.48, 1.52, 0.07, 0.06),
+        (2.16, -1.78, 1.42, 1.48, 0.11, -0.04),
     ]
+    frame_colors = [mats["wood"], mats["sage"], mats["paper"]]
     for i, (x, z, w, h, rz, ry) in enumerate(layout, start=1):
-        fr = frame_mesh("Frame_%02d" % i, w, h, 0.40, mats)
+        fr = frame_mesh("Frame_%02d" % i, w, h, 0.40, mats, frame_colors[(i - 1) % 3])
         fr.location = (x, 0, z)
         fr.rotation_euler = Euler((0, ry, rz))
-        # 相片槽：贴在框前，独立对象，便于前端换贴图
-        slot_v = [(-(w - 0.16) / 2, 0, -(h - 0.16) / 2), ((w - 0.16) / 2, 0, -(h - 0.16) / 2),
-                  ((w - 0.16) / 2, 0, (h - 0.16) / 2), (-(w - 0.16) / 2, 0, (h - 0.16) / 2)]
-        # 让平面朝 -Y（面向相机）
-        slot = add_mesh("Slot_%02d" % i, [(vx, -0.205, vz) for (vx, _vy, vz) in slot_v],
+        bpy.context.view_layer.update()
+        # 相片槽：贴在框前（平面本身已在 XZ 内），独立对象，便于前端换贴图
+        slot = add_mesh("Slot_%02d" % i,
+                        [(-(w - 0.16) / 2, -0.215, -(h - 0.16) / 2), ((w - 0.16) / 2, -0.215, -(h - 0.16) / 2),
+                         ((w - 0.16) / 2, -0.215, (h - 0.16) / 2), (-(w - 0.16) / 2, -0.215, (h - 0.16) / 2)],
                         [(0, 1, 2, 3)], [mats["matboard"]])
-        slot.parent = fr
+        add_planar_uv(slot)
+        slot.parent = fr          # 槽的坐标本来就是相对相框的，不能再套 parent_inverse
         slot.location = (0, 0, 0)
-        slot.rotation_euler = Euler((math.radians(90), 0, 0))
         geoms.extend([fr, slot])
 
     # 背后漂浮的小几何块，增加层次
@@ -401,7 +488,8 @@ def build_wall(mats):
     add_area("Key", (-3.5, -5.0, 5.5), 700, 5.0, (1.0, 0.97, 0.9), (0, 0, 0))
     add_area("Fill", (4.0, -4.0, 1.0), 260, 6.0, (0.92, 0.96, 1.0), (0, 0, 0))
     add_area("Top", (0.0, 0.5, 7.0), 300, 4.5, (1.0, 1.0, 0.97), (0, 0, 0))
-    add_camera((0.0, -21.5, 0.55), (0.0, 0.0, 0.0), 50.0)
+    bpy.context.scene.view_settings.exposure = -0.25
+    add_camera((0.0, -13.5, 0.55), (0.0, 0.0, -0.05), 50.0)
     return geoms, (1200, 760)
 
 
