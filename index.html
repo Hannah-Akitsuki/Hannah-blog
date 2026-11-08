@@ -9,8 +9,10 @@
 <script>
 /* 主题初始化：先于渲染执行，避免明暗闪烁 */
 (function(){try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}})();
+/* 首屏不做切页动画 */
+document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 
@@ -32,10 +34,18 @@
   </nav>
   <div class="top-actions">
     <button class="icon-btn" id="searchOpen" title="搜索（Ctrl+K）" aria-label="搜索">⌕</button>
+    <button class="icon-btn" id="fxToggle" title="交互反馈设置" aria-label="交互反馈设置">⚙</button>
     <button class="icon-btn" id="themeToggle" title="切换明暗" aria-label="切换明暗">☾</button>
     <button class="icon-btn menu-btn" id="menuToggle" title="菜单" aria-label="菜单">☰</button>
   </div>
 </header>
+
+<div class="fx-panel" id="fxPanel" hidden>
+  <b>交互反馈</b>
+  <label class="fx-row"><span>触感反馈（振动）</span><input type="checkbox" id="optHaptic" checked></label>
+  <label class="fx-row"><span>点击音效</span><input type="checkbox" id="optSound"></label>
+  <p class="tiny">触感仅部分安卓浏览器支持，iOS 与桌面端会自动跳过；点击音效由浏览器实时合成，不加载音频文件。设置只保存在本浏览器。</p>
+</div>
 
 <div class="drawer-mask" id="drawerMask" hidden></div>
 
@@ -121,7 +131,10 @@
       </aside>
       <div class="main-col">
         <div class="toolbar">
-          <span id="status">选择一篇笔记开始阅读</span>
+          <span class="toolbar-info">
+            <span id="status">选择一篇笔记开始阅读</span>
+            <span id="wordCount" class="word-count"></span>
+          </span>
           <div>
             <button id="edit" class="owner-only">编辑文章</button>
             <button id="save" hidden>下载 Markdown</button>
@@ -132,6 +145,7 @@
         <section id="writer" hidden>
           <div class="writer-tools">
             <span>Markdown 编辑器</span>
+            <span class="writer-count" id="writerCount"></span>
             <button id="insertImage">插入图片</button>
             <input id="imageFile" type="file" accept="image/*" hidden>
           </div>
@@ -142,10 +156,18 @@
           <p class="writer-note">粘贴图片会生成本地预览；下载文章后，请将图片也上传到仓库并改用相对路径（例如 <code>images/photo.png</code>），才能在线显示。</p>
         </section>
       </div>
-      <aside class="toc-col">
+      <aside class="toc-col" id="tocCol">
         <b>本篇目录</b>
         <div id="toc"></div>
       </aside>
+    </div>
+    <button class="toc-fab" id="tocFab" aria-label="打开本篇目录">☰ 目录</button>
+    <div class="toc-sheet" id="tocSheet" hidden>
+      <div class="toc-sheet-backdrop" id="tocSheetMask"></div>
+      <div class="toc-sheet-panel" role="dialog" aria-label="本篇目录">
+        <div class="toc-sheet-head"><b>本篇目录</b><button class="icon-btn" id="tocSheetClose" aria-label="关闭">×</button></div>
+        <div id="tocSheetList" class="toc-sheet-list"></div>
+      </div>
     </div>
   </section>
 
@@ -237,6 +259,8 @@
       <h1>留言榜</h1>
       <p>基于 GitHub Discussions 的 Giscus 评论系统，与本站同源同账号，无需额外后端。</p>
     </div>
+    <p class="gb-tip">如果点击登录没有反应，请允许本站弹窗与第三方 Cookie；或先
+      <a href="https://github.com/login" target="_blank" rel="noopener">在新标签打开 GitHub 登录</a>，登录后回来刷新本页。</p>
     <div id="giscusWrap"></div>
   </section>
 
@@ -289,6 +313,9 @@
   <p class="tiny" id="custStatus"></p>
 </dialog>
 
+<!-- 提示气泡 -->
+<div class="toast" id="toast" hidden></div>
+
 <!-- 图片灯箱 -->
 <div class="lightbox" id="lightbox" hidden>
   <button class="lb-close" id="lbClose" aria-label="关闭">×</button>
@@ -296,6 +323,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>

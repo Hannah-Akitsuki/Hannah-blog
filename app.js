@@ -6,6 +6,87 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const bust = p => p + (p.includes('?') ? '&' : '?') + 't=' + Date.now();
 
+/* ---------------- 通用工具 ---------------- */
+function stripFrontMatter(text) {
+  const t = String(text == null ? '' : text);
+  if (!/^---\s*\r?\n/.test(t)) return t;
+  const m = t.match(/^---\s*\r?\n[\s\S]*?\r?\n---\s*\r?\n?/);
+  return m ? t.slice(m[0].length) : t;
+}
+/* 字数口径：中文按字、英文按单词（数字串算 1 词）；
+   去掉 front matter、Markdown 符号、图片地址与链接地址；
+   围栏代码块整体不计入。 */
+function countWords(md) {
+  let t = stripFrontMatter(md);
+  t = t.replace(/```[\s\S]*?```/g, ' ');
+  t = t.replace(/<[^>]+>/g, ' ');
+  t = t.replace(/!\[[^\]]*\]\([^)]*\)/g, ' ');
+  t = t.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+  t = t.replace(/[#>*_`~|=+\-\[\]()]/g, ' ');
+  const cjk = (t.match(/[\u3400-\u4dbf\u4e00-\u9fff]/g) || []).length;
+  const words = (t.match(/[A-Za-z]+(?:['’][A-Za-z]+)?|\d+(?:\.\d+)?/g) || []).length;
+  return cjk + words;
+}
+function readMinutes(n) { return Math.max(1, Math.ceil(n / 350)); }
+function wordLabel(n) { return n ? ('约 ' + n.toLocaleString('zh-CN') + ' 字 · 阅读 ' + readMinutes(n) + ' 分钟') : ''; }
+function slugify(text) {
+  return String(text == null ? '' : text)
+    .replace(/\*\*|__/g, '')
+    .replace(/[\s\u3000]+/g, '-')
+    .replace(/[，。！？、：；（）【】《》「」『』“”‘’"'!?,.:;()\[\]<>\/\\|@#$%^&*+=~`]/g, '')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '') || 'section';
+}
+const safeDecode = s => { try { return decodeURIComponent(s); } catch (e) { return s; } };
+function reduceMotion() { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+let vtBusy = false;
+function withVT(fn) {
+  if (!document.startViewTransition || reduceMotion() || vtBusy ||
+      document.documentElement.classList.contains('booting')) { fn(); return; }
+  try {
+    vtBusy = true;
+    const t = document.startViewTransition(fn);
+    if (t) {
+      [t.finished, t.ready, t.updateCallbackDone].forEach(p => { if (p && p.catch) p.catch(() => {}); });
+      if (t.finished) t.finished.catch(() => {}).then(() => { vtBusy = false; });
+      else vtBusy = false;
+    } else vtBusy = false;
+  } catch (e) { vtBusy = false; fn(); }
+}
+let toastTimer = null;
+function toast(msg) {
+  const el = $('#toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.hidden = false;
+  requestAnimationFrame(() => el.classList.add('show'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => { el.hidden = true; }, 240);
+  }, 2000);
+}
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text).then(() => true).catch(() => legacyCopy(text));
+  }
+  return Promise.resolve(legacyCopy(text));
+}
+function legacyCopy(text) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (e) { return false; }
+}
+
+
 const state = {
   config: null, docs: [], photos: [], links: [], music: null, diary: [],
   current: -1, sourceText: '', photoShown: 0, track: 0, giscusLoaded: false
@@ -25,7 +106,6 @@ function refreshOwnerViews() {
   renderLinks();
   renderMusic();
   renderDiary();
-  renderGuestbook();
 }
 function toggleOwner() {
   setOwner(!isOwner());
@@ -79,6 +159,16 @@ function syncGiscusTheme(t) {
 const locked = d => !!(d.locked || (d.publishAfter && new Date() < new Date(d.publishAfter + 'T00:00:00')));
 const isIntro = d => (d.title || '').indexOf('寒鹤') === 0;
 const fmtDate = s => (s || '').replace(/-/g, '.');
+const docRef = (d, i) => d.id || String(i);
+function docIndex(ref) {
+  if (/^\d+$/.test(ref)) {
+    const n = +ref;
+    const byLegacy = state.docs.findIndex(d => d.legacyIndex === n);
+    if (byLegacy >= 0) return byLegacy;
+    return n >= 0 && n < state.docs.length ? n : -1;
+  }
+  return state.docs.findIndex(d => String(d.id) === String(ref));
+}
 
 async function loadJSON(path) {
   const res = await fetch(bust(path));
@@ -106,9 +196,14 @@ async function bootstrap() {
   renderMusic();
   renderPhotos();
   renderDiary();
-  renderGuestbook();
   initArticleTools();
   route();
+  /* 首屏不做切换动画：先给当前视图打上 initial，再放开后续过渡 */
+  $$('.view').forEach(v => v.classList.add('initial'));
+  requestAnimationFrame(() => {
+    document.documentElement.classList.add('ready');
+    document.documentElement.classList.remove('booting');
+  });
 }
 
 /* ---------------- 站点配置 ---------------- */
@@ -137,10 +232,10 @@ function applySiteConfig() {
 function renderNavs() {
   const course = state.docs.filter(d => !isIntro(d));
   const introIdx = state.docs.findIndex(isIntro);
-  const intro = introIdx >= 0 ? `<a class="side-link" href="#note-${introIdx}" data-i="${introIdx}">${esc(state.docs[introIdx].title)}</a>` : '';
+  const intro = introIdx >= 0 ? `<a class="side-link" href="#note-${docRef(state.docs[introIdx], introIdx)}" data-i="${introIdx}">${esc(state.docs[introIdx].title)}</a>` : '';
   const items = course.map(d => {
     const i = state.docs.indexOf(d);
-    return `<a class="side-link" href="#note-${i}" data-i="${i}">${esc(d.title)}${locked(d) ? '　<span class="lock-label">未公开</span>' : ''}</a>`;
+    return `<a class="side-link" href="#note-${docRef(d, i)}" data-i="${i}">${esc(d.title)}${locked(d) ? '　<span class="lock-label">未公开</span>' : ''}</a>`;
   }).join('');
   const html = intro + '<div class="side-group">FZU 课程</div>' + items;
   $('#notesNav').innerHTML = html;
@@ -159,7 +254,7 @@ function renderHome() {
   const course = state.docs.filter(d => !isIntro(d));
   $('#homeCards').innerHTML = course.map(d => {
     const i = state.docs.indexOf(d);
-    return `<a class="card ${locked(d) ? 'locked' : ''}" href="#note-${i}" data-i="${i}">
+    return `<a class="card ${locked(d) ? 'locked' : ''}" href="#note-${docRef(d, i)}" data-i="${i}">
       <span class="arrow">${locked(d) ? '◷' : '↗'}</span>
       <span class="num">${fmtDate(d.date) || 'NOTE'}　/　${locked(d) ? '未公开' : 'NOTE'}</span>
       <b>${esc(d.title)}</b>
@@ -192,7 +287,7 @@ function renderArchive() {
     <div class="year-group"><h2>${y}</h2>
       ${groups[y].map(d => {
         const i = state.docs.indexOf(d);
-        return `<a class="arch-item" href="#note-${i}" data-i="${i}">
+        return `<a class="arch-item" href="#note-${docRef(d, i)}" data-i="${i}">
           <time>${fmtDate(d.date || '')}</time>
           <b>${esc(d.title)}</b>${locked(d) ? '<span class="lock-label">未公开</span>' : ''}
         </a>`;
@@ -434,11 +529,12 @@ function renderGuestbook() {
   s.crossOrigin = 'anonymous';
   const attrs = {
     'data-repo': g.repo, 'data-repo-id': g.repoId, 'data-category': g.category,
-    'data-category-id': g.categoryId, 'data-mapping': g.mapping || 'pathname',
+    'data-category-id': g.categoryId, 'data-mapping': g.mapping || 'specific',
+    'data-term': g.term || '留言榜',
     'data-strict': '0', 'data-reactions-enabled': g.reactionsEnabled || '1',
     'data-emit-metadata': g.emitMetadata || '0', 'data-input-position': g.inputPosition || 'top',
     'data-theme': currentTheme() === 'dark' ? 'dark' : 'light',
-    'data-lang': g.lang || 'zh-CN', 'data-loading': 'lazy'
+    'data-lang': g.lang || 'zh-CN', 'data-loading': 'eager'
   };
   Object.keys(attrs).forEach(k => s.setAttribute(k, attrs[k]));
   wrap.appendChild(s);
@@ -451,7 +547,7 @@ async function renderAbout() {
   if (box.dataset.done) return;
   try {
     const res = await fetch(bust('articles/寒鹤.md'));
-    const text = await res.text();
+    const text = stripFrontMatter(await res.text());
     box.innerHTML = window.marked ? marked.parse(text) : '<pre>' + esc(text) + '</pre>';
     box.dataset.done = '1';
   } catch (e) {
@@ -460,6 +556,7 @@ async function renderAbout() {
 }
 
 /* ---------------- 文章 ---------------- */
+let tocItems = [];
 function setArticleChrome(mode) {
   $('#content').hidden = mode !== 'read';
   $('#writer').hidden = mode !== 'edit';
@@ -468,16 +565,78 @@ function setArticleChrome(mode) {
   $('#cancel').hidden = mode !== 'edit';
 }
 function drawPreview() {
-  $('#preview').innerHTML = window.marked ? marked.parse($('#source').value) : '<pre>' + esc($('#source').value) + '</pre>';
+  $('#preview').innerHTML = window.marked ? marked.parse(stripFrontMatter($('#source').value)) : '<pre>' + esc($('#source').value) + '</pre>';
 }
-async function openDoc(i) {
+function navOffset() {
+  const bar = $('.topbar');
+  return (bar ? bar.offsetHeight : 70) + 16;
+}
+function setActiveToc(slug) {
+  $$('#toc a, #tocSheetList a').forEach(a => a.classList.toggle('on', a.dataset.sec === slug));
+}
+function updateTocActive() {
+  if (!tocItems.length) return;
+  const view = $('#view-article');
+  if (!view || !view.classList.contains('active')) return;
+  const limit = navOffset() + 10;
+  let active = tocItems[0].id;
+  for (const t of tocItems) {
+    if (t.el.getBoundingClientRect().top <= limit) active = t.id;
+    else break;
+  }
+  setActiveToc(active);
+}
+function scrollToSection(slug, smooth) {
+  const el = slug ? document.getElementById(slug) : null;
+  if (!el) return false;
+  const top = el.getBoundingClientRect().top + (window.scrollY || 0) - navOffset();
+  window.scrollTo({ top: Math.max(0, top), behavior: smooth ? 'smooth' : 'auto' });
+  setActiveToc(slug);
+  return true;
+}
+function openTocSheet() { const s = $('#tocSheet'); if (s) s.hidden = false; }
+function closeTocSheet() { const s = $('#tocSheet'); if (s) s.hidden = true; }
+function setTocAvailable(on) {
+  const col = $('#tocCol');
+  if (col) col.hidden = !on;
+  const layout = $('#view-article .layout');
+  if (layout) layout.classList.toggle('no-toc', !on);
+  const fab = $('#tocFab');
+  if (fab) fab.classList.toggle('has-toc', !!on);
+  if (!on) closeTocSheet();
+}
+/* 等正文图片加载完（或 1.2s 超时）再滚动，避免深链落到空位置 */
+function afterImagesThen(cb) {
+  const imgs = $$('#content img');
+  let done = false;
+  const run = () => { if (!done) { done = true; cb(); } };
+  const pending = imgs.filter(im => !im.complete);
+  if (!pending.length) { requestAnimationFrame(() => requestAnimationFrame(run)); return; }
+  let left = pending.length;
+  const tick = () => { if (--left <= 0) run(); };
+  pending.forEach(im => {
+    im.addEventListener('load', tick, { once: true });
+    im.addEventListener('error', tick, { once: true });
+  });
+  setTimeout(run, 1200);
+}
+async function openDoc(i, section) {
   const d = state.docs[i];
   if (!d) return;
+  const already = state.current === i && $('#content').dataset.rendered === '1';
   state.current = i;
-  if (location.hash !== '#note-' + i) history.replaceState(null, '', '#note-' + i);
+  const want = '#note-' + encodeURIComponent(docRef(d, i)) + (section ? '/' + encodeURIComponent(section) : '');
+  if (safeDecode(location.hash || '') !== safeDecode(want)) history.replaceState(null, '', want);
+  if (already) { if (section) scrollToSection(section, true); return; }
+
   showView('article', true);
   $$('#articleNav .side-link, #notesNav .side-link').forEach(a => a.classList.toggle('active', +a.dataset.i === i));
+  $('#content').dataset.rendered = '0';
   $('#toc').innerHTML = '';
+  $('#tocSheetList').innerHTML = '';
+  tocItems = [];
+  setTocAvailable(false);
+  $('#wordCount').textContent = '';
 
   if (locked(d)) {
     $('#content').innerHTML = `<div class="locked-page"><div class="eyebrow">COMING SOON</div>
@@ -496,30 +655,67 @@ async function openDoc(i) {
     const res = await fetch(bust(d.file));
     if (!res.ok) throw new Error('missing');
     state.sourceText = await res.text();
+    const rendered = stripFrontMatter(state.sourceText);
     $('#source').value = localStorage.getItem('draft:' + d.file) || state.sourceText;
-    $('#content').innerHTML = window.marked ? marked.parse(state.sourceText) : '<pre>' + esc(state.sourceText) + '</pre>';
-    buildToc();
+    $('#content').innerHTML = window.marked ? marked.parse(rendered) : '<pre>' + esc(rendered) + '</pre>';
+    $('#content').dataset.rendered = '1';
+    buildToc(d);
+    $('#wordCount').textContent = wordLabel(countWords(state.sourceText));
+    updateWriterCount($('#source').value);
     $('#status').textContent = '阅读模式 · ' + d.title;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (section) afterImagesThen(() => scrollToSection(section, false));
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (e) {
     $('#content').innerHTML = '<p>文章加载失败。请刷新页面后重试。</p>';
     $('#status').textContent = '文章加载失败';
   }
 }
-function buildToc() {
-  const hs = $$('#content h2, #content h3');
-  $('#toc').innerHTML = hs.map((h, n) => {
-    h.id = 'sec' + n;
-    return `<a href="#sec${n}" data-sec="sec${n}">${esc(h.textContent)}</a>`;
-  }).join('');
-  $('#toc').onclick = e => {
-    const a = e.target.closest('[data-sec]');
-    if (a) {
-      e.preventDefault();
-      const el = document.getElementById(a.dataset.sec);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function buildToc(doc) {
+  tocItems = [];
+  const headings = $$('#content h1, #content h2, #content h3, #content h4');
+  const title = ((doc && doc.title) || '').trim();
+  const used = Object.create(null);
+  headings.forEach((h, idx) => {
+    const clone = h.cloneNode(true);
+    const old = clone.querySelector('.sec-anchor');
+    if (old) old.remove();
+    const text = (clone.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!text) return;
+    /* 跳过与文章标题重复的首个 h1（例如「# 编译原理」） */
+    if (idx === 0 && h.tagName === 'H1' && title && (text.indexOf(title) >= 0 || title.indexOf(text) >= 0)) return;
+    let slug = slugify(text);
+    if (used[slug]) { used[slug] += 1; slug = slug + '-' + used[slug]; }
+    else used[slug] = 1;
+    h.id = slug;
+    h.classList.add('has-anchor');
+    if (!h.querySelector('.sec-anchor')) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sec-anchor';
+      btn.title = '复制本节链接';
+      btn.setAttribute('aria-label', '复制本节链接');
+      btn.textContent = '#';
+      h.appendChild(btn);
     }
-  };
+    tocItems.push({ id: slug, text: text, el: h, tag: +h.tagName.slice(1), level: 0 });
+  });
+  if (tocItems.length) {
+    const minTag = Math.min.apply(null, tocItems.map(t => t.tag));
+    tocItems.forEach(t => { t.level = Math.min(t.tag - minTag, 2); });
+  }
+  const ref = doc ? docRef(doc, state.current) : '';
+  const html = tocItems.map(t =>
+    `<a class="toc-link lv${t.level}" href="#note-${encodeURIComponent(ref)}/${encodeURIComponent(t.id)}" data-sec="${esc(t.id)}">${esc(t.text)}</a>`
+  ).join('');
+  $('#toc').innerHTML = html;
+  $('#tocSheetList').innerHTML = html;
+  setTocAvailable(tocItems.length > 0);
+  updateTocActive();
+}
+function updateWriterCount(text) {
+  const n = countWords(text || '');
+  const el = $('#writerCount');
+  if (el) el.textContent = n ? wordLabel(n) : '';
 }
 function initArticleTools() {
   $('#edit').addEventListener('click', () => {
@@ -527,6 +723,7 @@ function initArticleTools() {
     if (!d || locked(d)) return;
     $('#source').value = state.sourceText;
     drawPreview();
+    updateWriterCount($('#source').value);
     setArticleChrome('edit');
     $('#status').textContent = '编辑模式 · 支持 Markdown、图片和即时预览';
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -542,6 +739,7 @@ function initArticleTools() {
   $('#source').addEventListener('input', () => {
     const d = state.docs[state.current];
     drawPreview();
+    updateWriterCount($('#source').value);
     if (d) localStorage.setItem('draft:' + d.file, $('#source').value);
   });
   $('#save').addEventListener('click', () => {
@@ -554,8 +752,9 @@ function initArticleTools() {
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     state.sourceText = text;
-    $('#content').innerHTML = window.marked ? marked.parse(text) : '<pre>' + esc(text) + '</pre>';
-    buildToc();
+    $('#content').innerHTML = window.marked ? marked.parse(stripFrontMatter(text)) : '<pre>' + esc(text) + '</pre>';
+    buildToc(d);
+    $('#wordCount').textContent = wordLabel(countWords(text));
     setArticleChrome('read');
     $('#status').textContent = '修改稿已下载 · 上传替换 articles 里的同名文件即可发布';
   });
@@ -590,34 +789,80 @@ function initArticleTools() {
 const VIEWS = ['home', 'notes', 'article', 'links', 'archive', 'music', 'photos', 'diary', 'guestbook', 'about'];
 function showView(name, keepScroll) {
   if (VIEWS.indexOf(name) < 0) name = 'home';
-  $$('.view').forEach(v => v.classList.toggle('active', v.dataset.view === name));
-  $('#hero').hidden = name !== 'home';
-  const navKey = name === 'article' ? 'notes' : name;
-  $$('#mainNav a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + navKey));
+  withVT(() => {
+    $$('.view').forEach(v => { v.classList.remove('initial'); v.classList.toggle('active', v.dataset.view === name); });
+    $('#hero').hidden = name !== 'home';
+    const navKey = name === 'article' ? 'notes' : name;
+    $$('#mainNav a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + navKey));
 
-  if (name === 'about') renderAbout();
-  if (name === 'guestbook') renderGuestbook();
+    if (name === 'about') renderAbout();
+    if (name === 'guestbook') renderGuestbook();
 
-  if (!keepScroll) window.scrollTo({ top: 0, behavior: 'auto' });
-  document.body.classList.remove('mobile-open');
-  $('#drawerMask').hidden = true;
-  onScroll();
+    if (!keepScroll) window.scrollTo({ top: 0, behavior: 'auto' });
+    document.body.classList.remove('mobile-open');
+    $('#drawerMask').hidden = true;
+    onScroll();
+  });
 }
 function route() {
   const h = (location.hash || '#home').replace(/^#/, '');
-  const m = h.match(/^note-(\d+)$/);
-  if (m) { openDoc(+m[1]); return; }
+  if (h.indexOf('note-') === 0) {
+    const rest = h.slice(5);
+    const cut = rest.indexOf('/');
+    const ref = safeDecode(cut >= 0 ? rest.slice(0, cut) : rest);
+    const sec = cut >= 0 ? safeDecode(rest.slice(cut + 1)) : '';
+    const idx = docIndex(ref);
+    if (idx >= 0) { openDoc(idx, sec); return; }
+  }
   if (h === 'library') { location.replace('#notes'); return; }
-  showView(h);
+  showView(safeDecode(h));
+}
+
+/* ---------------- 本篇目录交互 ---------------- */
+function initToc() {
+  const onLink = e => {
+    const a = e.target.closest('[data-sec]');
+    if (!a) return;
+    const view = $('#view-article');
+    if (!view || !view.classList.contains('active')) return;
+    e.preventDefault();
+    const id = a.dataset.sec;
+    const d = state.docs[state.current];
+    if (!d) return;
+    scrollToSection(id, true);
+    history.replaceState(null, '', '#note-' + encodeURIComponent(docRef(d, state.current)) + '/' + encodeURIComponent(id));
+    closeTocSheet();
+  };
+  $('#toc').addEventListener('click', onLink);
+  $('#tocSheetList').addEventListener('click', onLink);
+
+  $('#content').addEventListener('click', e => {
+    const b = e.target.closest('.sec-anchor');
+    if (!b) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const h = b.parentElement;
+    const d = state.docs[state.current];
+    if (!h || !d) return;
+    const url = location.origin + location.pathname + '#note-' +
+      encodeURIComponent(docRef(d, state.current)) + '/' + encodeURIComponent(h.id);
+    copyText(url).then(ok => toast(ok ? '已复制本节链接' : '复制失败，请手动复制地址栏'));
+  });
+
+  $('#tocFab').addEventListener('click', openTocSheet);
+  $('#tocSheetClose').addEventListener('click', closeTocSheet);
+  $('#tocSheetMask').addEventListener('click', closeTocSheet);
 }
 
 /* ---------------- 顶栏交互 ---------------- */
+let scrollRaf = 0;
 function onScroll() {
   const y = window.scrollY || 0;
   const scrolled = y > 40;
   document.body.classList.toggle('scrolled', scrolled);
   const isHome = $('#hero') && !$('#hero').hidden;
   $('.topbar').classList.toggle('over-hero', !!isHome && !scrolled);
+  if (!scrollRaf) scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; updateTocActive(); });
 }
 
 /* ---------------- 搜索 ---------------- */
@@ -635,8 +880,8 @@ function paintSearch(q) {
   if (!key) { box.innerHTML = ''; return; }
   const hits = searchDocs(key);
   box.innerHTML = hits.length
-    ? hits.map(d => `<a href="#note-${state.docs.indexOf(d)}" data-i="${state.docs.indexOf(d)}">
-        <span>${esc(d.title)}</span><span class="lock-label">${locked(d) ? '未公开' : (d.date || '')}</span></a>`).join('')
+    ? hits.map(d => { const i = state.docs.indexOf(d); return `<a href="#note-${docRef(d, i)}" data-i="${i}">
+        <span>${esc(d.title)}</span><span class="lock-label">${locked(d) ? '未公开' : (d.date || '')}</span></a>`; }).join('')
     : '<div class="empty">没有匹配的笔记</div>';
 }
 function openSearch(prefill) {
@@ -686,6 +931,95 @@ function initCustomize() {
     dlg.close();
     refreshOwnerViews();
   });
+}
+
+/* ---------------- 交互反馈：触感 + 点击音效 ---------------- */
+const FX_KEY = 'fx';
+const fx = { haptic: true, sound: false };
+let actx = null;
+let fxHinted = false;
+function loadFx() {
+  try {
+    const raw = localStorage.getItem(FX_KEY);
+    if (raw) {
+      const o = JSON.parse(raw);
+      if (typeof o.haptic === 'boolean') fx.haptic = o.haptic;
+      if (typeof o.sound === 'boolean') fx.sound = o.sound;
+    }
+    fxHinted = localStorage.getItem('hint:fx') === '1';
+  } catch (e) {}
+}
+function saveFx() { try { localStorage.setItem(FX_KEY, JSON.stringify(fx)); } catch (e) {} }
+function coarsePointer() { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } }
+function hapticTap(strong) {
+  if (!fx.haptic || !coarsePointer() || !navigator.vibrate) return;
+  try { navigator.vibrate(strong ? 12 : 8); } catch (e) {}
+}
+function ensureAudioCtx() {
+  if (actx) {
+    if (actx.state === 'suspended') actx.resume().catch(() => {});
+    return actx;
+  }
+  const C = window.AudioContext || window.webkitAudioContext;
+  if (!C) return null;
+  try { actx = new C(); } catch (e) { actx = null; }
+  return actx;
+}
+function clickSound(kind) {
+  if (!fx.sound) return;
+  const ctx = ensureAudioCtx();
+  if (!ctx) return;
+  try {
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const base = kind === 'tab' ? 880 : 620;
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(base, t);
+    osc.frequency.exponentialRampToValueAtTime(base * 0.55, t + 0.05);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.045, t + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.1);
+  } catch (e) {}
+}
+const FX_TARGETS = 'button,.chip,.card,.side-link,.main-nav a,.icon-btn,.link-card,.ph,.arch-item,.pl-list li,.toc-col a,.toc-sheet-list a,.feed-head a,.gb-tip a';
+function initFx() {
+  loadFx();
+  const hap = $('#optHaptic');
+  const snd = $('#optSound');
+  if (hap) hap.checked = !!fx.haptic;
+  if (snd) snd.checked = !!fx.sound;
+  if (hap) hap.addEventListener('change', () => { fx.haptic = hap.checked; saveFx(); });
+  if (snd) snd.addEventListener('change', () => {
+    fx.sound = snd.checked;
+    saveFx();
+    if (fx.sound) { ensureAudioCtx(); clickSound('tab'); }
+  });
+
+  const panel = $('#fxPanel');
+  const btn = $('#fxToggle');
+  if (btn) btn.addEventListener('click', e => { e.stopPropagation(); if (panel) panel.hidden = !panel.hidden; });
+  document.addEventListener('click', e => {
+    if (panel && !panel.hidden && !panel.contains(e.target) && e.target !== btn) panel.hidden = true;
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel) panel.hidden = true; });
+
+  document.addEventListener('pointerdown', e => {
+    const el = e.target.closest(FX_TARGETS);
+    if (!el) return;
+    const isTab = el.matches('.main-nav a,.chip,.toc-col a,.toc-sheet-list a,.pl-list li');
+    if (e.pointerType === 'touch') hapticTap(isTab);
+    clickSound(isTab ? 'tab' : 'tap');
+    if (!fxHinted) {
+      fxHinted = true;
+      try { localStorage.setItem('hint:fx', '1'); } catch (err) {}
+      if (!fx.sound) toast('可在右上角 ⚙ 里开启点击音效与触感反馈');
+    }
+  }, { passive: true });
 }
 
 /* ---------------- 启动 ---------------- */
@@ -750,5 +1084,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initDiaryDraft();
   initCustomize();
+  initToc();
+  initFx();
   bootstrap();
 });

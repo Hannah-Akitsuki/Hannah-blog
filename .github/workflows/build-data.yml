@@ -1,0 +1,37 @@
+name: 生成博客数据
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'articles/**'
+      - 'diary/**'
+      - 'photos/**'
+      - 'tools/build_manifest.py'
+      - 'tools/build_photos.py'
+      - '.github/workflows/build-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 生成 manifest / 公开日记
+        run: |
+          python tools/build_manifest.py
+          if [ -f tools/build_photos.py ]; then python tools/build_photos.py; fi
+
+      - name: 提交生成结果
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 自动更新数据（manifest / 日记 / 相册）
+          file_pattern: manifest.json data/photos.json data/diary.json

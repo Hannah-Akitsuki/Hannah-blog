@@ -1,0 +1,262 @@
+# Pages CMS 配置（https://pagescms.org）
+# 打开 https://app.pagescms.org 用 GitHub 登录，选择 Hannah-Akitsuki/Hannah-blog 即可编辑。
+# 没有仓库写权限的账号只能看到登录页，无法提交任何修改。
+
+media:
+  - name: images
+    label: 文章插图（images/）
+    input: images
+    output: images
+    categories: [image]
+    rename: safe
+  - name: photos
+    label: 相册（photos/，按子文件夹分相册）
+    input: photos
+    output: photos
+    categories: [image]
+    rename: safe
+
+content:
+  - name: notes
+    label: 个人笔记
+    type: collection
+    path: articles
+    format: yaml-frontmatter
+    filename: "{primary}.md"
+    view:
+      fields: [title, date, category, public]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: date
+        label: 日期
+        type: date
+        required: true
+      - name: category
+        label: 分类（FZU 课程）
+        type: select
+        options:
+          values:
+            - 编译原理
+            - 系统架构
+            - 软件工程
+            - 计算机网络
+            - 操作系统
+            - 关于
+      - name: public
+        label: 公开（关闭后不会出现在站点）
+        type: boolean
+        default: true
+      - name: excerpt
+        label: 摘要（留空则自动截取正文开头）
+        type: text
+      - name: cover
+        label: 封面图（可选）
+        type: image
+        options:
+          media: images
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          format: markdown
+          media: images
+          switcher: true
+      - name: id
+        label: 稳定 ID（不要修改，旧链接靠它）
+        type: string
+        hidden: true
+      - name: legacyIndex
+        label: 旧链接序号
+        type: number
+        hidden: true
+      - name: source
+        label: 来源
+        type: string
+        hidden: true
+      - name: publishAfter
+        label: 定时公开日期
+        type: date
+        hidden: true
+
+  - name: diary
+    label: 个人日记
+    type: collection
+    path: diary
+    format: yaml-frontmatter
+    filename: "{year}-{month}-{day}-{primary}.md"
+    view:
+      fields: [title, date, public]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: date
+        label: 日期
+        type: date
+        required: true
+      - name: public
+        label: 公开（默认关闭，只保存在仓库里）
+        type: boolean
+        default: false
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          format: markdown
+          media: images
+          switcher: true
+
+  - name: links
+    label: 个人工具 Links
+    type: file
+    path: data/links.json
+    format: json
+    list: true
+    fields:
+      - name: name
+        label: 名称
+        type: string
+        required: true
+      - name: url
+        label: 链接地址
+        type: string
+        required: true
+      - name: desc
+        label: 说明
+        type: text
+      - name: tag
+        label: 标签
+        type: string
+
+  - name: music
+    label: 音乐
+    type: file
+    path: data/music.json
+    format: json
+    fields:
+      - name: title
+        label: 歌单名
+        type: string
+      - name: artist
+        label: 艺术家
+        type: string
+      - name: cover
+        label: 封面
+        type: image
+        options:
+          media: images
+      - name: tracks
+        label: 歌曲列表
+        type: object
+        list:
+          collapsible: true
+          summary: "{title}"
+        fields:
+          - name: title
+            label: 歌名
+            type: string
+            required: true
+          - name: artist
+            label: 艺术家
+            type: string
+          - name: src
+            label: 音频地址（仓库内相对路径或 https URL）
+            type: string
+            required: true
+
+  - name: site
+    label: 站点设置
+    type: file
+    path: config.json
+    format: json
+    fields:
+      - name: site
+        label: 站点信息
+        type: object
+        fields:
+          - name: brandMark
+            label: 品牌符号
+            type: string
+          - name: brandName
+            label: 昵称（顶栏）
+            type: string
+          - name: brandSub
+            label: 顶栏副标题
+            type: string
+          - name: heroTitle
+            label: 首页大标题
+            type: string
+          - name: heroSubtitle
+            label: 首页副标题
+            type: string
+          - name: heroEyebrow
+            label: 首页小标签
+            type: string
+          - name: nickname
+            label: 个人卡昵称
+            type: string
+          - name: signature
+            label: 个人卡签名
+            type: string
+          - name: avatar
+            label: 头像
+            type: image
+            options:
+              media: images
+          - name: heroImage
+            label: 首页背景
+            type: image
+            options:
+              media: images
+      - name: giscus
+        label: 留言板（高级，只读）
+        type: object
+        readonly: true
+        fields:
+          - name: enabled
+            label: enabled
+            type: boolean
+          - name: repo
+            label: repo
+            type: string
+          - name: repoId
+            label: repoId
+            type: string
+          - name: category
+            label: category
+            type: string
+          - name: categoryId
+            label: categoryId
+            type: string
+          - name: mapping
+            label: mapping
+            type: string
+          - name: term
+            label: term
+            type: string
+          - name: reactionsEnabled
+            label: reactionsEnabled
+            type: string
+          - name: emitMetadata
+            label: emitMetadata
+            type: string
+          - name: inputPosition
+            label: inputPosition
+            type: string
+          - name: lang
+            label: lang
+            type: string
