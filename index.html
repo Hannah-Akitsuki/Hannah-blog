@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=17">
 <script type="importmap">
 {
   "imports": {
@@ -103,6 +103,13 @@ document.documentElement.classList.add('booting');
         <p id="nowCardLine">还没填</p>
         <span class="now-card-meta" id="nowCardMeta"></span>
       </a>
+
+      <a class="now-card" id="booksCard" href="#books">
+        <span class="num">SHELF ／ 书单</span>
+        <b>书单</b>
+        <p id="booksCardLine">还没填</p>
+        <span class="now-card-meta" id="booksCardMeta"></span>
+      </a>
       </div>
 
       <div class="feed">
@@ -136,6 +143,25 @@ document.documentElement.classList.add('booting');
     <details class="howto owner-only">
       <summary>怎么更新这张「现在」页</summary>
       <p>编辑仓库里的 <code>data/now.json</code>，或在 Pages CMS 后台打开「现在（Now）」集合。每项写 <code>title</code> 与可选的 <code>note</code>，保存提交即可；把 <code>updated</code> 改成本次填写的日期，页面会自动显示「最后更新于 X 天前」。</p>
+    </details>
+  </section>
+
+  <!-- 书单 -->
+  <section class="view page" id="view-books" data-view="books">
+    <div class="page-head">
+      <div class="eyebrow">SHELF</div>
+      <h1>书单</h1>
+      <p>读过的书、看过的片，和几句实话。点开卡片看摘抄。<span id="booksCount"></span></p>
+    </div>
+    <div class="shelf-tabs" role="tablist" aria-label="书单分类">
+      <button class="shelf-tab on" data-shelf="books" role="tab" aria-selected="true">读书</button>
+      <button class="shelf-tab" data-shelf="films" role="tab" aria-selected="false">观影</button>
+    </div>
+    <div class="book-grid" id="bookGrid"></div>
+    <details class="howto owner-only">
+      <summary>怎么填这份书单</summary>
+      <p>编辑 <code>data/books.json</code>，或在 Pages CMS 后台打开「书单」集合。<code>books</code> 放书，<code>films</code> 放影视，每项字段：<code>title</code> 标题、<code>author</code> 作者/导演、<code>cover</code> 封面图（可留空，会显示色块首字）、<code>review</code> 一句话短评、<code>rating</code> 0–5 星、<code>excerpts</code> 摘抄列表（每项 <code>{"text": "..."}</code>）。</p>
+      <p>没有内容时只显示空态，不会编造书目。</p>
     </details>
   </section>
 
@@ -380,6 +406,13 @@ document.documentElement.classList.add('booting');
 <!-- 提示气泡 -->
 <div class="toast" id="toast" hidden></div>
 
+<!-- 书单摘抄抽屉 -->
+<div class="drawer-mask" id="bookMask" hidden></div>
+<aside class="book-drawer" id="bookDrawer" hidden aria-label="摘抄">
+  <button class="book-drawer-close" id="bookClose" aria-label="关闭">×</button>
+  <div id="bookDrawerBody"></div>
+</aside>
+
 <!-- 图片灯箱 -->
 <div class="lightbox" id="lightbox" hidden>
   <button class="lb-close" id="lbClose" aria-label="关闭">×</button>
@@ -390,7 +423,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=15"></script>
+<script src="app.js?v=16"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

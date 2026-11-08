@@ -245,6 +245,85 @@ content:
             label: 补充说明
             type: text
 
+  - name: books
+    label: 书单（读书 / 观影）
+    type: file
+    path: data/books.json
+    format: json
+    fields:
+      - name: books
+        label: 读过的书
+        type: object
+        list:
+          collapsible: true
+          summary: "{title}"
+        fields:
+          - name: title
+            label: 书名
+            type: string
+            required: true
+          - name: author
+            label: 作者
+            type: string
+          - name: cover
+            label: 封面（可留空，自动用色块 + 首字）
+            type: image
+            options:
+              media: images
+          - name: review
+            label: 一句话短评
+            type: text
+          - name: rating
+            label: 星级（0–5）
+            type: number
+            default: 0
+          - name: excerpts
+            label: 摘抄
+            type: object
+            list:
+              collapsible: true
+              summary: "{text}"
+            fields:
+              - name: text
+                label: 摘抄内容
+                type: text
+      - name: films
+        label: 看过的影视
+        type: object
+        list:
+          collapsible: true
+          summary: "{title}"
+        fields:
+          - name: title
+            label: 片名
+            type: string
+            required: true
+          - name: author
+            label: 导演 / 主创
+            type: string
+          - name: cover
+            label: 封面（可留空，自动用色块 + 首字）
+            type: image
+            options:
+              media: images
+          - name: review
+            label: 一句话短评
+            type: text
+          - name: rating
+            label: 星级（0–5）
+            type: number
+            default: 0
+          - name: excerpts
+            label: 摘抄 / 台词
+            type: object
+            list:
+              collapsible: true
+              summary: "{text}"
+            fields:
+              - name: text
+                label: 摘抄内容
+                type: text
+
   - name: site
     label: 站点设置
     type: file

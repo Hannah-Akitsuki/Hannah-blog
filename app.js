@@ -88,7 +88,7 @@ function legacyCopy(text) {
 
 
 const state = {
-  config: null, docs: [], photos: [], links: [], music: null, diary: [], now: null,
+  config: null, docs: [], photos: [], links: [], music: null, diary: [], now: null, books: null,
   current: -1, sourceText: '', photoShown: 0, track: 0, giscusLoaded: false
 };
 const PAGE_SIZE = 60;
@@ -178,15 +178,15 @@ async function loadJSON(path) {
 
 async function bootstrap() {
   try {
-    const [config, docs, photos, links, music, diary, now] = await Promise.all([
+    const [config, docs, photos, links, music, diary, now, books] = await Promise.all([
       loadJSON('config.json'), loadJSON('manifest.json'), loadJSON('data/photos.json'),
       loadJSON('data/links.json'), loadJSON('data/music.json'), loadJSON('data/diary.json'),
-      loadJSON('data/now.json').catch(() => null)
+      loadJSON('data/now.json').catch(() => null), loadJSON('data/books.json').catch(() => null)
     ]);
     state.config = config; state.docs = docs || [];
     state.photos = (photos && photos.photos) || [];
     state.links = links || []; state.music = music; state.diary = diary || [];
-    state.now = now || {};
+    state.now = now || {}; state.books = books || {};
   } catch (e) {
     console.error(e);
   }
@@ -309,6 +309,95 @@ function renderNow() {
   }).join('') + (total ? '' : '<p class="now-hint tiny owner-only">在 <code>data/now.json</code> 或 Pages CMS 的「现在（Now）」里填上几条，这里就会显示出来。</p>');
 }
 
+/* ---------------- 书单 ---------------- */
+const COVER_COLORS = ['#6f7f6a', '#a8895f', '#8a7d97', '#7c8d93', '#a37a6a', '#7f8b7d'];
+let shelfKey = 'books';
+function shelfItems(key) {
+  const v = state.books && state.books[key];
+  return Array.isArray(v) ? v : [];
+}
+function bookStars(n) {
+  const v = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
+  return `<span class="book-stars" aria-label="${v} 星">${'★'.repeat(v)}${'☆'.repeat(5 - v)}</span>`;
+}
+function bookExcerpts(b) {
+  return (Array.isArray(b.excerpts) ? b.excerpts : [])
+    .map(x => (typeof x === 'string' ? x : (x && x.text) || ''))
+    .filter(Boolean);
+}
+function coverColor(title) {
+  let h = 0;
+  const s = String(title || '书');
+  for (let i = 0; i < s.length; i++) h = (h + s.charCodeAt(i)) % COVER_COLORS.length;
+  return COVER_COLORS[h];
+}
+function bookCover(b, big) {
+  const letter = esc(String(b.title || '书').trim().charAt(0) || '书');
+  const img = b.cover ? `<img src="${esc(b.cover)}" alt="${esc(b.title || '封面')}" loading="lazy" decoding="async">` : '';
+  return `<div class="book-cover${big ? ' big' : ''}" style="--cover:${coverColor(b.title)}"><span class="book-letter">${letter}</span>${img}</div>`;
+}
+function bindCoverErrors(root) {
+  $$('.book-cover img', root).forEach(img => {
+    img.addEventListener('error', () => { img.remove(); }, { once: true });
+  });
+}
+function bookCard(b, i) {
+  return `<article class="book-card" data-i="${i}" tabindex="0" role="button" aria-label="查看《${esc(b.title || '未命名')}》的摘抄">
+    ${bookCover(b)}
+    <div class="book-info">
+      <b>${esc(b.title || '未命名')}</b>
+      <span class="book-author">${esc(b.author || '')}</span>
+      ${b.review ? `<p>${esc(b.review)}</p>` : ''}
+      ${bookStars(b.rating)}
+    </div>
+  </article>`;
+}
+function renderBooks() {
+  const grid = $('#bookGrid');
+  if (!grid) return;
+  const nb = shelfItems('books').length, nf = shelfItems('films').length;
+  $('#booksCount').textContent = nb || nf ? ` 共 ${nb} 本书、${nf} 部片` : '';
+  $$('.shelf-tab').forEach(btn => {
+    const on = btn.dataset.shelf === shelfKey;
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  const items = shelfItems(shelfKey);
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty">' + (shelfKey === 'books' ? '书单' : '观影记录') +
+      '还是空的 —— 站主还没有往里填，这里不会编造书目。</div>';
+    return;
+  }
+  grid.innerHTML = items.map(bookCard).join('');
+  bindCoverErrors(grid);
+}
+function openBookDrawer(b) {
+  const excerpts = bookExcerpts(b);
+  $('#bookDrawerBody').innerHTML = `
+    <div class="book-drawer-head">
+      ${bookCover(b, true)}
+      <div>
+        <h2>${esc(b.title || '未命名')}</h2>
+        <p class="book-author">${esc(b.author || '')}</p>
+        ${bookStars(b.rating)}
+      </div>
+    </div>
+    ${b.review ? `<p class="book-review">${esc(b.review)}</p>` : ''}
+    <div class="book-excerpts">
+      <h3>摘抄</h3>
+      ${excerpts.length ? excerpts.map(t => `<blockquote>${esc(t)}</blockquote>`).join('') : '<p class="tiny">还没有摘抄。</p>'}
+    </div>`;
+  bindCoverErrors($('#bookDrawerBody'));
+  $('#bookMask').hidden = false;
+  $('#bookDrawer').hidden = false;
+}
+function closeBookDrawer() {
+  const d = $('#bookDrawer');
+  if (!d || d.hidden) return;
+  d.hidden = true;
+  $('#bookMask').hidden = true;
+}
+
 function renderHome() {
   const course = state.docs.filter(d => !isIntro(d));
   $('#homeCards').innerHTML = course.map(d => {
@@ -331,6 +420,9 @@ function renderHome() {
     if (fig) openLightbox(fig.dataset.src, fig.dataset.at, fig.dataset.place);
   });
   renderNowCard();
+  const nb = shelfItems('books').length, nf = shelfItems('films').length;
+  $('#booksCardLine').textContent = (nb || nf) ? ('书 ' + nb + ' · 片 ' + nf) : '还没填';
+  $('#booksCardMeta').textContent = (nb || nf) ? '点开看摘抄' : '等你补上';
 }
 
 /* ---------------- 归档 ---------------- */
@@ -880,7 +972,7 @@ function initArticleTools() {
 }
 
 /* ---------------- 视图路由 ---------------- */
-const VIEWS = ['home', 'now', 'notes', 'article', 'links', 'archive', 'music', 'photos', 'diary', 'guestbook', 'about'];
+const VIEWS = ['home', 'now', 'books', 'notes', 'article', 'links', 'archive', 'music', 'photos', 'diary', 'guestbook', 'about'];
 function showView(name, keepScroll) {
   if (VIEWS.indexOf(name) < 0) name = 'home';
   withVT(() => {
@@ -892,6 +984,7 @@ function showView(name, keepScroll) {
     if (name === 'about') renderAbout();
     if (name === 'guestbook') renderGuestbook();
     if (name === 'now') renderNow();
+    if (name === 'books') renderBooks();
 
     if (!keepScroll) window.scrollTo({ top: 0, behavior: 'auto' });
     document.body.classList.remove('mobile-open');
@@ -1169,8 +1262,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault(); openSearch('');
     }
-    if (e.key === 'Escape') { closeSearch(); closeLightbox(); }
+    if (e.key === 'Escape') { closeSearch(); closeLightbox(); closeBookDrawer(); }
   });
+
+  const bookGrid = $('#bookGrid');
+  if (bookGrid) {
+    bookGrid.addEventListener('click', e => {
+      const card = e.target.closest('.book-card');
+      if (!card) return;
+      const b = shelfItems(shelfKey)[+card.dataset.i];
+      if (b) openBookDrawer(b);
+    });
+    bookGrid.addEventListener('keydown', e => {
+      const card = e.target.closest('.book-card');
+      if (card && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        const b = shelfItems(shelfKey)[+card.dataset.i];
+        if (b) openBookDrawer(b);
+      }
+    });
+  }
+  $$('.shelf-tab').forEach(btn => btn.addEventListener('click', () => {
+    shelfKey = btn.dataset.shelf === 'films' ? 'films' : 'books';
+    renderBooks();
+  }));
+  $('#bookClose').addEventListener('click', closeBookDrawer);
+  $('#bookMask').addEventListener('click', closeBookDrawer);
 
   const rssCopy = $('#rssCopy');
   if (rssCopy) rssCopy.addEventListener('click', () => {
