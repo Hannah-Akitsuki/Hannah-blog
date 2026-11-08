@@ -623,6 +623,279 @@ def osi_model_figure():
 
 
 # --------------------------------------------------------------------------
+# 操作系统
+# --------------------------------------------------------------------------
+
+
+def arrow(x1, y1, x2, y2, label="", cls="dg-green", lx=0, ly=0):
+    ang = math.atan2(y2 - y1, x2 - x1)
+    inner = ['<line class="%s" x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f"/>'
+             % (cls, x1, y1, x2, y2)]
+    for side in (-1, 1):
+        a = ang + side * 0.42
+        inner.append('<path class="%s" d="M %.1f,%.1f L %.1f,%.1f L %.1f,%.1f Z" fill="currentColor" stroke="none"/>'
+                     % (cls, x2, y2, x2 + 10 * math.cos(a), y2 + 10 * math.sin(a),
+                        x2 + 10 * math.cos(ang - side * 0.42), y2 + 10 * math.sin(ang - side * 0.42)))
+    if label:
+        inner.append(text((x1 + x2) / 2 + lx, (y1 + y2) / 2 + ly, label, "dg-muted", "middle"))
+    return "".join(inner)
+
+
+def process_state_figure():
+    W, H = 760, 390
+    inner = [text(20, 26, "进程状态转换（五态模型）", "dg-text")]
+    boxes = [
+        ("创建", 60, 60, 96, 34), ("就绪", 250, 120, 96, 34), ("运行", 460, 120, 96, 34),
+        ("阻塞", 250, 250, 96, 34), ("终止", 630, 60, 96, 34),
+    ]
+    for name, x, y, w, h in boxes:
+        inner.append('<rect class="dg-fill" x="%d" y="%d" width="%d" height="%d" rx="8"/>'
+                     % (x, y, w, h))
+        inner.append(text(x + w / 2, y + 22, name, "dg-text", "middle"))
+    inner.append(arrow(156, 77, 250, 130, "创建", ly=-10))
+    inner.append(arrow(346, 125, 460, 125, "调度", ly=-8))
+    inner.append(arrow(460, 145, 346, 145, "时间片到/被抢占", ly=14))
+    inner.append(arrow(490, 154, 310, 250, "等待事件", lx=55))
+    inner.append(arrow(290, 250, 278, 154, "事件发生", lx=-62))
+    inner.append(arrow(556, 120, 630, 82, "正常结束", ly=-14))
+    inner.append(text(20, 330, "三态模型只保留就绪、运行、阻塞；创建与终止是五态模型额外增加的边界状态。", "dg-muted"))
+    inner.append(text(20, 354, "运行态只能由就绪态转入；阻塞态不能直接转入运行态，必须先回到就绪队列。", "dg-muted"))
+    return svg(W, H, inner, "进程状态转换图")
+
+
+def pv_figure():
+    W, H = 760, 330
+    inner = [text(20, 26, "生产者-消费者：信号量 PV 的配对关系", "dg-text")]
+    inner.append('<rect class="dg-fill" x="40" y="70" width="150" height="70" rx="6"/>')
+    inner.append(text(115, 98, "生产者", "dg-text", "middle"))
+    inner.append(text(115, 120, "生产数据 → 放缓冲区", "dg-muted", "middle"))
+    inner.append('<rect class="dg-fill" x="570" y="70" width="150" height="70" rx="6"/>')
+    inner.append(text(645, 98, "消费者", "dg-text", "middle"))
+    inner.append(text(645, 120, "取缓冲区 → 消费", "dg-muted", "middle"))
+    for i in range(6):
+        cls = "dg-fill-green" if i < 3 else "dg-fill"
+        inner.append('<rect class="%s" x="%d" y="166" width="54" height="44" rx="4"/>'
+                     % (cls, 250 + i * 58, ))
+        inner.append(text(277 + i * 58, 193, "槽", "dg-muted", "middle"))
+    inner.append(text(380, 240, "缓冲区（容量 N = 6，示例已有 3 个）", "dg-muted", "middle"))
+    inner.append(text(20, 268, "empty = N 表示空槽数；full = 0 表示已有数据数；mutex = 1 互斥访问缓冲区。", "dg-muted"))
+    inner.append(text(20, 292, "生产者 P(empty) → P(mutex) → 放入 → V(mutex) → V(full)；消费者顺序相反。", "dg-muted"))
+    inner.append(text(20, 314, "P 操作先减后判，V 操作先加后唤醒；两个 P 的顺序不能颠倒，否则可能死锁。", "dg-muted"))
+    return svg(W, H, inner, "生产者消费者信号量示意图")
+
+
+def banker_figure():
+    alloc = [[0, 1, 0], [2, 0, 0], [3, 0, 2], [2, 1, 1], [0, 0, 2]]
+    maxm = [[7, 5, 3], [3, 2, 2], [9, 0, 2], [2, 2, 2], [4, 3, 3]]
+    avail = [3, 3, 2]
+    need = [[maxm[i][j] - alloc[i][j] for j in range(3)] for i in range(5)]
+    safe, work = [], list(avail)
+    left = {i for i in range(5)}
+    while left:
+        done = False
+        for i in sorted(left):
+            if all(need[i][j] <= work[j] for j in range(3)):
+                for j in range(3):
+                    work[j] += alloc[i][j]
+                safe.append("P%d" % i)
+                left.remove(i)
+                done = True
+                break
+        if not done:
+            break
+    W, H = 760, 430
+    inner = [text(20, 26, "银行家算法：Need = Max − Allocation，Available = (3,3,2)", "dg-text")]
+    heads = ["进程", "Allocation", "Max", "Need"]
+    xs = [40, 220, 350, 490]
+    for x, h in zip(xs, heads):
+        inner.append(text(x, 62, h, "dg-text"))
+    for i in range(5):
+        y = 92 + i * 30
+        inner.append(text(xs[0], y, "P%d" % i, "dg-text"))
+        inner.append(text(xs[1], y, " ".join(map(str, alloc[i])), "dg-mono-muted"))
+        inner.append(text(xs[2], y, " ".join(map(str, maxm[i])), "dg-mono-muted"))
+        inner.append(text(xs[3], y, " ".join(map(str, need[i])), "dg-mono-muted"))
+    inner.append(text(40, 270, "安全序列（脚本按 Work+Allocation 贪心求出）：%s" % " → ".join(safe), "dg-text"))
+    inner.append(text(40, 304, "每一步都要求 Need ≤ Work；找到安全序列说明当前状态安全。", "dg-muted"))
+    inner.append(text(40, 328, "若某进程请求资源，先做「试探分配」，再用同样方法检查是否仍存在安全序列；", "dg-muted"))
+    inner.append(text(40, 352, "存在才真正分配，否则让进程等待，避免进入不安全状态。", "dg-muted"))
+    return svg(W, H, inner, "银行家算法安全序列示例")
+
+
+def page_walk_figure():
+    W, H = 760, 420
+    inner = [text(20, 26, "分页地址转换：TLB → 页表 → 物理地址", "dg-text")]
+    # 逻辑地址
+    inner.append('<rect class="dg-fill-green" x="20" y="60" width="220" height="40" rx="4"/>')
+    inner.append(text(130, 78, "逻辑地址 32 位", "dg-text", "middle"))
+    inner.append(text(130, 92, "页号 20 位 | 页内偏移 12 位", "dg-muted", "middle"))
+    inner.append(arrow(240, 80, 300, 80, "页号"))
+    inner.append('<rect class="dg-fill" x="300" y="52" width="160" height="56" rx="4"/>')
+    inner.append(text(380, 74, "TLB（快表）", "dg-text", "middle"))
+    inner.append(text(380, 92, "命中 → 直接得帧号", "dg-muted", "middle"))
+    inner.append(arrow(460, 80, 520, 80, ""))
+    inner.append(arrow(380, 108, 380, 148, "未命中", lx=34))
+    inner.append('<rect class="dg-fill" x="280" y="148" width="200" height="56" rx="4"/>')
+    inner.append(text(380, 170, "页表（在内存）", "dg-text", "middle"))
+    inner.append(text(380, 188, "页号 → 物理帧号", "dg-muted", "middle"))
+    inner.append(arrow(480, 176, 560, 176, ""))
+    inner.append('<rect class="dg-fill-green" x="560" y="148" width="180" height="56" rx="4"/>')
+    inner.append(text(650, 170, "物理地址", "dg-text", "middle"))
+    inner.append(text(650, 188, "帧号 20 位 | 偏移 12 位", "dg-muted", "middle"))
+    inner.append(text(20, 258, "页内偏移在转换前后保持不变；页号被替换为物理帧号。", "dg-muted"))
+    inner.append(text(20, 282, "TLB 命中只需一次访存取数据；未命中要先访问内存中的页表，再访问数据。", "dg-muted"))
+    inner.append(text(20, 306, "多级页表把页号继续分段，逐级查表，用时间换空间，避免为整个地址空间建一张大表。", "dg-muted"))
+    inner.append(text(20, 330, "页面大小 4 KB = 2^12，所以偏移 12 位；帧号位数由物理地址宽度决定。", "dg-muted"))
+    return svg(W, H, inner, "分页与 TLB 地址转换路径")
+
+
+def page_replace_rows(ref, frames, algo):
+    mem, rows, faults = [], [], 0
+    for page in ref:
+        hit = page in mem
+        if not hit:
+            faults += 1
+            if len(mem) < frames:
+                mem.append(page)
+            elif algo == "fifo":
+                mem.pop(0)
+                mem.append(page)
+            elif algo == "lru":
+                mem.remove(page) if page in mem else None
+                mem.pop(0)
+                mem.append(page)
+            elif algo == "opt":
+                far, victim = -1, 0
+                for idx, p in enumerate(mem):
+                    try:
+                        nxt = ref[rows.__len__() + 1:].index(p)
+                    except ValueError:
+                        nxt = 10 ** 9
+                    if nxt > far:
+                        far, victim = nxt, idx
+                mem.pop(victim)
+                mem.append(page)
+        else:
+            if algo == "lru":
+                mem.remove(page)
+                mem.append(page)
+        rows.append((list(mem), hit))
+    return rows, faults
+
+
+def page_replace_figure():
+    ref = [1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5]
+    frames = 3
+    algos = [("FIFO", "fifo"), ("LRU", "lru"), ("OPT", "opt")]
+    W, H = 760, 380
+    inner = [text(20, 26, "页面置换对比：引用串 1 2 3 4 1 2 5 1 2 3 4 5，3 个物理块", "dg-text")]
+    cw = 55
+    left = 110
+    for i, p in enumerate(ref):
+        inner.append(text(left + i * cw + cw / 2, 52, str(p), "dg-mono-muted", "middle"))
+    y = 78
+    for name, algo in algos:
+        rows, faults = page_replace_rows(ref, frames, algo)
+        inner.append(text(20, y + 26, name, "dg-text"))
+        for i, (mem, hit) in enumerate(rows):
+            cls = "dg-fill-green" if hit else "dg-fill-accent"
+            inner.append('<rect class="%s" x="%d" y="%d" width="%d" height="24" rx="2"/>'
+                         % (cls, left + i * cw, y, cw - 6))
+            inner.append(text(left + i * cw + (cw - 6) / 2, y + 16, str(ref[i]),
+                              "dg-mono", "middle"))
+            inner.append(text(left + i * cw + (cw - 6) / 2, y + 38, "命中" if hit else "缺页",
+                              "dg-muted", "middle"))
+        inner.append(text(700, y + 16, "缺页 %d 次" % faults, "dg-text"))
+        y += 86
+    inner.append(text(20, 340, "绿色 = 命中，橙色 = 缺页；每列显示本次访问的页，缺页率对比见右侧统计。", "dg-muted"))
+    inner.append(text(20, 364, "FIFO 会出现 Belady 异常（块数增加缺页反而增多）；LRU 与 OPT 不会。", "dg-muted"))
+    return svg(W, H, inner, "FIFO/LRU/OPT 页面置换对比")
+
+
+def disk_time_figure():
+    W, H = 760, 400
+    inner = [text(20, 26, "磁盘访问时间 = 寻道时间 + 旋转延迟 + 传输时间", "dg-text")]
+    # 盘面
+    cx, cy, r = 130, 210, 100
+    for rr in (100, 78, 56, 34):
+        inner.append('<circle cx="%d" cy="%d" r="%d" class="dg-axis"/>' % (cx, cy, rr))
+    inner.append('<line class="dg-grid" x1="%d" y1="%d" x2="%d" y2="%d"/>'
+                 % (cx - 100, cy, cx + 100, cy))
+    inner.append(text(cx, cy - 108, "磁道", "dg-muted", "middle"))
+    for ang, name in ((0, "0°"), (90, "90°"), (180, "180°"), (270, "270°")):
+        x = cx + 106 * math.cos(math.radians(ang))
+        y = cy + 106 * math.sin(math.radians(ang))
+        inner.append(text(x, y + 4, name, "dg-muted", "middle"))
+    # 时间条
+    left, top, width = 280, 100, 440
+    segs = [("寻道", 150, "磁头移到目标磁道"), ("旋转延迟", 120, "平均半圈"), ("传输", 150, "读写数据")]
+    x = left
+    for name, w, note in segs:
+        inner.append('<rect class="dg-fill-green" x="%d" y="%d" width="%d" height="36" rx="3"/>'
+                     % (x, top, w))
+        inner.append(text(x + w / 2, top + 22, name, "dg-text", "middle"))
+        inner.append(text(x + w / 2, top + 56, note, "dg-muted", "middle"))
+        x += w + 8
+    inner.append(text(left, top + 96, "平均旋转延迟 = 半圈时间 = 1/(2r)，r 为转速（转/秒）。", "dg-muted"))
+    inner.append(text(left, top + 120, "传输时间 = 读写数据量 / 传输速率；与磁道位置无关。", "dg-muted"))
+    inner.append(text(left, top + 144, "寻道时间通常占主导，因此磁盘调度主要优化寻道。", "dg-muted"))
+    inner.append(text(20, 360, "转速 7200 rpm 时一圈约 8.33 ms，平均旋转延迟约 4.17 ms。", "dg-muted"))
+    return svg(W, H, inner, "磁盘访问时间三段与盘面")
+
+
+def disk_sched_figure():
+    req = [98, 183, 37, 122, 14, 124, 65, 67]
+    start = 53
+
+    def run(algo):
+        if algo == "fcfs":
+            return [start] + req
+        if algo == "sstf":
+            seq, left, cur = [start], list(req), start
+            while left:
+                nxt = min(left, key=lambda x: abs(x - cur))
+                left.remove(nxt)
+                seq.append(nxt)
+                cur = nxt
+            return seq
+        up = sorted([x for x in req if x >= start])
+        down = sorted([x for x in req if x < start], reverse=True)
+        if algo == "scan":          # 到 199 折返
+            return [start] + up + [199] + down
+        if algo == "look":          # 到最远请求折返
+            return [start] + up + down
+        if algo == "cscan":         # 到 199，回到 0，再向上
+            return [start] + up + [199, 0] + sorted([x for x in req if x < start])
+        if algo == "clook":         # 到最远请求，跳到最小请求，再向上
+            low = sorted([x for x in req if x < start])
+            return [start] + up + [low[0]] + low[1:]
+        raise ValueError(algo)
+
+    W, H = 760, 520
+    inner = [text(20, 26, "磁盘调度：起点 53，请求 98/183/37/122/14/124/65/67", "dg-text")]
+    panels = [("FCFS", "fcfs", 40, 90), ("SSTF", "sstf", 280, 90), ("SCAN（向大磁道）", "scan", 520, 90),
+              ("LOOK", "look", 40, 300), ("C-SCAN", "cscan", 280, 300), ("C-LOOK", "clook", 520, 300)]
+    for name, algo, ox, oy in panels:
+        seq = run(algo)
+        inner.append(text(ox, oy - 12, name, "dg-text"))
+        inner.append(line(ox + 34, oy, ox + 214, oy, "dg-axis"))
+        inner.append(line(ox + 34, oy - 140, ox + 34, oy, "dg-axis"))
+        for v in (0, 50, 100, 150, 200):
+            yy = oy - 140 * v / 200
+            inner.append(line(ox + 30, yy, ox + 34, yy, "dg-axis"))
+            inner.append(text(ox + 26, yy + 4, str(v), "dg-muted", "end"))
+        n = max(1, len(seq) - 1)
+        pts = [(ox + 40 + 172 * i / n, oy - 140 * v / 200) for i, v in enumerate(seq)]
+        inner.append(polyline(pts, "dg-green"))
+        for x, y in pts:
+            inner.append('<circle cx="%.1f" cy="%.1f" r="2" class="dg-accent"/>' % (x, y))
+        total = sum(abs(seq[i + 1] - seq[i]) for i in range(len(seq) - 1))
+        inner.append(text(ox + 214, oy + 16, "移动 %d 道" % total, "dg-muted", "end"))
+    inner.append(text(20, 492, "SCAN/C-SCAN 到达端点（199 或 0）才折返；LOOK/C-LOOK 只到最远请求处折返，移动量更小。", "dg-muted"))
+    return svg(W, H, inner, "六种磁盘调度算法的磁头轨迹对比")
+
+
+# --------------------------------------------------------------------------
 # 注册表
 # --------------------------------------------------------------------------
 
@@ -644,4 +917,11 @@ DIAGRAMS = {
     "net-teardown": teardown_figure(),
     "net-subnet": subnet_figure(),
     "net-osi-model": osi_model_figure(),
+    "os-state": process_state_figure(),
+    "os-pv": pv_figure(),
+    "os-banker": banker_figure(),
+    "os-page-walk": page_walk_figure(),
+    "os-replace": page_replace_figure(),
+    "os-disk-time": disk_time_figure(),
+    "os-disk-sched": disk_sched_figure(),
 }

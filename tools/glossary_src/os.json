@@ -1,0 +1,639 @@
+{
+  "course": "操作系统",
+  "terms": [
+    {
+      "id": "os-kernel",
+      "term": "操作系统内核",
+      "abbr": "Kernel",
+      "course": "操作系统",
+      "brief": "运行在特权态、负责进程管理、内存管理、设备管理与文件管理的核心程序。",
+      "detail": "内核常驻内存，提供系统调用接口。按结构可分为单体内核、微内核、模块化内核；Linux 属于模块化单体内核。",
+      "related": ["system-call", "user-kernel-mode", "interrupt-os"],
+      "source": "王道《操作系统》· 概述"
+    },
+    {
+      "id": "system-call",
+      "term": "系统调用",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "用户程序请求内核服务的唯一合法入口，通过陷入（trap）指令从用户态切换到内核态。",
+      "detail": "系统调用与普通函数调用的区别在于特权级切换与内核栈切换。常见系统调用有 fork、exec、read、write、open、close 等。",
+      "related": ["os-kernel", "user-kernel-mode", "interrupt-os"],
+      "source": "王道《操作系统》· 概述"
+    },
+    {
+      "id": "interrupt-os",
+      "term": "中断与异常",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "中断是外部事件引起的异步处理请求，异常是 CPU 执行指令时产生的同步事件。",
+      "detail": "中断包括 I/O 完成中断、时钟中断等；异常包括缺页、除零、非法指令、系统调用陷入。二者都会保存现场并转入内核处理程序。",
+      "related": ["system-call", "page-fault", "interrupt-io"],
+      "source": "王道《操作系统》· 概述"
+    },
+    {
+      "id": "user-kernel-mode",
+      "term": "用户态与内核态",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "CPU 的两种运行特权级：用户态只能执行非特权指令，内核态可执行全部指令并访问全部资源。",
+      "detail": "特权指令包括修改 PSW、开中断、访问页表基址寄存器等。状态切换只能通过中断、异常或系统调用由硬件完成，用户程序不能自行提权。",
+      "related": ["system-call", "os-kernel", "interrupt-os"],
+      "source": "王道《操作系统》· 概述"
+    },
+    {
+      "id": "process-state",
+      "term": "进程状态机",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "进程在生命周期中于创建、就绪、运行、阻塞、终止五种状态之间转换。",
+      "detail": "就绪 → 运行由调度程序触发；运行 → 就绪可能因时间片用完或被更高优先级进程抢占；运行 → 阻塞是主动等待事件；阻塞 → 就绪由事件完成触发。阻塞态不能直接变为运行态。",
+      "related": ["process", "pcb", "process-scheduling"],
+      "source": "王道《操作系统》· 进程管理",
+      "diagram": "os-state",
+      "caption": "五态模型的状态与合法转换；三态模型省略创建与终止两个边界状态。"
+    },
+    {
+      "id": "context-switch",
+      "term": "上下文切换",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "把当前进程的寄存器、PC、栈指针等现场保存到 PCB，并恢复另一个进程的现场。",
+      "detail": "上下文切换本身不产生有用计算，属于系统开销。切换发生在时间片用完、阻塞、中断返回或抢占时。线程切换通常比进程切换便宜，因为地址空间不变。",
+      "related": ["process", "pcb", "thread"],
+      "source": "王道《操作系统》· 进程管理"
+    },
+    {
+      "id": "ipc",
+      "term": "进程间通信（IPC）",
+      "abbr": "IPC",
+      "course": "操作系统",
+      "brief": "进程之间交换数据的机制，主要有共享内存与消息传递两类。",
+      "detail": "共享内存需要显式同步，速度最快；消息传递由内核搬运，适合分布式系统；此外还有管道、信号、套接字等方式。",
+      "related": ["shared-memory", "message-passing", "semaphore"],
+      "source": "王道《操作系统》· 进程管理"
+    },
+    {
+      "id": "shared-memory",
+      "term": "共享内存",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "把同一块物理内存映射到多个进程的地址空间，进程直接读写该区域通信。",
+      "detail": "共享内存本身不提供互斥与同步，必须配合信号量或互斥锁使用，否则会出现数据竞争。",
+      "related": ["ipc", "message-passing", "semaphore"],
+      "source": "王道《操作系统》· 进程管理"
+    },
+    {
+      "id": "message-passing",
+      "term": "消息传递",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "进程通过发送/接收消息（send/receive）交换数据，消息由内核缓冲区搬运。",
+      "detail": "分为直接通信（指定进程）与间接通信（通过信箱）；发送/接收可阻塞也可非阻塞。适合分布式系统，但需要两次数据拷贝。",
+      "related": ["ipc", "shared-memory"],
+      "source": "王道《操作系统》· 进程管理"
+    },
+    {
+      "id": "thread-implementation",
+      "term": "用户级线程与内核级线程",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "用户级线程由线程库管理、内核不可见；内核级线程由内核调度，可真正并行。",
+      "detail": "用户级线程切换快，但一个线程阻塞会导致整个进程阻塞，且不能利用多核。内核级线程由内核管理，切换开销大但可并行。常见模型有多对一、一对一、多对多。",
+      "related": ["thread", "process"],
+      "source": "王道《操作系统》· 进程管理"
+    },
+    {
+      "id": "fcfs-os",
+      "term": "先来先服务调度（FCFS）",
+      "abbr": "FCFS",
+      "course": "操作系统",
+      "brief": "按进程到达就绪队列的先后顺序调度，非抢占式。",
+      "detail": "实现简单、公平，但会出现「护航效应」：长作业在前会使后续短作业等待很久，平均周转时间较大。",
+      "related": ["process-scheduling", "sjf", "rr"],
+      "source": "王道《操作系统》· 调度"
+    },
+    {
+      "id": "sjf",
+      "term": "短作业优先调度（SJF）",
+      "abbr": "SJF",
+      "course": "操作系统",
+      "brief": "选择估计运行时间最短的作业/进程运行，非抢占式；其抢占版本称为 SRTN。",
+      "detail": "在非抢占式且所有作业同时到达时，SJF 的平均等待时间最小。缺点是需要预先估计运行时间，长作业可能饥饿。",
+      "related": ["fcfs-os", "priority-scheduling", "rr"],
+      "source": "王道《操作系统》· 调度"
+    },
+    {
+      "id": "priority-scheduling",
+      "term": "优先级调度",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "每次选择优先级最高的就绪进程运行，可抢占也可非抢占。",
+      "detail": "静态优先级简单但可能饥饿；动态优先级可根据等待时间调整（老化 aging），低优先级进程等待越久优先级越高。",
+      "related": ["sjf", "mlfq", "rr"],
+      "source": "王道《操作系统》· 调度"
+    },
+    {
+      "id": "rr",
+      "term": "时间片轮转调度（RR）",
+      "abbr": "RR",
+      "course": "操作系统",
+      "brief": "就绪进程按 FIFO 排队，每个进程最多运行一个时间片，用完即被抢占并排到队尾。",
+      "detail": "时间片过大退化为 FCFS，过小则上下文切换开销占比过高。RR 响应时间有保证，适合交互式系统，但不区分作业长短。",
+      "related": ["timeslice", "fcfs-os", "mlfq"],
+      "source": "王道《操作系统》· 调度"
+    },
+    {
+      "id": "mlfq",
+      "term": "多级反馈队列调度",
+      "abbr": "MLFQ",
+      "course": "操作系统",
+      "brief": "设置多个优先级队列，时间片随优先级降低而增大；新进程进入最高级队列，用完整时间片的进程被降级。",
+      "detail": "兼顾响应时间与吞吐量：短作业在高层队列很快完成，长作业逐步降到低层获得较大时间片。可能产生饥饿，需配合老化或周期性提升。",
+      "related": ["rr", "priority-scheduling", "sjf"],
+      "source": "王道《操作系统》· 调度"
+    },
+    {
+      "id": "pv-operation",
+      "term": "信号量 PV 操作",
+      "abbr": "P/V",
+      "course": "操作系统",
+      "brief": "P（wait）操作申请资源并使信号量减 1，V（signal）操作释放资源并使信号量加 1。",
+      "detail": "按 Dijkstra 定义：P(S) 先 S=S−1，若 S<0 则阻塞；V(S) 先 S=S+1，若 S≤0 则唤醒一个等待进程。信号量初值表示可用资源数，负值绝对值表示等待进程数。",
+      "related": ["semaphore", "producer-consumer", "monitor"],
+      "source": "王道《操作系统》· 同步与互斥"
+    },
+    {
+      "id": "monitor",
+      "term": "管程",
+      "abbr": "Monitor",
+      "course": "操作系统",
+      "brief": "把共享数据与操作封装在一起的语言级同步机制，同一时刻只允许一个进程在管程内执行。",
+      "detail": "管程用条件变量 wait/signal 实现等待与唤醒；wait 会释放管程锁并阻塞，signal 唤醒一个等待者。相比信号量，管程把互斥自动化，降低出错概率。",
+      "related": ["pv-operation", "semaphore", "critical-section"],
+      "source": "王道《操作系统》· 同步与互斥"
+    },
+    {
+      "id": "producer-consumer",
+      "term": "生产者-消费者问题",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "生产者向容量有限的缓冲区放数据，消费者取数据，二者需互斥访问缓冲区并在满/空时等待。",
+      "detail": "典型解法用三个信号量：empty=N、full=0、mutex=1。生产者先 P(empty) 再 P(mutex)，消费者先 P(full) 再 P(mutex)。两个 P 的顺序不能颠倒，否则生产者可能在持有 mutex 时等待空槽而死锁。",
+      "related": ["pv-operation", "semaphore", "reader-writer"],
+      "source": "王道《操作系统》· 同步与互斥",
+      "diagram": "os-pv",
+      "caption": "缓冲区容量 N=6、已有 3 个数据时的信号量含义；P(empty) 必须写在 P(mutex) 之前。"
+    },
+    {
+      "id": "reader-writer",
+      "term": "读者-写者问题",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "多个读者可同时读，写者必须独占；需保证读写互斥并避免某一方饥饿。",
+      "detail": "读者优先方案用 readcount + mutex + rw 信号量，第一个读者 P(rw)、最后一个读者 V(rw)。写者可能饥饿。写者优先或公平方案需增加排队信号量。",
+      "related": ["producer-consumer", "pv-operation", "philosopher"],
+      "source": "王道《操作系统》· 同步与互斥"
+    },
+    {
+      "id": "philosopher",
+      "term": "哲学家进餐问题",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "5 位哲学家围桌，每人需同时拿起左右两根筷子才能进餐，筷子是共享资源。",
+      "detail": "若每人先拿左边再等右边，会形成循环等待而死锁。解决办法：最多允许 4 人同时拿筷子；奇偶编号不同顺序拿；或一次性原子地拿起两根（AND 信号量）。",
+      "related": ["deadlock-conditions", "pv-operation", "reader-writer"],
+      "source": "王道《操作系统》· 同步与互斥"
+    },
+    {
+      "id": "deadlock-conditions",
+      "term": "死锁的四个必要条件",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "互斥、请求并保持、不可剥夺、循环等待，四者同时成立才可能发生死锁。",
+      "detail": "破坏任一条件即可预防死锁：资源可共享、一次性申请全部资源、允许抢占、按序申请资源。注意这四个条件是必要条件而非充分条件。",
+      "related": ["deadlock", "banker", "resource-allocation-graph"],
+      "source": "王道《操作系统》· 死锁"
+    },
+    {
+      "id": "banker",
+      "term": "银行家算法",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "在分配资源前先做安全性检查，只有分配后仍存在安全序列才真正分配，从而避免死锁。",
+      "detail": "数据结构包括 Available、Max、Allocation、Need。安全性算法用 Work 与 Finish 模拟：反复寻找 Need ≤ Work 的进程，令 Work += Allocation，若能完成全部进程则状态安全。",
+      "related": ["deadlock-conditions", "deadlock", "resource-allocation-graph"],
+      "source": "王道《操作系统》· 死锁",
+      "diagram": "os-banker",
+      "caption": "经典 5 进程 3 类资源示例：Need = Max − Allocation，脚本按 Work+Allocation 求出安全序列。"
+    },
+    {
+      "id": "resource-allocation-graph",
+      "term": "资源分配图",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "用圆圈表示进程、方框表示资源、边表示请求与分配关系，用于分析死锁。",
+      "detail": "请求边由进程指向资源，分配边由资源指向进程。每类资源只有一个实例时，图中出现环即死锁；多实例时，有环不一定死锁，需进一步化简图。",
+      "related": ["deadlock-conditions", "banker"],
+      "source": "王道《操作系统》· 死锁"
+    },
+    {
+      "id": "memory-fragmentation",
+      "term": "内部碎片与外部碎片",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "内部碎片是分配给进程但未被使用的空间；外部碎片是分区之间零散、无法利用的小空闲区。",
+      "detail": "固定分区与分页会产生内部碎片；可变分区与分段会产生外部碎片，可用紧凑（compaction）合并，但代价高。",
+      "related": ["contiguous-allocation", "paging", "segmentation"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "contiguous-allocation",
+      "term": "连续分配管理",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "为进程分配一段连续的内存空间，分为单一连续、固定分区与动态分区。",
+      "detail": "动态分区常用首次适应、最佳适应、最坏适应、邻近适应等算法。首次适应实现简单、性能通常较好；最佳适应容易留下大量难以利用的小碎片。",
+      "related": ["memory-fragmentation", "paging", "segmentation"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "paging",
+      "term": "分页存储管理",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "把逻辑地址空间等分为页、物理内存等分为块（页框），页可离散装入任意页框。",
+      "detail": "页与页框大小相等，通常为 4 KB。分页消除了外部碎片，但最后一页可能产生内部碎片；地址转换依赖页表，页表项记录页号到页框号的映射。",
+      "related": ["page-table", "address-translation", "tlb", "segmentation"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "segmentation",
+      "term": "分段存储管理",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "按程序的逻辑结构（代码段、数据段、栈段）划分成不等长的段，每段连续存放。",
+      "detail": "段表项包含段基址与段长，地址转换需检查段内偏移是否越界。分段便于共享与保护，但会产生外部碎片。",
+      "related": ["segment-paging", "paging", "memory-fragmentation"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "segment-paging",
+      "term": "段页式存储管理",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "先按逻辑分段，段内再分页，兼顾分段的逻辑性与分页的无外部碎片。",
+      "detail": "地址转换需要段表与页表两级查表：逻辑地址 = 段号 + 段内页号 + 页内偏移。首次访存查段表，第二次查页表，第三次取数据，TLB 可加速。",
+      "related": ["segmentation", "paging", "address-translation"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "address-translation",
+      "term": "逻辑地址到物理地址转换",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "分页系统中把逻辑地址拆成页号与页内偏移，用页表查得页框号后拼接成物理地址。",
+      "detail": "页内偏移位数由页面大小决定（4 KB → 12 位）；页号位数由逻辑地址宽度决定。转换时先查 TLB，未命中再查内存页表；缺页则触发缺页异常。",
+      "related": ["paging", "tlb", "page-table", "page-fault"],
+      "source": "王道《操作系统》· 内存管理",
+      "diagram": "os-page-walk",
+      "caption": "32 位逻辑地址（页号 20 位 + 偏移 12 位）经 TLB 与页表转换为物理地址的路径。"
+    },
+    {
+      "id": "tlb",
+      "term": "快表（TLB）",
+      "abbr": "TLB",
+      "course": "操作系统",
+      "brief": "存放在 CPU 内的高速相联想存储器，缓存最近使用的页表项，减少访存次数。",
+      "detail": "TLB 命中时一次访存即可取数据；未命中需访问内存页表。进程切换时要刷新 TLB（或用 ASID 区分），否则会读到旧进程的映射。",
+      "related": ["address-translation", "page-table", "paging"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "multilevel-page-table",
+      "term": "多级页表",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "把页号再分段，用多张较小的页表逐级索引，避免为整个地址空间建立一张连续大表。",
+      "detail": "32 位地址、4 KB 页、页表项 4 B 时，单级页表需 4 MB 且必须连续；两级页表把页号分成 10+10 位，只需顶层 4 KB 常驻。代价是访存次数增加。",
+      "related": ["page-table", "address-translation", "tlb"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "page-fault",
+      "term": "缺页中断",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "访问的页不在内存时由硬件触发缺页异常，内核调入该页后重新执行指令。",
+      "detail": "处理流程：检查地址合法性 → 找空闲页框（无则置换）→ 从外存读入 → 修改页表与 TLB → 重新执行被中断的指令。缺页处理期间进程阻塞。",
+      "related": ["paging", "page-replacement", "interrupt-os"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "page-replacement",
+      "term": "页面置换算法",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "内存无空闲页框时，选择某一页换出，常见算法有 OPT、FIFO、LRU、Clock。",
+      "detail": "OPT 置换未来最长时间不用的页，缺页率最低但无法实现，只作评价基准；FIFO 实现简单但可能出现 Belady 异常；LRU 置换最久未使用的页，性能接近 OPT，但需要硬件支持；Clock 是 LRU 的近似，用引用位与指针扫描。",
+      "related": ["lru", "fifo-page", "opt-page", "clock-page", "page-fault"],
+      "source": "王道《操作系统》· 内存管理",
+      "diagram": "os-replace",
+      "caption": "引用串 1 2 3 4 1 2 5 1 2 3 4 5、3 个物理块时 FIFO / LRU / OPT 的缺页情况（绿色命中，橙色缺页）。"
+    },
+    {
+      "id": "lru",
+      "term": "最近最久未使用（LRU）",
+      "abbr": "LRU",
+      "course": "操作系统",
+      "brief": "每次置换最长时间未被访问的页面，依据程序的时间局部性。",
+      "detail": "LRU 不会出现 Belady 异常，但需要记录访问顺序，硬件实现成本高；常用栈或链表近似实现。",
+      "related": ["page-replacement", "clock-page", "opt-page"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "fifo-page",
+      "term": "先进先出置换（FIFO）",
+      "abbr": "FIFO",
+      "course": "操作系统",
+      "brief": "置换最早进入内存的页面，按到达顺序排队。",
+      "detail": "FIFO 实现简单，但可能把常用页换出，并存在 Belady 异常：物理块数增加时缺页次数反而增加。",
+      "related": ["page-replacement", "lru", "opt-page"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "opt-page",
+      "term": "最佳置换（OPT）",
+      "abbr": "OPT",
+      "course": "操作系统",
+      "brief": "置换未来最长时间不再被访问的页面，理论缺页率最低。",
+      "detail": "OPT 需要预知未来访问序列，无法实际实现，通常作为衡量其他置换算法优劣的下界。",
+      "related": ["page-replacement", "lru", "fifo-page"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "clock-page",
+      "term": "时钟置换（Clock）",
+      "abbr": "Clock",
+      "course": "操作系统",
+      "brief": "把页面排成环，指针扫描；引用位为 1 则清零并跳过，为 0 则置换。",
+      "detail": "Clock 又称最近未使用（NRU）近似，是 LRU 的低成本实现。最坏情况下扫描一圈才能找到被置换页，也称二次机会算法。",
+      "related": ["page-replacement", "lru", "fifo-page"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "thrashing",
+      "term": "抖动（颠簸）",
+      "abbr": "Thrashing",
+      "course": "操作系统",
+      "brief": "进程频繁缺页、大部分时间用于换页而非计算，CPU 利用率急剧下降。",
+      "detail": "根因是分配给进程的页框数少于其工作集。解决办法：降低多道程序度、采用工作集模型分配页框、增加内存或调整页面大小。",
+      "related": ["working-set", "page-replacement", "virtual-memory"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "working-set",
+      "term": "工作集",
+      "abbr": "WS",
+      "course": "操作系统",
+      "brief": "进程在最近 Δ 个时间单位内实际访问的页面集合，用于估计所需页框数。",
+      "detail": "工作集大小 WSS 随 Δ 变化；系统应保证所有进程工作集之和不超过可用页框数，否则会发生抖动。",
+      "related": ["thrashing", "lru", "virtual-memory"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "virtual-memory",
+      "term": "虚拟存储器",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "借助外存把逻辑地址空间扩大，只把当前需要的页调入内存，实现按需调页。",
+      "detail": "虚拟存储的理论基础是局部性原理。容量受地址空间与辅存大小限制，不受物理内存限制；需要地址转换、缺页处理与页面置换配合。",
+      "related": ["page-fault", "page-replacement", "thrashing", "tlb"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "file-directory",
+      "term": "目录结构",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "组织文件名到文件控制块的映射，常见单级、两级、树形与图形目录。",
+      "detail": "树形目录支持路径访问与层次管理；图形目录允许硬链接与软链接，需防止循环。目录项通常只存文件名与 inode 号。",
+      "related": ["file-system", "inode", "file-allocation"],
+      "source": "王道《操作系统》· 文件系统"
+    },
+    {
+      "id": "file-allocation",
+      "term": "文件分配方式",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "外存上为文件分配块的方式：连续分配、链接分配、索引分配。",
+      "detail": "连续分配顺序访问快但有外部碎片、难扩展；链接分配无外部碎片、易扩展，但随机访问慢；索引分配通过索引块支持随机访问，代价是索引块开销。",
+      "related": ["inode", "fat", "free-space"],
+      "source": "王道《操作系统》· 文件系统"
+    },
+    {
+      "id": "inode",
+      "term": "索引节点（inode）",
+      "abbr": "inode",
+      "course": "操作系统",
+      "brief": "存放文件元数据（大小、权限、时间、块指针）的数据结构，文件名与 inode 分离。",
+      "detail": "inode 含直接指针、一级/二级/三级间接指针，可支持大文件。打开文件时把 inode 调入内存；硬链接是多个目录项指向同一 inode。",
+      "related": ["file-allocation", "file-directory", "fat"],
+      "source": "王道《操作系统》· 文件系统"
+    },
+    {
+      "id": "fat",
+      "term": "文件分配表（FAT）",
+      "abbr": "FAT",
+      "course": "操作系统",
+      "brief": "链接分配的一种实现：在内存中保存一张表，记录每个块的下一块号。",
+      "detail": "FAT 表项与磁盘块一一对应，随机访问需沿链查找。FAT12/16/32 的表项位数不同，决定单分区最大容量。",
+      "related": ["file-allocation", "inode", "free-space"],
+      "source": "王道《操作系统》· 文件系统"
+    },
+    {
+      "id": "free-space",
+      "term": "空闲空间管理",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "记录磁盘空闲块的方法：位示图、空闲链表、成组链接、计数法。",
+      "detail": "位示图用 1 位表示一个块是否空闲，便于查找连续块；成组链接适合大磁盘，把空闲块分组并记录下一组信息。",
+      "related": ["file-allocation", "fat", "bitmap"],
+      "source": "王道《操作系统》· 文件系统"
+    },
+    {
+      "id": "bitmap",
+      "term": "位示图",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "用二进制位表示磁盘块或页框的使用状态，0/1 表示空闲/占用。",
+      "detail": "位示图占用空间小，可快速判断与查找连续空闲块；常用于文件系统空闲空间管理与内存页框分配。",
+      "related": ["free-space", "file-allocation"],
+      "source": "王道《操作系统》· 文件系统"
+    },
+    {
+      "id": "disk-structure",
+      "term": "磁盘物理结构",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "磁盘由盘片、磁道、扇区、柱面组成，磁头沿半径移动寻道，盘片旋转定位扇区。",
+      "detail": "一个扇区通常 512 B 或 4 KB。柱面是同一半径上的所有磁道，连续分配时优先同柱面可减少寻道。",
+      "related": ["disk-access-time", "disk-scheduling"],
+      "source": "王道《操作系统》· 磁盘管理"
+    },
+    {
+      "id": "disk-access-time",
+      "term": "磁盘访问时间",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "一次磁盘读写的时间由寻道时间、旋转延迟和传输时间三部分组成。",
+      "detail": "寻道时间是把磁头移到目标磁道的时间；旋转延迟是等待目标扇区转到磁头下方的时间，平均为半圈；传输时间是读写数据本身的时间。寻道通常占主导。",
+      "related": ["disk-structure", "disk-scheduling"],
+      "source": "王道《操作系统》· 磁盘管理",
+      "diagram": "os-disk-time",
+      "caption": "磁盘访问时间三段：寻道 + 旋转延迟（平均半圈）+ 传输；转速 7200 rpm 时平均旋转延迟约 4.17 ms。"
+    },
+    {
+      "id": "disk-scheduling",
+      "term": "磁盘调度算法",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "决定多个磁盘请求的服务顺序，以减少总寻道时间，常见 FCFS、SSTF、SCAN、C-SCAN、LOOK、C-LOOK。",
+      "detail": "SSTF 每次选离当前磁头最近的请求，可能饥饿；SCAN 像电梯一样单向扫描到端点再折返；C-SCAN 到端点后直接回到另一端，使等待时间更均匀；LOOK/C-LOOK 只在最远请求处折返，减少空走。",
+      "related": ["sstf", "scan-disk", "c-scan", "look-disk", "disk-access-time"],
+      "source": "王道《操作系统》· 磁盘管理",
+      "diagram": "os-disk-sched",
+      "caption": "起点 53、请求 98/183/37/122/14/124/65/67 时六种算法的磁头轨迹与总移动道数（脚本计算）。"
+    },
+    {
+      "id": "sstf",
+      "term": "最短寻道时间优先（SSTF）",
+      "abbr": "SSTF",
+      "course": "操作系统",
+      "brief": "每次选择距离当前磁头位置最近的磁盘请求，使单次寻道最短。",
+      "detail": "SSTF 平均寻道时间优于 FCFS，但可能使远端请求长期得不到服务（饥饿）。",
+      "related": ["disk-scheduling", "scan-disk", "fcfs-os"],
+      "source": "王道《操作系统》· 磁盘管理"
+    },
+    {
+      "id": "scan-disk",
+      "term": "扫描算法（SCAN / 电梯算法）",
+      "abbr": "SCAN",
+      "course": "操作系统",
+      "brief": "磁头沿一个方向移动到磁盘端点，途中服务所有经过的请求，到端点后反向。",
+      "detail": "SCAN 避免饥饿，但两侧请求的等待时间不均匀；到达端点可能空走。",
+      "related": ["disk-scheduling", "c-scan", "look-disk"],
+      "source": "王道《操作系统》· 磁盘管理"
+    },
+    {
+      "id": "c-scan",
+      "term": "循环扫描算法（C-SCAN）",
+      "abbr": "C-SCAN",
+      "course": "操作系统",
+      "brief": "磁头单向扫描到端点后快速回到另一端，再沿同一方向扫描，只在返回途中服务请求。",
+      "detail": "C-SCAN 使各磁道请求的等待时间更均匀，代价是返回空走增加。",
+      "related": ["disk-scheduling", "scan-disk", "look-disk"],
+      "source": "王道《操作系统》· 磁盘管理"
+    },
+    {
+      "id": "look-disk",
+      "term": "LOOK 与 C-LOOK",
+      "abbr": "LOOK",
+      "course": "操作系统",
+      "brief": "LOOK 到最远请求处即折返；C-LOOK 到最远请求后直接跳到最小请求，再单向扫描。",
+      "detail": "两者不走到磁盘物理端点，避免空走，是 SCAN/C-SCAN 的实用改进。",
+      "related": ["disk-scheduling", "scan-disk", "c-scan"],
+      "source": "王道《操作系统》· 磁盘管理"
+    },
+    {
+      "id": "io-buffer",
+      "term": "缓冲区管理",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "在内存设置缓冲区，协调 CPU 与 I/O 设备的速度差异，减少中断次数。",
+      "detail": "单缓冲、双缓冲、循环缓冲与缓冲池。双缓冲允许输入与输出并行，提高吞吐量；缓冲池供多个设备共享。",
+      "related": ["spooling", "device-controller", "interrupt-io"],
+      "source": "王道《操作系统》· I/O 管理"
+    },
+    {
+      "id": "spooling",
+      "term": "SPOOLing 技术",
+      "abbr": "SPOOLing",
+      "course": "操作系统",
+      "brief": "用磁盘作为缓冲区，把独占设备改造成逻辑上的共享设备，典型例子是打印池。",
+      "detail": "SPOOLing 系统由输入井、输出井、输入/输出进程组成，使多个进程可并发提交作业，提高设备利用率。",
+      "related": ["io-buffer", "device-controller"],
+      "source": "王道《操作系统》· I/O 管理"
+    },
+    {
+      "id": "device-controller",
+      "term": "设备控制器",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "位于 CPU 与 I/O 设备之间的硬件，负责接收命令、控制设备动作并向 CPU 报告状态。",
+      "detail": "控制器含数据寄存器、控制寄存器、状态寄存器；设备驱动程序通过读写这些寄存器操作设备。",
+      "related": ["io-buffer", "interrupt-io", "dma-os"],
+      "source": "王道《操作系统》· I/O 管理"
+    },
+    {
+      "id": "program-query",
+      "term": "程序查询方式（轮询）",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "CPU 不断读取设备状态寄存器，直到设备就绪后再进行数据传输。",
+      "detail": "实现简单但 CPU 空转等待，效率低，只适合设备很少或对性能要求不高的场合。",
+      "related": ["interrupt-io", "dma-os", "device-controller"],
+      "source": "王道《操作系统》· I/O 管理"
+    },
+    {
+      "id": "interrupt-io",
+      "term": "中断驱动 I/O",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "设备就绪时向 CPU 发中断，CPU 转去执行中断处理程序完成数据传送。",
+      "detail": "相比轮询，CPU 不必空转等待，但每个字节/字都要中断，开销仍较大，适合低速设备。",
+      "related": ["program-query", "dma-os", "interrupt-os"],
+      "source": "王道《操作系统》· I/O 管理"
+    },
+    {
+      "id": "dma-os",
+      "term": "直接存储器访问（DMA）",
+      "abbr": "DMA",
+      "course": "操作系统",
+      "brief": "由 DMA 控制器在设备与内存之间直接搬运数据块，CPU 只在开始与结束时参与。",
+      "detail": "DMA 以块为单位传输，减少中断次数，适合磁盘等高速设备。CPU 与 DMA 同时访存时可能发生总线争用。",
+      "related": ["interrupt-io", "program-query", "device-controller"],
+      "source": "王道《操作系统》· I/O 管理"
+    },
+    {
+      "id": "file-logical-structure",
+      "term": "文件逻辑结构",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "从用户角度看到的文件组织方式，分为无结构文件与有结构文件。",
+      "detail": "有结构文件又分顺序文件、索引文件、索引顺序文件。顺序文件适合批量处理，索引文件支持随机访问，索引顺序文件兼顾两者。",
+      "related": ["file-system", "file-allocation", "file-directory"],
+      "source": "王道《操作系统》· 文件系统"
+    },
+    {
+      "id": "page-size",
+      "term": "页面大小",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "分页系统中页与页框的大小，常见 4 KB，是地址拆分与页表规模的基准。",
+      "detail": "页面过小则页表项过多、缺页开销增大；页面过大则内部碎片增加。页面大小为 2^n 时，页内偏移占 n 位。",
+      "related": ["paging", "address-translation", "memory-fragmentation"],
+      "source": "王道《操作系统》· 内存管理"
+    },
+    {
+      "id": "scheduler-level",
+      "term": "三级调度",
+      "abbr": "",
+      "course": "操作系统",
+      "brief": "高级调度（作业调度）、中级调度（内存调度/挂起）、低级调度（进程调度）。",
+      "detail": "高级调度决定哪些作业进入内存；中级调度在内存紧张时把进程挂起到外存并在适当时机调入；低级调度决定就绪进程谁占用 CPU，频率最高。",
+      "related": ["process-scheduling", "process-state", "virtual-memory"],
+      "source": "王道《操作系统》· 调度"
+    }
+  ]
+}
