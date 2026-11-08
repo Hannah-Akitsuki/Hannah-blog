@@ -127,7 +127,8 @@ function buildUpdate(s) {
 
   if (s.name === 'music') {
     const disc = n.Disc;
-    if (disc) s.update = (t, dt) => { disc.rotateZ(dt * 0.5); };
+    // glTF 里圆柱的轴向是 +Y（Blender 的 Z 在导出时被转成 Y），所以绕 Y 才是原地匀速旋转
+    if (disc) s.update = (t, dt) => { disc.rotateY(dt * 0.5); };
   }
 
   if (s.name === 'wall') {
