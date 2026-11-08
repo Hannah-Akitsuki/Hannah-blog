@@ -1,6 +1,6 @@
 {
   "site": {
-    "brandMark": "寒",
+    "brandMark": "✦",
     "brandName": "寒鹤",
     "brandSub": "HANHE BLOG",
     "heroTitle": "寒鹤",
@@ -12,11 +12,11 @@
     "signature": "记录课堂与生活，也做一点小工具。"
   },
   "giscus": {
-    "enabled": false,
+    "enabled": true,
     "repo": "Hannah-Akitsuki/Hannah-blog",
-    "repoId": "",
+    "repoId": "R_kgDOVjWrUw",
     "category": "Announcements",
-    "categoryId": "",
+    "categoryId": "DIC_kwDOVjWrU84DKoIG",
     "mapping": "pathname",
     "reactionsEnabled": "1",
     "emitMetadata": "0",

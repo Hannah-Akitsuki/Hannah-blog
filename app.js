@@ -12,6 +12,53 @@ const state = {
 };
 const PAGE_SIZE = 60;
 
+/* ---------------- 站主模式 ----------------
+   仅隐藏编辑入口，不构成安全防护：静态站无法验证身份。
+   ?owner=1 进入（写入 localStorage，本机长期有效）；?owner=0 或面板内按钮退出。 */
+const OWNER_KEY = 'owner';
+function isOwner() { try { return localStorage.getItem(OWNER_KEY) === '1'; } catch (e) { return false; } }
+function setOwner(on) {
+  try { on ? localStorage.setItem(OWNER_KEY, '1') : localStorage.removeItem(OWNER_KEY); } catch (e) {}
+  document.body.classList.toggle('owner', !!on);
+}
+function refreshOwnerViews() {
+  renderLinks();
+  renderMusic();
+  renderDiary();
+  renderGuestbook();
+}
+function toggleOwner() {
+  setOwner(!isOwner());
+  const dlg = $('#customize');
+  if (!isOwner() && dlg && dlg.open) dlg.close();
+  refreshOwnerViews();
+}
+function initOwner() {
+  const p = new URLSearchParams(location.search);
+  const flag = p.get('owner');
+  if (flag === '1') setOwner(true);
+  else if (flag === '0') setOwner(false);
+  else setOwner(isOwner());
+  if (flag === '1' || flag === '0') {
+    p.delete('owner');
+    const qs = p.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+  }
+
+  /* 连点品牌 5 次进入 / 退出（触屏同样可用） */
+  let taps = 0, timer = null;
+  $('.brand').addEventListener('click', e => {
+    taps++;
+    clearTimeout(timer);
+    timer = setTimeout(() => { taps = 0; }, 2500);
+    if (taps >= 5) {
+      taps = 0;
+      e.preventDefault();
+      toggleOwner();
+    }
+  });
+}
+
 /* ---------------- 主题 ---------------- */
 function currentTheme() { return document.documentElement.getAttribute('data-theme') || 'light'; }
 function applyTheme(t) {
@@ -125,7 +172,7 @@ function renderHome() {
 
   const items = state.photos.slice(0, 8).map(p =>
     `<figure class="ph"><img src="${esc(p.src)}" alt="${esc(p.album)}" loading="lazy" decoding="async"></figure>`).join('');
-  $('#homePhotos').innerHTML = items;
+  $('#homePhotos').innerHTML = items || '<div class="empty">相册还是空的 —— 把照片放进 <code>photos/</code> 就会出现在这里。</div>';
   $('#homePhotos').addEventListener('click', e => {
     const img = e.target.closest('img');
     if (img) openLightbox(img.src);
@@ -161,7 +208,9 @@ function renderArchive() {
 function renderLinks() {
   const box = $('#linkGrid');
   if (!state.links.length) {
-    box.innerHTML = '<div class="empty">还没有添加链接。编辑 <code>data/links.json</code> 后刷新即可显示。</div>';
+    box.innerHTML = isOwner()
+      ? '<div class="empty">还没有添加链接。编辑 <code>data/links.json</code> 后刷新即可显示。</div>'
+      : '<div class="empty">还没有整理好链接，稍后再来看看。</div>';
     return;
   }
   box.innerHTML = state.links.map(l => `
@@ -181,7 +230,7 @@ function renderPhotos() {
   $('#photoTotal').textContent = state.photos.length;
   state.photoShown = 0;
   if (!state.photos.length) {
-    grid.innerHTML = '<div class="empty">images/ 目录里没有找到图片。</div>';
+    grid.innerHTML = '<div class="empty">相册还是空的 —— 把照片放进 <code>photos/</code> 就会出现在这里。</div>';
     return;
   }
   grid.innerHTML = '';
@@ -258,9 +307,9 @@ function renderMusic() {
       </div>
       ${list.length ? `<ul class="pl-list" id="plList">${list.map((t, i) =>
         `<li data-track="${i}" class="${i === state.track ? 'on' : ''}"><span>${esc(t.title)}</span><span>${esc(t.artist || '')}</span></li>`).join('')}</ul>`
-      : `<div class="empty" style="margin-top:18px">还没有音频文件。把 mp3 放进仓库（例如 <code>audio/xxx.mp3</code>），
-          然后在 <code>data/music.json</code> 的 <code>tracks</code> 里加一条
-          <code>{"title":"歌名","artist":"歌手","src":"audio/xxx.mp3"}</code> 即可播放。</div>`}
+      : `<div class="empty" style="margin-top:18px">${isOwner()
+          ? '还没有音频文件。把 mp3 放进仓库（例如 <code>audio/xxx.mp3</code>），然后在 <code>data/music.json</code> 的 <code>tracks</code> 里加一条 <code>{"title":"歌名","artist":"歌手","src":"audio/xxx.mp3"}</code> 即可播放。'
+          : '博主还没有上传音乐。'}</div>`}
     </div>`;
 
   $$('[data-act]').forEach(btn => btn.addEventListener('click', () => {
@@ -315,9 +364,8 @@ function paintPlayState() {
 function renderDiary() {
   const box = $('#diaryList');
   if (!state.diary.length) {
-    box.innerHTML = `<div class="empty">还没有公开的日记条目。<br>
-      在 <code>data/diary-all.json</code> 写好内容后运行 <code>python tools/filter_diary.py</code>，
-      只有 <code>public: true</code> 的条目会出现在这里。</div>`;
+    box.innerHTML = `<div class="empty">还没有公开的日记。<br>
+      ${isOwner() ? '在 <code>data/diary-all.json</code> 写好内容后运行 <code>python tools/filter_diary.py</code>，只有 <code>public: true</code> 的条目会出现在这里。' : '博主还没有公开任何日记。'}</div>`;
   } else {
     box.innerHTML = state.diary.map(e => `
       <article class="diary-item">
@@ -354,6 +402,10 @@ function renderGuestbook() {
   const g = (state.config && state.config.giscus) || {};
   const wrap = $('#giscusWrap');
   if (!g.enabled || !g.repoId || !g.categoryId) {
+    if (!isOwner()) {
+      wrap.innerHTML = '<div class="empty">留言板还在准备中，稍后再来看看。</div>';
+      return;
+    }
     wrap.innerHTML = `<div class="gb-steps">
       <b>留言板还没启用，需要你完成三步（约 3 分钟）：</b>
       <ol>
@@ -562,9 +614,10 @@ function route() {
 /* ---------------- 顶栏交互 ---------------- */
 function onScroll() {
   const y = window.scrollY || 0;
-  document.body.classList.toggle('scrolled', y > 12);
+  const scrolled = y > 40;
+  document.body.classList.toggle('scrolled', scrolled);
   const isHome = $('#hero') && !$('#hero').hidden;
-  $('.topbar').classList.toggle('over-hero', isHome && y < 40 && !document.body.classList.contains('scrolled'));
+  $('.topbar').classList.toggle('over-hero', !!isHome && !scrolled);
 }
 
 /* ---------------- 搜索 ---------------- */
@@ -628,11 +681,17 @@ function initCustomize() {
     if (s.heroImage) $('#heroImg').src = s.heroImage;
     $('#custStatus').textContent = '已恢复为 config.json 中的默认图片。';
   });
+  $('#custExit').addEventListener('click', () => {
+    setOwner(false);
+    dlg.close();
+    refreshOwnerViews();
+  });
 }
 
 /* ---------------- 启动 ---------------- */
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(currentTheme());
+  initOwner();
 
   window.addEventListener('hashchange', route);
   window.addEventListener('scroll', onScroll, { passive: true });

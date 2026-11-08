@@ -10,7 +10,7 @@
 /* 主题初始化：先于渲染执行，避免明暗闪烁 */
 (function(){try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}})();
 </script>
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -68,8 +68,8 @@
           <a class="chip" href="#about">关于我</a>
           <a class="chip" href="#guestbook">留言</a>
         </div>
-        <button class="ghost-btn" id="customizeBtn">换头像 / 换背景</button>
-        <p class="tiny">默认读取 config.json</p>
+        <button class="ghost-btn owner-only" id="customizeBtn">换头像 / 换背景</button>
+        <p class="tiny owner-only">默认读取 config.json</p>
       </aside>
 
       <div class="feed">
@@ -123,7 +123,7 @@
         <div class="toolbar">
           <span id="status">选择一篇笔记开始阅读</span>
           <div>
-            <button id="edit">编辑文章</button>
+            <button id="edit" class="owner-only">编辑文章</button>
             <button id="save" hidden>下载 Markdown</button>
             <button id="cancel" hidden>取消</button>
           </div>
@@ -154,10 +154,10 @@
     <div class="page-head">
       <div class="eyebrow">LINKS</div>
       <h1>个人工具 Links</h1>
-      <p>常用站点与自建工具。列表由 <code>data/links.json</code> 驱动，改文件即可增删。</p>
+      <p>常用站点与自建工具。</p>
     </div>
     <div class="link-grid" id="linkGrid"></div>
-    <details class="howto">
+    <details class="howto owner-only">
       <summary>怎么编辑这个列表</summary>
       <p>打开仓库里的 <code>data/links.json</code>，按现有格式添加一条：</p>
 <pre><code>{
@@ -175,7 +175,7 @@
     <div class="page-head">
       <div class="eyebrow">ARCHIVE</div>
       <h1>归档</h1>
-      <p>按年份倒序排列。日期取自 <code>manifest.json</code> 的 <code>date</code> 字段。</p>
+      <p>按年份倒序排列。</p>
     </div>
     <div id="archiveList"></div>
   </section>
@@ -185,7 +185,7 @@
     <div class="page-head">
       <div class="eyebrow">MUSIC</div>
       <h1>音乐</h1>
-      <p>纯本地播放器，歌单来自 <code>data/music.json</code>，音频文件放在仓库里。</p>
+      <p>随手放几首正在听的歌。</p>
     </div>
     <div class="player" id="player"></div>
   </section>
@@ -195,7 +195,7 @@
     <div class="page-head">
       <div class="eyebrow">GALLERY</div>
       <h1>照片墙</h1>
-      <p>来自站内 <code>images/</code> 目录，共 <b id="photoTotal">0</b> 张。点击可放大。新增图片后运行 <code>python tools/build_photos.py</code> 更新索引。</p>
+      <p>来自独立相册目录 <code>photos/</code>，共 <b id="photoTotal">0</b> 张。点击可放大。<span class="owner-only">新增照片后运行 <code>python tools/build_photos.py</code> 更新索引。</span></p>
     </div>
     <div class="photo-grid" id="photoGrid"></div>
     <div class="more-wrap"><button class="ghost-btn" id="photoMore" hidden>加载更多</button></div>
@@ -206,9 +206,9 @@
     <div class="page-head">
       <div class="eyebrow">DIARY</div>
       <h1>个人日记</h1>
-      <p>只有标记为 <code>public: true</code> 的条目才会被构建进页面。</p>
+      <p>记录一些日常，公开的部分会出现在这里。</p>
     </div>
-    <div class="notice warn">
+    <div class="notice warn owner-only">
       <b>隐私边界（请先读）</b>
       <p>GitHub Pages 是公开站点，写进仓库的文件任何人都能下载查看，包括被页面隐藏的文件。所以：</p>
       <ul>
@@ -218,7 +218,7 @@
       </ul>
     </div>
     <div id="diaryList" class="diary-list"></div>
-    <div class="local-draft">
+    <div class="local-draft owner-only">
       <div class="feed-head"><h2>仅自己看 · 本地草稿</h2><span class="tiny">存在浏览器 localStorage</span></div>
       <textarea id="draftBox" placeholder="在这里写点不想公开的东西……（只保存在本机浏览器）"></textarea>
       <div class="draft-actions">
@@ -280,7 +280,9 @@
     <label class="file-row">头像 <input type="file" id="pickAvatar" accept="image/*"></label>
     <label class="file-row">背景 <input type="file" id="pickHero" accept="image/*"></label>
   </div>
+  <p class="owner-warn">此模式仅隐藏入口，不构成安全防护：静态站无法验证身份，任何人手动访问 <code>?owner=1</code> 都能进入。要对外发布内容，请修改 <code>config.json</code> / <code>data/*.json</code> 后提交推送。</p>
   <div class="cust-actions">
+    <button class="ghost-btn" id="custExit">退出站主模式</button>
     <button class="ghost-btn" id="custReset">恢复默认</button>
     <button class="primary-btn" id="custClose">完成</button>
   </div>
@@ -294,6 +296,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
