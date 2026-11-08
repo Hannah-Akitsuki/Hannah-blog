@@ -15,6 +15,13 @@
       <description>寒鹤 你好，我是 寒鹤 ，一个还在读书的大学生，欢迎来到我的个人博客。 我把这里当作整理自己的地方：白天上课，课后把听过的、读过的、查到的零散内容收拢成一篇篇笔记。目前笔记以 FZU 课程为主：编译原理、系统架构、软件工程、操作系统、计算机…</description>
     </item>
     <item>
+      <title>操作系统</title>
+      <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-operating-systems</link>
+      <guid isPermaLink="false">hanhe:note:operating-systems</guid>
+      <pubDate>Thu, 05 Nov 2026 00:00:00 +0800</pubDate>
+      <description>操作系统知识点梳理 与同学 ibuki 共同整理 题型 单选 填空 简答 问一些概念性的问题 xx是什么，有什么用 综合题（计算或演绎）（PC问题必考，调度问题必考） 注意 多回归课本，看看定义，概念考的多 有些题目的演绎可能和课堂的场景略…</description>
+    </item>
+    <item>
       <title>系统架构</title>
       <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-architecture</link>
       <guid isPermaLink="false">hanhe:note:architecture</guid>
@@ -27,6 +34,13 @@
       <guid isPermaLink="false">hanhe:note:compiler</guid>
       <pubDate>Thu, 05 Nov 2026 00:00:00 +0800</pubDate>
       <description>编译原理 与同学 ibuki 共同整理 1、选择题 2分 5=10分 2、填空题 3分 5=15分 3、简答题 5分 7=35分 4、综合题 10+12+18=40分 第一章 1. 什么是编译程序：编译程序(compiler)： 把某一种高…</description>
+    </item>
+    <item>
+      <title>计算机网络</title>
+      <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-computer-networks</link>
+      <guid isPermaLink="false">hanhe:note:computer-networks</guid>
+      <pubDate>Thu, 05 Nov 2026 00:00:00 +0800</pubDate>
+      <description>计算机网络（聚合笔记） 与同学 ibuki 共同整理 由多份分章节笔记聚合而成，按原章节顺序排列。 --- 第一篇 概述与物理层 计网1-2 从 Word 提取的可编辑文字，图片已归档。 第一章：概述 网络、互联网、因特网、internet…</description>
     </item>
     <item>
       <title>软件工程</title>

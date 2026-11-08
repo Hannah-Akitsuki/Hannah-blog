@@ -291,6 +291,7 @@ article pre{overflow:auto;background:var(--card-2);padding:14px;border-radius:8p
 .link-card .tag{align-self:flex-start;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--green);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
 .link-card b{font:500 16px 'Noto Serif SC';margin-top:4px}
 .link-card span{font-size:12px;color:var(--muted);line-height:1.7;word-break:break-all}
+.link-block{margin-top:40px}
 .empty{border:1px dashed var(--line);border-radius:14px;padding:40px 24px;text-align:center;color:var(--muted);font-size:13px;background:var(--card)}
 .howto{margin-top:26px;border:1px solid var(--line);border-radius:12px;padding:14px 18px;font-size:13px;color:var(--muted)}
 .howto summary{cursor:pointer;color:var(--ink);font-size:13.5px}

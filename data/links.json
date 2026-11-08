@@ -10,5 +10,12 @@
     "url": "https://github.com/Hannah-Akitsuki",
     "desc": "我的代码仓库。",
     "tag": "主页"
+  },
+  {
+    "name": "Firefly",
+    "url": "https://rererego.github.io/Firefly/",
+    "desc": "友链：Firefly 的个人站点。",
+    "tag": "友链",
+    "friend": true
   }
 ]

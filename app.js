@@ -167,7 +167,10 @@ function docIndex(ref) {
     if (byLegacy >= 0) return byLegacy;
     return n >= 0 && n < state.docs.length ? n : -1;
   }
-  return state.docs.findIndex(d => String(d.id) === String(ref));
+  const byId = state.docs.findIndex(d => String(d.id) === String(ref));
+  if (byId >= 0) return byId;
+  /* 兼容用标题作深链：#note-计算机网络 */
+  return state.docs.findIndex(d => String(d.title || '') === String(ref));
 }
 
 async function loadJSON(path) {
@@ -907,20 +910,30 @@ function renderArchive() {
 }
 
 /* ---------------- Links ---------------- */
-function renderLinks() {
-  const box = $('#linkGrid');
-  if (!state.links.length) {
-    box.innerHTML = isOwner()
-      ? '<div class="empty">还没有添加链接。编辑 <code>data/links.json</code> 后刷新即可显示。</div>'
-      : '<div class="empty">还没有整理好链接，稍后再来看看。</div>';
-    return;
-  }
-  box.innerHTML = state.links.map(l => `
+function linkCard(l) {
+  return `
     <a class="link-card" href="${esc(l.url)}" target="_blank" rel="noopener">
       <span class="tag">${esc(l.tag || 'LINK')}</span>
       <b>${esc(l.name)}</b>
       <span>${esc(l.desc || l.url)}</span>
-    </a>`).join('');
+    </a>`;
+}
+function renderLinks() {
+  const box = $('#linkGrid');
+  const tools = state.links.filter(l => !l.friend);
+  const friends = state.links.filter(l => l.friend);
+  if (!tools.length) {
+    box.innerHTML = isOwner()
+      ? '<div class="empty">还没有添加链接。编辑 <code>data/links.json</code> 后刷新即可显示。</div>'
+      : '<div class="empty">还没有整理好链接，稍后再来看看。</div>';
+  } else {
+    box.innerHTML = tools.map(linkCard).join('');
+  }
+  const fbox = $('#friendGrid'), block = $('#friendBlock');
+  if (fbox && block) {
+    fbox.innerHTML = friends.map(linkCard).join('');
+    block.hidden = !friends.length;
+  }
 }
 
 /* ---------------- 照片墙（按年份分卷 + 胶卷条） ---------------- */

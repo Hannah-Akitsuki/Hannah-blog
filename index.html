@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=21">
+<link rel="stylesheet" href="style.css?v=22">
 <script type="importmap">
 {
   "imports": {
@@ -306,6 +306,13 @@ document.documentElement.classList.add('booting');
       <p>常用站点与自建工具。</p>
     </div>
     <div class="link-grid" id="linkGrid"></div>
+    <div class="link-block" id="friendBlock" hidden>
+      <div class="feed-head">
+        <h2>友链 <span class="study-en">/ FRIENDS</span></h2>
+        <span class="tiny">独立站点，点击在新标签打开</span>
+      </div>
+      <div class="link-grid" id="friendGrid"></div>
+    </div>
     <details class="howto owner-only">
       <summary>怎么编辑这个列表</summary>
       <p>打开仓库里的 <code>data/links.json</code>，按现有格式添加一条：</p>
@@ -498,7 +505,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=20"></script>
+<script src="app.js?v=21"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>
