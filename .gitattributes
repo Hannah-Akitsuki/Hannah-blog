@@ -1,0 +1,2 @@
+# 批处理文件必须是 CRLF，否则 cmd 解析 if/else 块会出错
+*.bat text eol=crlf
