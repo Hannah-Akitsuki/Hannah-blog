@@ -1,0 +1,5 @@
+# 计划提醒（本地数据不入版本控制）
+plan.json
+*.local.json
+__pycache__/
+*.pyc

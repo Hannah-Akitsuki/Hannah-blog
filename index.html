@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=29">
+<link rel="stylesheet" href="style.css?v=30">
 <script type="importmap">
 {
   "imports": {
@@ -38,6 +38,7 @@ document.documentElement.classList.add('booting');
     <a href="#music">音乐</a>
     <a href="#photos">照片墙</a>
     <a href="#diary">个人日记</a>
+    <a href="#plan">计划</a>
     <a href="#guestbook">留言榜</a>
     <a href="#about">关于</a>
   </nav>
@@ -405,6 +406,129 @@ document.documentElement.classList.add('booting');
     </div>
   </section>
 
+  <!-- 计划 + 定时器 -->
+  <section class="view page" id="view-plan" data-view="plan">
+    <div class="page-head">
+      <div class="eyebrow">PLAN &amp; TIMER</div>
+      <h1>计划与定时器</h1>
+      <p>月历看安排、当天切状态；定时器帮你看住一段时间。计划发布后是公开只读的，定时器与完成次数只存在这台电脑的浏览器里。</p>
+    </div>
+
+    <div class="notice warn">
+      <b>先读：这份计划是公开的</b>
+      <p>发布后的日期、时间段和任务名会写进仓库的 <code>data/plans.json</code>，任何访问本站的人都能看到（只读），也可以直接下载。不要把密码、住址之类的内容写进任务名。</p>
+      <p>定时器状态、完成次数和你的本地草稿只保存在本浏览器的 <code>localStorage</code>，不会公开；换设备请用「导出 JSON / 导入 JSON」，或用 <code>reminders/</code> 里的本地脚本。</p>
+    </div>
+
+    <section class="plan-calendar plan-panel" aria-label="计划日历">
+      <div class="cal-head">
+        <button class="icon-btn cal-nav" id="calPrev" type="button" aria-label="上个月">‹</button>
+        <b id="calTitle">—</b>
+        <button class="icon-btn cal-nav" id="calNext" type="button" aria-label="下个月">›</button>
+        <button class="ghost-btn cal-today" id="calToday" type="button">回到今天</button>
+        <span class="cal-legend"><i class="cal-dot pending"></i>未完成<i class="cal-dot done"></i>已完成</span>
+      </div>
+      <div class="cal-week" aria-hidden="true">
+        <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+      </div>
+      <div class="cal-grid" id="calGrid" role="grid" aria-label="月历"></div>
+    </section>
+
+    <div class="plan-grid">
+      <section class="plan-panel owner-only">
+        <div class="feed-head">
+          <h2>定时器</h2>
+          <span class="tiny" id="timerNotif">通知未开启</span>
+        </div>
+        <div class="plan-tabs" role="tablist" aria-label="计时方式">
+          <button class="seg-btn on" data-timer-mode="down" type="button" role="tab" aria-selected="true">倒计时</button>
+          <button class="seg-btn" data-timer-mode="up" type="button" role="tab" aria-selected="false">正计时</button>
+        </div>
+        <div class="timer-display" id="timerDisplay" role="timer">25:00</div>
+        <div class="timer-presets" id="timerPresets" aria-label="预设时长">
+          <button type="button" data-min="5">5 分钟</button>
+          <button type="button" data-min="15">15 分钟</button>
+          <button type="button" data-min="25">25 分钟</button>
+          <button type="button" data-min="45">45 分钟</button>
+        </div>
+        <div class="timer-custom">
+          <label for="timerCustom">自定义</label>
+          <input id="timerCustom" type="number" min="1" max="600" inputmode="numeric" placeholder="分钟">
+          <button class="ghost-btn" id="timerCustomSet" type="button">设定</button>
+        </div>
+        <div class="timer-actions">
+          <button class="primary-btn" id="timerToggle" type="button">开始</button>
+          <button class="ghost-btn" id="timerReset" type="button">重置</button>
+          <button class="ghost-btn" id="timerNotifyBtn" type="button">开启通知</button>
+        </div>
+        <div class="timer-meta">
+          <span id="timerState">待开始 · 25 分钟</span>
+          <span id="timerDone">今天完成 0 次</span>
+        </div>
+        <p class="tiny" id="timerHint" hidden></p>
+      </section>
+
+      <section class="plan-panel plan-panel-list">
+        <div class="feed-head">
+          <h2 id="planDayLabel">今天的安排</h2>
+          <span class="tiny" id="planSummary"></span>
+        </div>
+        <div class="plan-toolbar">
+          <div class="plan-tabs" role="tablist" aria-label="计划范围">
+            <button class="seg-btn on" data-plan-range="day" type="button" role="tab" aria-selected="true">当天</button>
+            <button class="seg-btn" data-plan-range="week" type="button" role="tab" aria-selected="false">本周</button>
+          </div>
+          <div class="plan-tools owner-only">
+            <button class="ghost-btn" id="planAdd" type="button">＋ 新增</button>
+            <button class="ghost-btn" id="planExport" type="button">导出 JSON</button>
+            <button class="ghost-btn" id="planImport" type="button">导入 JSON</button>
+            <input type="file" id="planImportFile" accept="application/json,.json" hidden>
+          </div>
+        </div>
+        <form class="plan-form owner-only" id="planForm" hidden>
+          <input type="date" id="planDate" required aria-label="日期">
+          <input type="time" id="planStart" required aria-label="开始时间">
+          <input type="time" id="planEnd" aria-label="结束时间（可选）">
+          <input type="text" id="planTitle" maxlength="80" placeholder="任务名" required aria-label="任务名">
+          <select id="planStatus" aria-label="状态">
+            <option value="todo">未开始</option>
+            <option value="doing">进行中</option>
+            <option value="done">完成</option>
+          </select>
+          <button class="primary-btn" id="planSave" type="submit">保存</button>
+          <button class="ghost-btn" id="planCancel" type="button">取消</button>
+          <input type="hidden" id="planEditId">
+        </form>
+        <div class="plan-list" id="planList"></div>
+        <p class="tiny plan-readonly-note" id="planReadonlyNote" hidden>计划为公开只读版本；在站主模式下才可编辑。</p>
+      </section>
+    </div>
+
+    <section class="plan-publish plan-panel owner-only">
+      <div class="feed-head">
+        <h2>发布到公开计划</h2>
+        <span class="tiny publish-state" id="publishState">尚未发布</span>
+      </div>
+      <p class="tiny">把当前计划写入仓库 <code>data/plans.json</code>，别人刷新后即可看到只读版本。需要一个 fine-grained PAT（只给本仓库 <b>Contents 读写</b> 权限）。token 只存在本浏览器 localStorage，不会写进代码或进仓库。</p>
+      <div class="publish-row">
+        <input type="password" id="planToken" placeholder="粘贴 GitHub fine-grained PAT" autocomplete="off" aria-label="GitHub token">
+        <button class="ghost-btn" id="planTokenSave" type="button">保存 token</button>
+        <button class="ghost-btn" id="planTokenClear" type="button">清除 token</button>
+      </div>
+      <div class="publish-row">
+        <button class="primary-btn" id="planPublish" type="button">发布</button>
+        <span class="tiny" id="publishMsg">提交后约 1–2 分钟线上生效。</span>
+      </div>
+      <p class="tiny" id="tokenState"></p>
+    </section>
+
+    <details class="howto">
+      <summary>计划怎么存、怎么备份</summary>
+      <p>公开的只读版本在 <code>data/plans.json</code>，由站主模式里的「发布」提交。你自己的浏览器里还有一份本地工作副本，没发布前的改动只在本机可见。</p>
+      <p>导出 JSON 会得到和 <code>data/plans.json</code> 同格式的文件；放到 <code>reminders/plan.json</code> 后双击 <code>reminders/run_reminder.bat</code>，就能在网页关闭时由本地脚本提醒（依赖电脑不睡眠、脚本窗口开着）。</p>
+    </details>
+  </section>
+
   <!-- 留言榜 -->
   <section class="view page" id="view-guestbook" data-view="guestbook">
     <div class="page-head">
@@ -508,7 +632,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=27"></script>
+<script src="app.js?v=28"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

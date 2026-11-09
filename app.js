@@ -89,7 +89,7 @@ function legacyCopy(text) {
 
 const state = {
   config: null, docs: [], photos: [], links: [], music: null, diary: [], now: null, books: null,
-  glossary: null, current: -1, sourceText: '', photoShown: 0, track: 0, giscusLoaded: false
+  glossary: null, plans: [], plansUpdated: '', current: -1, sourceText: '', photoShown: 0, track: 0, giscusLoaded: false
 };
 const PAGE_SIZE = 60;
 
@@ -106,6 +106,10 @@ function refreshOwnerViews() {
   renderLinks();
   renderMusic();
   renderDiary();
+  renderCalendar();
+  renderPlan();
+  renderTokenState();
+  setPublish(planPublishState === 'saving' || planPublishState === 'fail' ? planPublishState : 'idle');
 }
 function toggleOwner() {
   setOwner(!isOwner());
@@ -181,19 +185,23 @@ async function loadJSON(path) {
 
 async function bootstrap() {
   try {
-    const [config, docs, photos, links, music, diary, now, books] = await Promise.all([
+    const [config, docs, photos, links, music, diary, now, books, plans] = await Promise.all([
       loadJSON('config.json'), loadJSON('manifest.json'), loadJSON('data/photos.json'),
       loadJSON('data/links.json'), loadJSON('data/music.json'), loadJSON('data/diary.json'),
-      loadJSON('data/now.json').catch(() => null), loadJSON('data/books.json').catch(() => null)
+      loadJSON('data/now.json').catch(() => null), loadJSON('data/books.json').catch(() => null),
+      loadJSON('data/plans.json').catch(() => null)
     ]);
     state.config = config; state.docs = docs || [];
     state.photos = (photos && photos.photos) || [];
     state.links = links || []; state.music = music; state.diary = diary || [];
     state.now = now || {}; state.books = books || {};
+    state.plans = (plans && plans.items) || [];
+    state.plansUpdated = (plans && plans.updatedAt) || '';
   } catch (e) {
     console.error(e);
   }
   applySiteConfig();
+  initPlan();
   renderNavs();
   renderHome();
   renderArchive();
@@ -1850,7 +1858,7 @@ function initArticleTools() {
 }
 
 /* ---------------- 视图路由 ---------------- */
-const VIEWS = ['home', 'now', 'books', 'notes', 'article', 'glossary', 'demos', 'links', 'archive', 'music', 'photos', 'diary', 'guestbook', 'about'];
+const VIEWS = ['home', 'now', 'books', 'notes', 'article', 'glossary', 'demos', 'links', 'archive', 'music', 'photos', 'diary', 'plan', 'guestbook', 'about'];
 function showView(name, keepScroll) {
   if (VIEWS.indexOf(name) < 0) name = 'home';
   withVT(() => {
@@ -1862,6 +1870,7 @@ function showView(name, keepScroll) {
     if (name === 'about') renderAbout();
     if (name === 'guestbook') renderGuestbook();
     if (name === 'now') renderNow();
+    if (name === 'plan') { renderCalendar(); renderPlan(); renderTimer(); timerNotifyRender(); }
     if (name === 'books') renderBooks();
     if (name === 'glossary') renderGlossary();
     if (name !== 'glossary') closeTerm();
@@ -2190,6 +2199,590 @@ function initFx() {
       if (!fx.sound) toast('可在右上角 ⚙ 里开启点击音效与触感反馈');
     }
   }, { passive: true });
+}
+
+/* ---------------- 计划 + 定时器 ----------------
+   公开计划读 data/plans.json（所有人只读）；站主模式的草稿存 localStorage，
+   填 fine-grained PAT 后通过 GitHub Contents API 发布；定时器只在本机。 */
+const PLAN_KEY = 'plan:items:v1';
+const TIMER_KEY = 'plan:timer:v1';
+const PAT_KEY = 'plan:pat';
+const PLAN_ST = { todo: '未开始', doing: '进行中', done: '完成' };
+const WK = ['日', '一', '二', '三', '四', '五', '六'];
+const pad2 = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+const parseYmd = s => { const a = String(s || '').split('-').map(Number); return new Date(a[0], a[1] - 1, a[2]); };
+const planToday = () => ymd(new Date());
+const fmtShort = s => s.slice(5).replace('-', '.');
+
+let planItems = [];
+let planHasLocal = false;
+let planRange = 'day';
+let planSelected = planToday();
+let planMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let planPublishState = 'idle';
+let pageTitle = '';
+let titleFlash = null;
+
+function planIdOf(x) {
+  return String(x.id || (x.date + '|' + x.start + '|' + x.title).replace(/\s+/g, '_'));
+}
+function normPlanItem(x) {
+  const it = { id: planIdOf(x), date: String(x.date || ''), start: String(x.start || ''), end: String(x.end || ''),
+    title: String(x.title || '').slice(0, 80), status: PLAN_ST[x.status] ? x.status : 'todo', note: String(x.note || '') };
+  return it;
+}
+function validPlanItem(x) {
+  return x && typeof x === 'object' && /^\d{4}-\d{2}-\d{2}$/.test(String(x.date || '')) && String(x.title || '').trim();
+}
+function publicPlanItems() { return (state.plans || []).filter(validPlanItem).map(normPlanItem); }
+function activePlanItems() { return isOwner() ? planItems : publicPlanItems(); }
+function planCanonical(items) {
+  return JSON.stringify(items.map(x => [x.date, x.start, x.end, x.title, x.status, x.note]).sort());
+}
+function planIsDirty() {
+  return isOwner() && planCanonical(planItems) !== planCanonical(publicPlanItems());
+}
+function savePlanLocal() {
+  try { localStorage.setItem(PLAN_KEY, JSON.stringify(planItems)); } catch (e) {}
+}
+function planLoadLocal() {
+  try {
+    const raw = localStorage.getItem(PLAN_KEY);
+    if (raw) {
+      planHasLocal = true;
+      const o = JSON.parse(raw);
+      const arr = Array.isArray(o) ? o : (o && o.items) || [];
+      planItems = arr.filter(validPlanItem).map(normPlanItem);
+    }
+  } catch (e) {}
+  if (!planHasLocal) planItems = publicPlanItems();
+}
+
+/* 日历 */
+function weekOf(dateStr) {
+  const d = parseYmd(dateStr);
+  const off = (d.getDay() + 6) % 7;
+  const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - off);
+  return Array.from({ length: 7 }, (_, i) => ymd(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
+}
+function renderCalendar() {
+  const grid = $('#calGrid');
+  if (!grid) return;
+  const y = planMonth.getFullYear(), m = planMonth.getMonth();
+  $('#calTitle').textContent = y + ' 年 ' + (m + 1) + ' 月';
+  const startPad = (new Date(y, m, 1).getDay() + 6) % 7;
+  const days = new Date(y, m + 1, 0).getDate();
+  const byDate = {};
+  activePlanItems().forEach(it => { (byDate[it.date] = byDate[it.date] || []).push(it); });
+  let html = '';
+  for (let i = 0; i < startPad; i++) html += '<span class="cal-cell cal-blank" aria-hidden="true"></span>';
+  for (let day = 1; day <= days; day++) {
+    const ds = ymd(new Date(y, m, day));
+    const list = byDate[ds] || [];
+    let dot = '';
+    if (list.length) dot = '<i class="cal-dot ' + (list.every(x => x.status === 'done') ? 'done' : 'pending') + '"></i>';
+    const cls = 'cal-cell' + (ds === planToday() ? ' is-today' : '') + (ds === planSelected ? ' is-selected' : '');
+    html += '<button type="button" role="gridcell" class="' + cls + '" data-cal-date="' + ds + '" aria-label="' +
+      (m + 1) + ' 月 ' + day + ' 日' + (list.length ? '，' + list.length + ' 项计划' : '') + '"' +
+      (list.length ? ' aria-current="date"' : '') + '><span>' + day + '</span>' + dot + '</button>';
+  }
+  grid.innerHTML = html;
+}
+
+/* 计划列表 */
+function planSortCmp(a, b) { return (a.start || '99:99').localeCompare(b.start || '99:99') || a.title.localeCompare(b.title); }
+function syncRangeTabs() {
+  $$('[data-plan-range]').forEach(b => {
+    const on = b.dataset.planRange === planRange;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+}
+function renderPlan() {
+  const box = $('#planList');
+  if (!box) return;
+  const items = activePlanItems();
+  const days = planRange === 'week' ? weekOf(planSelected) : [planSelected];
+  $('#planDayLabel').textContent = planRange === 'week'
+    ? fmtShort(days[0]) + ' – ' + fmtShort(days[6]) + ' · 本周'
+    : fmtShort(planSelected) + ' 的安排';
+  const subset = items.filter(x => days.indexOf(x.date) >= 0);
+  $('#planSummary').textContent = subset.length ? ('完成 ' + subset.filter(x => x.status === 'done').length + ' / ' + subset.length) : '';
+  $('#planReadonlyNote').hidden = isOwner();
+  let html = '';
+  days.forEach(ds => {
+    const list = items.filter(x => x.date === ds).sort(planSortCmp);
+    const d = parseYmd(ds);
+    html += '<div class="plan-day"><div class="plan-day-head"><b>' + fmtShort(ds) + '</b><span>星期' + WK[d.getDay()] +
+      (ds === planToday() ? ' · 今天' : '') + '</span>' +
+      (list.length ? '<em>' + list.filter(x => x.status === 'done').length + '/' + list.length + ' 完成</em>' : '') + '</div>';
+    if (!list.length) {
+      html += '<p class="plan-empty-line">没有安排</p>';
+    } else {
+      html += '<ul class="plan-items">';
+      list.forEach(it => {
+        const owner = isOwner();
+        const range = it.start + (it.end ? '–' + it.end : '');
+        html += '<li class="plan-item' + (it.status === 'done' ? ' done' : '') + '" data-plan-id="' + esc(it.id) + '">' +
+          '<span class="plan-time">' + esc(range) + '</span>' +
+          '<span class="plan-title" title="' + esc(it.title) + '">' + esc(it.title) + '</span>' +
+          (owner
+            ? '<button class="plan-status st-' + it.status + '" data-plan-status="' + esc(it.id) + '" type="button" title="点击切换状态">' + PLAN_ST[it.status] + '</button>'
+            : '<span class="plan-status st-' + it.status + '">' + PLAN_ST[it.status] + '</span>') +
+          (owner
+            ? '<button class="plan-edit" data-plan-edit="' + esc(it.id) + '" type="button" title="编辑" aria-label="编辑">✎</button>' +
+              '<button class="plan-del" data-plan-del="' + esc(it.id) + '" type="button" title="删除" aria-label="删除">×</button>'
+            : '') +
+          '</li>';
+      });
+      html += '</ul>';
+    }
+    html += '</div>';
+  });
+  box.innerHTML = html;
+  setPublish(planPublishState === 'saving' || planPublishState === 'fail' ? planPublishState : 'idle');
+}
+
+/* 编辑表单 */
+function openPlanForm(id) {
+  const form = $('#planForm');
+  if (!form || !isOwner()) return;
+  const found = id ? planItems.find(x => x.id === id) : null;
+  $('#planEditId').value = found ? found.id : '';
+  $('#planDate').value = found ? found.date : planSelected;
+  const h = Math.min(23, new Date().getHours() + 1);
+  $('#planStart').value = found ? found.start : pad2(h) + ':00';
+  $('#planEnd').value = found ? found.end : '';
+  $('#planTitle').value = found ? found.title : '';
+  $('#planStatus').value = found ? found.status : 'todo';
+  form.hidden = false;
+  $('#planTitle').focus();
+}
+function closePlanForm() {
+  const form = $('#planForm');
+  if (form) form.hidden = true;
+  $('#planEditId').value = '';
+}
+function markPlanEdited() {
+  savePlanLocal();
+  if (planPublishState !== 'saving') setPublish('idle');
+  renderCalendar();
+}
+
+/* 发布状态 / token */
+function planTokenGet() { try { return localStorage.getItem(PAT_KEY) || ''; } catch (e) { return ''; } }
+function planTokenSet(t) {
+  try { t ? localStorage.setItem(PAT_KEY, t) : localStorage.removeItem(PAT_KEY); } catch (e) {}
+}
+function renderTokenState() {
+  const has = !!planTokenGet();
+  const el = $('#tokenState');
+  if (el) el.textContent = has ? '已保存 token（仅本浏览器，不会写进代码）。' : '未保存 token：可以编辑本地计划，但无法发布。';
+  const inp = $('#planToken');
+  if (inp) inp.placeholder = has ? '已保存，粘贴新 token 可覆盖' : '粘贴 GitHub fine-grained PAT';
+}
+function setPublish(state, msg) {
+  planPublishState = state;
+  const el = $('#publishState');
+  if (!el) return;
+  const label = { idle: planIsDirty() ? '尚未发布' : '已发布', saving: '发布中…', ok: '已发布', fail: '发布失败' }[state] || '尚未发布';
+  el.textContent = label;
+  el.className = 'tiny publish-state ' + state;
+  const m = $('#publishMsg');
+  if (m) m.textContent = msg || (state === 'saving' ? '正在提交到 GitHub…' : '提交后约 1–2 分钟线上生效。');
+  const btn = $('#planPublish');
+  if (btn) btn.disabled = state === 'saving';
+}
+function planRepo() {
+  const g = (state.config && state.config.giscus) || {};
+  const parts = String(g.repo || 'Hannah-Akitsuki/Hannah-blog').split('/');
+  return { owner: parts[0] || 'Hannah-Akitsuki', name: parts[1] || 'Hannah-blog', branch: 'main' };
+}
+function b64utf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  return btoa(bin);
+}
+function ghErrorText(status, msg) {
+  if (status === 401) return 'token 无效或已过期，请重新生成 fine-grained PAT。';
+  if (status === 403) return 'token 没有本仓库 Contents 读写权限，或触发了 GitHub 频率限制。';
+  if (status === 404) return '仓库 / 分支 / 文件路径找不到，请检查 token 的仓库权限。';
+  if (status === 409 || status === 422) return '远端 data/plans.json 有冲突，请刷新页面后再发布。';
+  return 'GitHub 返回 ' + status + (msg ? '：' + msg : '') + '。';
+}
+async function publishPlan() {
+  if (!isOwner()) return;
+  const token = planTokenGet();
+  if (!token) { setPublish('fail', '还没有保存 token，无法发布。当前改动只在本机。'); toast('请先保存 GitHub token'); return; }
+  const repo = planRepo();
+  setPublish('saving');
+  const api = 'https://api.github.com/repos/' + repo.owner + '/' + repo.name + '/contents/data/plans.json';
+  const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+  try {
+    let sha = '';
+    const gr = await fetch(api + '?ref=' + encodeURIComponent(repo.branch) + '&t=' + Date.now(), { headers, cache: 'no-store' });
+    if (gr.status !== 404) {
+      const gj = await gr.json().catch(() => ({}));
+      if (!gr.ok) throw { status: gr.status, message: gj.message };
+      sha = gj.sha || '';
+    }
+    const payload = { app: 'hanhe-plan', version: 1, updatedAt: new Date().toISOString(), items: planItems };
+    const body = {
+      message: '计划更新：' + planItems.length + ' 项（' + planToday() + '）',
+      content: b64utf8(JSON.stringify(payload, null, 2) + '\n'),
+      branch: repo.branch
+    };
+    if (sha) body.sha = sha;
+    const pr = await fetch(api, { method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const pj = await pr.json().catch(() => ({}));
+    if (!pr.ok) throw { status: pr.status, message: pj.message };
+    state.plans = planItems.map(x => ({ ...x }));
+    state.plansUpdated = payload.updatedAt;
+    setPublish('ok', '已提交' + (pj.commit && pj.commit.sha ? ' commit ' + pj.commit.sha.slice(0, 7) : '') + '；GitHub Pages 约 1–2 分钟后生效。');
+    toast('已发布，稍等 1–2 分钟生效');
+  } catch (e) {
+    if (e && (e.name === 'TypeError' || e instanceof TypeError)) {
+      setPublish('fail', '网络请求失败：' + (e.message || '请检查网络后重试') + '。本地计划未丢。');
+    } else {
+      setPublish('fail', ghErrorText(e && e.status, e && e.message) + ' 本地计划未丢。');
+    }
+  }
+}
+
+/* 导出 / 导入 */
+function exportPlan() {
+  const payload = { app: 'hanhe-plan', version: 1, updatedAt: new Date().toISOString(), items: planItems };
+  const blob = new Blob([JSON.stringify(payload, null, 2) + '\n'], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'plan-' + planToday().replace(/-/g, '') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  toast('已导出，可放到 reminders/plan.json');
+}
+function importPlanFile(file) {
+  if (!file) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    let arr = null;
+    try {
+      const o = JSON.parse(String(fr.result || ''));
+      arr = Array.isArray(o) ? o : (o && o.items);
+    } catch (e) {}
+    const good = Array.isArray(arr) ? arr.filter(validPlanItem).map(normPlanItem) : [];
+    if (!good.length) { toast('这个文件里没有可导入的计划'); return; }
+    if (!confirm('导入会替换当前本地全部计划（' + planItems.length + ' 条），继续？')) return;
+    planItems = good;
+    markPlanEdited();
+    renderPlan();
+    toast('已导入 ' + good.length + ' 条，本地已保存');
+  };
+  fr.readAsText(file);
+}
+
+/* 定时器 */
+let timerState = { mode: 'down', duration: 25 * 60 * 1000, remain: 25 * 60 * 1000, upBase: 0, running: false, endAt: 0, startedAt: 0, doneDate: '', doneCount: 0 };
+function timerSaveLocal() { try { localStorage.setItem(TIMER_KEY, JSON.stringify(timerState)); } catch (e) {} }
+function timerTodayFix() {
+  if (timerState.doneDate !== planToday()) { timerState.doneDate = planToday(); timerState.doneCount = 0; }
+}
+function timerLoad() {
+  try {
+    const raw = localStorage.getItem(TIMER_KEY);
+    if (raw) { const o = JSON.parse(raw); if (o && typeof o === 'object') Object.assign(timerState, o); }
+  } catch (e) {}
+  if (timerState.mode !== 'up') timerState.mode = 'down';
+  timerTodayFix();
+  if (timerState.running && timerState.mode === 'down') {
+    const left = timerState.endAt - Date.now();
+    if (left <= 0) {
+      timerState.running = false; timerState.remain = 0; timerState.endAt = 0;
+      timerBumpDone(); timerSaveLocal();
+      setTimeout(() => toast('上次倒计时在页面关闭时已经结束'), 500);
+    } else {
+      timerState.remain = left;
+    }
+  }
+}
+function timerBumpDone() { timerTodayFix(); timerState.doneCount += 1; timerSaveLocal(); }
+function timerFmt(ms) {
+  let s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600); s %= 3600;
+  const m = Math.floor(s / 60), ss = s % 60;
+  return (h ? h + ':' + pad2(m) : pad2(m)) + ':' + pad2(ss);
+}
+function timerDisplayText() {
+  if (timerState.mode === 'down') return timerFmt(timerState.remain);
+  return timerFmt(timerState.running ? timerState.upBase + (Date.now() - timerState.startedAt) : timerState.upBase);
+}
+function renderTimer() {
+  const d = $('#timerDisplay');
+  if (!d) return;
+  d.textContent = timerDisplayText();
+  $('#timerToggle').textContent = timerState.running ? '暂停' : '开始';
+  $$('[data-timer-mode]').forEach(b => {
+    const on = b.dataset.timerMode === timerState.mode;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  $$('#timerPresets [data-min]').forEach(b => {
+    b.classList.toggle('on', timerState.mode === 'down' && +b.dataset.min * 60000 === timerState.duration);
+  });
+  const st = $('#timerState');
+  if (timerState.mode === 'down') {
+    if (timerState.running) st.textContent = '运行中 · 剩余 ' + timerFmt(timerState.remain);
+    else if (timerState.remain <= 0) st.textContent = '已结束 · 点开始重新计时';
+    else if (timerState.remain === timerState.duration) st.textContent = '待开始 · ' + Math.round(timerState.duration / 60000) + ' 分钟';
+    else st.textContent = '已暂停 · 剩余 ' + timerFmt(timerState.remain);
+  } else {
+    st.textContent = timerState.running ? '正计时中' : (timerState.upBase > 0 ? '已暂停' : '待开始');
+  }
+  $('#timerDone').textContent = '今天完成 ' + timerState.doneCount + ' 次';
+}
+function timerStart() {
+  ensureAudioCtx();
+  if (timerState.mode === 'down') {
+    const ms = timerState.remain > 0 ? timerState.remain : timerState.duration;
+    timerState.remain = ms;
+    timerState.endAt = Date.now() + ms;
+  } else {
+    timerState.startedAt = Date.now();
+  }
+  timerState.running = true;
+  timerSaveLocal(); renderTimer();
+}
+function timerPause() {
+  const now = Date.now();
+  if (timerState.mode === 'down') timerState.remain = Math.max(0, timerState.endAt - now);
+  else timerState.upBase += now - timerState.startedAt;
+  timerState.running = false; timerState.endAt = 0; timerState.startedAt = 0;
+  timerSaveLocal(); renderTimer();
+}
+function timerStop(remainMs) {
+  timerState.running = false; timerState.endAt = 0; timerState.startedAt = 0;
+  if (timerState.mode === 'down') timerState.remain = remainMs;
+  else timerState.upBase = 0;
+  timerSaveLocal();
+}
+function timerFinish(quiet) {
+  if (timerState.mode !== 'down') return;
+  timerState.running = false; timerState.remain = 0; timerState.endAt = 0;
+  timerBumpDone();
+  timerSaveLocal(); renderTimer();
+  if (quiet) { toast('倒计时已经结束'); return; }
+  timerAlert();
+}
+function timerTick() {
+  if (!timerState.running) return;
+  if (timerState.mode === 'down') {
+    const left = timerState.endAt - Date.now();
+    if (left <= 0) { timerFinish(false); return; }
+    timerState.remain = left;
+  }
+  renderTimer();
+}
+function timerBeep() {
+  const ctx = ensureAudioCtx();
+  if (!ctx) return;
+  try {
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const t0 = ctx.currentTime;
+    [0, 0.42, 0.84].forEach((off, i) => {
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = i === 2 ? 988 : 740;
+      g.gain.setValueAtTime(0.0001, t0 + off);
+      g.gain.exponentialRampToValueAtTime(0.09, t0 + off + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + off + 0.3);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(t0 + off); osc.stop(t0 + off + 0.32);
+    });
+  } catch (e) {}
+}
+function timerFlashTitle() {
+  if (titleFlash || !document.hidden) return;
+  let flip = false;
+  titleFlash = setInterval(() => {
+    flip = !flip;
+    document.title = flip ? '⏰ 时间到 · ' + pageTitle : pageTitle;
+  }, 700);
+}
+function stopTitleFlash() {
+  if (titleFlash) { clearInterval(titleFlash); titleFlash = null; }
+  document.title = pageTitle;
+}
+function timerAlert() {
+  toast('时间到，休息一下');
+  timerBeep();
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification('寒鹤 · 时间到', { body: Math.round(timerState.duration / 60000) + ' 分钟到了，站起来活动一下。', tag: 'hanhe-timer' });
+    } catch (e) {}
+  }
+  timerFlashTitle();
+}
+function timerNotifyRender() {
+  const el = $('#timerNotif'), btn = $('#timerNotifyBtn'), hint = $('#timerHint');
+  if (!el) return;
+  const supported = 'Notification' in window;
+  const perm = supported ? Notification.permission : 'unsupported';
+  btn.hidden = perm !== 'default';
+  hint.hidden = true;
+  if (perm === 'granted') { el.textContent = '通知已开启'; }
+  else if (perm === 'denied') {
+    el.textContent = '通知已被拒绝';
+    hint.hidden = false;
+    hint.textContent = '通知被浏览器拒绝：到点仍会响铃并把标签页标题闪烁，但不会有系统弹窗。可在浏览器地址栏左侧的站点设置里重新允许。';
+  } else if (perm === 'default') {
+    el.textContent = '通知未开启';
+  } else {
+    el.textContent = '浏览器不支持通知';
+    hint.hidden = false;
+    hint.textContent = '当前浏览器不支持 Notification API：到点会响铃并闪烁标题。';
+  }
+}
+function timerRequestNotify() {
+  if (!('Notification' in window)) { timerNotifyRender(); toast('当前浏览器不支持系统通知'); return; }
+  if (Notification.permission === 'granted') { timerNotifyRender(); toast('通知已开启'); return; }
+  Notification.requestPermission().then(p => {
+    timerNotifyRender();
+    toast(p === 'granted' ? '通知已开启' : '通知未获得授权，到时改用响铃 + 标题闪烁');
+  }).catch(() => {
+    timerNotifyRender();
+    toast('通知授权失败，到时改用响铃 + 标题闪烁');
+  });
+}
+
+/* 初始化 */
+function initPlan() {
+  const view = $('#view-plan');
+  if (!view || view.dataset.planReady === '1') return;
+  view.dataset.planReady = '1';
+  pageTitle = document.title;
+  planLoadLocal();
+  timerLoad();
+  renderCalendar(); renderPlan(); renderTimer(); timerNotifyRender(); renderTokenState();
+
+  $('#calPrev').addEventListener('click', () => { planMonth = new Date(planMonth.getFullYear(), planMonth.getMonth() - 1, 1); renderCalendar(); });
+  $('#calNext').addEventListener('click', () => { planMonth = new Date(planMonth.getFullYear(), planMonth.getMonth() + 1, 1); renderCalendar(); });
+  $('#calToday').addEventListener('click', () => {
+    planSelected = planToday();
+    planMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    planRange = 'day'; syncRangeTabs();
+    renderCalendar(); renderPlan();
+  });
+  $('#calGrid').addEventListener('click', e => {
+    const cell = e.target.closest('[data-cal-date]');
+    if (!cell) return;
+    planSelected = cell.dataset.calDate;
+    planRange = 'day'; syncRangeTabs();
+    renderCalendar(); renderPlan();
+  });
+  $$('[data-plan-range]').forEach(b => b.addEventListener('click', () => {
+    planRange = b.dataset.planRange; syncRangeTabs(); renderPlan();
+  }));
+
+  $('#planAdd').addEventListener('click', () => openPlanForm(null));
+  $('#planCancel').addEventListener('click', closePlanForm);
+  $('#planForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const date = $('#planDate').value, start = $('#planStart').value, title = $('#planTitle').value.trim();
+    if (!date || !start || !title) { toast('日期、开始时间和任务名都要填'); return; }
+    const end = $('#planEnd').value, status = $('#planStatus').value, id = $('#planEditId').value;
+    if (id) {
+      const it = planItems.find(x => x.id === id);
+      if (it) Object.assign(it, { date, start, end, title, status });
+    } else {
+      planItems.push({ id: newPlanId(), date, start, end, title, status, note: '' });
+    }
+    planSelected = date;
+    planMonth = new Date(parseYmd(date).getFullYear(), parseYmd(date).getMonth(), 1);
+    closePlanForm();
+    markPlanEdited(); renderPlan();
+    toast(planIsDirty() ? '已保存到本地，尚未发布' : '已保存');
+  });
+  $('#planList').addEventListener('click', e => {
+    if (!isOwner()) return;
+    const st = e.target.closest('[data-plan-status]');
+    if (st) {
+      const it = planItems.find(x => x.id === st.dataset.planStatus);
+      if (!it) return;
+      it.status = it.status === 'todo' ? 'doing' : (it.status === 'doing' ? 'done' : 'todo');
+      markPlanEdited(); renderPlan();
+      return;
+    }
+    const ed = e.target.closest('[data-plan-edit]');
+    if (ed) { openPlanForm(ed.dataset.planEdit); return; }
+    const del = e.target.closest('[data-plan-del]');
+    if (del) {
+      const it = planItems.find(x => x.id === del.dataset.planDel);
+      if (!it) return;
+      if (!confirm('删除「' + it.title + '」？')) return;
+      planItems = planItems.filter(x => x.id !== it.id);
+      markPlanEdited(); renderPlan();
+      toast('已删除（本地）' + (planIsDirty() ? '，尚未发布' : ''));
+    }
+  });
+  $('#planExport').addEventListener('click', exportPlan);
+  $('#planImport').addEventListener('click', () => $('#planImportFile').click());
+  $('#planImportFile').addEventListener('change', e => { importPlanFile(e.target.files && e.target.files[0]); e.target.value = ''; });
+
+  $('#planTokenSave').addEventListener('click', () => {
+    const t = ($('#planToken').value || '').trim();
+    if (!t) { toast('请先粘贴 token'); return; }
+    planTokenSet(t);
+    $('#planToken').value = '';
+    renderTokenState();
+    toast('token 已保存到本机浏览器');
+  });
+  $('#planTokenClear').addEventListener('click', () => {
+    planTokenSet('');
+    $('#planToken').value = '';
+    renderTokenState();
+    setPublish('idle', '已清除 token；本地计划仍可编辑，但无法发布。');
+    toast('已清除 token');
+  });
+  $('#planPublish').addEventListener('click', publishPlan);
+
+  $('#timerToggle').addEventListener('click', () => {
+    if (timerState.running) timerPause(); else timerStart();
+  });
+  $('#timerReset').addEventListener('click', () => {
+    timerStop(timerState.mode === 'down' ? timerState.duration : 0);
+    renderTimer();
+  });
+  $$('[data-timer-mode]').forEach(b => b.addEventListener('click', () => {
+    if (timerState.mode === b.dataset.timerMode) return;
+    timerState.mode = b.dataset.timerMode;
+    timerStop(timerState.mode === 'down' ? timerState.duration : 0);
+    renderTimer();
+  }));
+  $$('#timerPresets [data-min]').forEach(b => b.addEventListener('click', () => {
+    const ms = +b.dataset.min * 60000;
+    timerState.mode = 'down';
+    timerState.duration = ms;
+    timerStop(ms); renderTimer();
+  }));
+  $('#timerCustomSet').addEventListener('click', () => {
+    const m = Math.floor(+($('#timerCustom').value || 0));
+    if (!(m >= 1 && m <= 600)) { toast('请输入 1–600 分钟'); return; }
+    timerState.mode = 'down';
+    timerState.duration = m * 60000;
+    timerStop(timerState.duration); renderTimer();
+    toast('已设为 ' + m + ' 分钟');
+  });
+  $('#timerNotifyBtn').addEventListener('click', timerRequestNotify);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) stopTitleFlash(); });
+  setInterval(timerTick, 500);
+  setPublish('idle');
+}
+function newPlanId() {
+  return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
 /* ---------------- 启动 ---------------- */

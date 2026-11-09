@@ -1,0 +1,25 @@
+{
+  "app": "hanhe-plan",
+  "version": 1,
+  "updatedAt": "2026-11-09T00:00:00.000Z",
+  "items": [
+    {
+      "id": "demo-1",
+      "date": "2026-11-09",
+      "start": "09:00",
+      "end": "10:00",
+      "title": "读《计算机网络》第 4 章",
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "demo-2",
+      "date": "2026-11-09",
+      "start": "14:00",
+      "end": "14:25",
+      "title": "整理操作系统笔记",
+      "status": "doing",
+      "note": ""
+    }
+  ]
+}
