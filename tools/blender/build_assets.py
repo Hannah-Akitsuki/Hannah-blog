@@ -274,17 +274,17 @@ def palette():
 
 # ---------------------------------------------------------------- 场景一：首页 hero
 def cloud_cluster(name, loc, parts, mats, rot=(0, 0, 0)):
-    """由几个压扁的低模球拼成一朵云，join 成一个物体便于整体漂移"""
+    """以柔和云团和细小高光层构成云朵，join 成整体便于漂移"""
     from mathutils import Matrix
     spheres = []
     for (dx, dy, dz, sx, sy, sz) in parts:
-        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1.0, location=(dx, dy, dz))
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=1.0, location=(dx, dy, dz))
         ob = bpy.context.active_object
         # 先把非等比缩放烘进网格，join 时才不会被主子物体的缩放带偏
         ob.data.transform(Matrix.Diagonal((sx, sy, sz, 1.0)))
         ob.data.materials.append(mats["mist"])
         for p in ob.data.polygons:
-            p.use_smooth = True   # 云做平滑着色，避免看成石头
+            p.use_smooth = True
         spheres.append(ob)
     bpy.ops.object.select_all(action="DESELECT")
     for ob in spheres:
@@ -328,6 +328,9 @@ def floating_island(name, loc, radius, depth, mats, rot=(0, 0, 0)):
 def build_hero(mats):
     # —— 纸鹤：八面体机身 + 折面双翼 + 锥形长颈 / 喙 / 尾 ——
     P = mats["paper"]
+    # 用暖白、珍珠灰和淡金的细微差异强调折纸折面
+    wing_light = make_mat("WingLight", "#FFF7E8", 0.68)
+    wing_shadow = make_mat("WingShadow", "#D9D9D2", 0.78)
     body_v = [
         (0.00, 0.62, 0.08), (-0.30, 0.05, -0.04), (0.30, 0.05, -0.04),
         (0.00, -0.68, 0.16), (0.00, -0.02, 0.30), (0.00, -0.02, -0.20),
@@ -341,9 +344,9 @@ def build_hero(mats):
         (-1.62, 0.26, 0.92), (-1.35, -0.40, 0.80),
     ]
     wing_f = [(0, 1, 2), (0, 2, 3), (1, 4, 2), (2, 4, 3)]
-    wing_l = add_mesh("CraneWingL", wing_v, wing_f, [P])
+    wing_l = add_mesh("CraneWingL", wing_v, wing_f, [P, wing_light, wing_shadow], [0, 1, 2, 1])
     wing_r = add_mesh("CraneWingR", [(-x, y, z) for (x, y, z) in wing_v],
-                      [(0, 2, 1), (0, 3, 2), (1, 2, 4), (2, 3, 4)], [P])
+                      [(0, 2, 1), (0, 3, 2), (1, 2, 4), (2, 3, 4)], [P, wing_light, wing_shadow], [0, 1, 2, 1])
 
     neck = add_cone("CraneNeck", (0.0, 0.60, 0.58), 0.14, 0.075, 0.86, P,
                     rot=(math.radians(-35), 0, 0), verts=6)
@@ -369,18 +372,21 @@ def build_hero(mats):
                             [(0, 0, 0, 1.05, 0.52, 0.40), (1.05, 0.03, -0.02, 0.86, 0.46, 0.34),
                              (-1.02, 0.02, -0.03, 0.82, 0.44, 0.32), (0.40, 0.07, 0.26, 0.76, 0.40, 0.28),
                              (-0.42, 0.05, 0.24, 0.70, 0.38, 0.27)], mats, (0, -0.10, 0))
+    # 远景薄云带，降低画面空旷感；体积克制以保持标题可读
+    cloud_c = cloud_cluster("CloudC", (0.05, 2.8, 1.35),
+                            [(0,0,0,1.05,.30,.14),(.86,.02,.04,.72,.25,.12),(-.92,.01,.02,.66,.24,.12)], mats)
     # —— 浮空地形 ——
     island = floating_island("Island", (2.85, 0.55, -0.35), 0.82, 0.58, mats, (0.05, 0, 0.1))
     shard1 = floating_island("ShardA", (-0.65, 0.30, -1.55), 0.24, 0.20, mats, (0.2, 0.3, 0.4))
     shard2 = floating_island("ShardB", (1.35, 0.40, -2.10), 0.15, 0.13, mats, (0.1, 0.2, 0.6))
 
-    geoms = crane_parts + [cloud_a, cloud_b, island, shard1, shard2]
+    geoms = crane_parts + [cloud_a, cloud_b, cloud_c, island, shard1, shard2]
 
     world_ambient(0.55, "#FBFAF4")
-    add_area("Key", (-4.5, -5.0, 5.0), 260, 5.0, (1.0, 0.97, 0.92), (-1.2, 0.2, 0.9))
-    add_area("Fill", (5.0, -3.5, 2.6), 90, 6.0, (0.92, 0.96, 1.0), (0.5, 0, 0.6))
-    add_area("Rim", (1.5, 6.0, 4.5), 140, 4.0, (1.0, 0.95, 0.85), (0, 0, 0.5))
-    bpy.context.scene.view_settings.exposure = -0.35
+    add_area("Key", (-4.5, -5.0, 5.0), 420, 5.0, (1.0, 0.91, 0.78), (-1.2, 0.2, 0.9))
+    add_area("Fill", (5.0, -3.5, 2.6), 220, 6.0, (0.68, 0.82, 1.0), (0.5, 0, 0.6))
+    add_area("Rim", (1.5, 6.0, 4.5), 380, 4.0, (1.0, 0.78, 0.55), (0, 0, 0.5))
+    bpy.context.scene.view_settings.exposure = -0.15
     add_camera((0.0, -13.4, 3.85), (0.0, 0.0, 0.95), 52.0)
     return geoms, (1600, 700)
 
