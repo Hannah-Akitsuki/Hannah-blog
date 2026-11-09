@@ -1038,6 +1038,7 @@ function ensureAudio() {
   return audio;
 }
 function tracks() { return (state.music && state.music.tracks) || []; }
+function recentTracks() { return (state.music && state.music.recent) || []; }
 function curTrack() { return tracks()[state.track] || null; }
 function fmtTime(t) {
   if (!isFinite(t)) return '0:00';
@@ -1092,6 +1093,49 @@ function renderMusic() {
   if (pl) pl.addEventListener('click', e => {
     const li = e.target.closest('[data-track]');
     if (li) { state.track = +li.dataset.track; loadTrack(true); }
+  });
+  renderRecentMusic();
+}
+/* 最近在听：不接收音频文件，点开才插入 B 站官方嵌入播放器 */
+function renderRecentMusic() {
+  const box = $('#recentListen');
+  if (!box) return;
+  const list = recentTracks();
+  if (!list.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML = `
+    <div class="rl-head">
+      <h2>最近在听 <span>/ NOW PLAYING</span></h2>
+      <span class="tiny">B 站嵌入播放器，未放音频文件</span>
+    </div>
+    <div class="rl-grid">${list.map((t, i) => `
+      <article class="rl-card">
+        <div class="rl-media">
+          <img src="${esc(t.cover)}" alt="${esc(t.title)} 封面" width="${t.coverW || 480}" height="${t.coverH || 270}" loading="lazy" decoding="async">
+          <button class="rl-play" type="button" data-rl-play="${i}" aria-label="在站内播放 ${esc(t.title)}">▶</button>
+        </div>
+        <div class="rl-body">
+          <p class="rl-title">${esc(t.title)}</p>
+          <p class="rl-meta">${esc(t.artist || '')} · UP 主 ${esc(t.up || '')}${t.note ? ' · ' + esc(t.note) : ''}</p>
+          <div class="rl-actions">
+            <button class="rl-btn rl-btn-play" type="button" data-rl-play="${i}">站内播放</button>
+            <a class="rl-btn" href="${esc(t.url)}" target="_blank" rel="noopener noreferrer">去 B 站 ↗</a>
+          </div>
+          <p class="rl-tip">播放器点击后才加载；若提示无法播放，请点「去 B 站」。</p>
+        </div>
+      </article>`).join('')}</div>`;
+  if (box.dataset.bound) return;
+  box.dataset.bound = '1';
+  box.addEventListener('click', e => {
+    const btn = e.target.closest('[data-rl-play]');
+    if (!btn) return;
+    const t = recentTracks()[+btn.dataset.rlPlay];
+    const media = btn.closest('.rl-card') && btn.closest('.rl-card').querySelector('.rl-media');
+    if (!t || !media || media.querySelector('iframe')) return;
+    const src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(t.bvid) +
+      '&page=1&autoplay=1&danmaku=0&high_quality=1';
+    media.innerHTML = `<iframe class="rl-iframe" src="${src}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
+    btn.closest('.rl-card').classList.add('playing');
   });
 }
 function loadTrack(play) {

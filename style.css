@@ -319,6 +319,32 @@ article pre{overflow:auto;background:var(--card-2);padding:14px;border-radius:8p
 .pl-list li:hover{background:var(--card-2);color:var(--ink)}
 .pl-list li.on{color:var(--green);background:rgba(84,115,99,.10)}
 
+/* 最近在听：封面卡片 + 点击后插入 B 站嵌入播放器 */
+.recent-listen{margin-top:24px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:22px 22px 24px;box-shadow:var(--shadow)}
+.recent-listen[hidden]{display:none}
+.rl-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.rl-head h2{font:500 17px 'Noto Serif SC',serif;margin:0}
+.rl-head h2 span{font:10px 'DM Sans';letter-spacing:1.4px;color:var(--muted)}
+.rl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
+.rl-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card-2);display:flex;flex-direction:column;min-width:0}
+.rl-media{position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,#cfe0d4,#e9dccd);overflow:hidden}
+[data-theme="dark"] .rl-media{background:linear-gradient(135deg,#243830,#3a2f28)}
+.rl-media img{width:100%;height:100%;object-fit:cover;display:block}
+.rl-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;border:none;background:rgba(20,28,24,.60);color:#fff;font-size:17px;display:grid;place-items:center;cursor:pointer;transition:.22s}
+.rl-play:hover{background:var(--green);transform:translate(-50%,-50%) scale(1.06)}
+.rl-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.rl-body{padding:13px 15px 15px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.rl-title{font:500 15px 'Noto Serif SC',serif;margin:0}
+.rl-meta{font-size:11.5px;color:var(--muted);margin:0;line-height:1.6;overflow-wrap:anywhere}
+.rl-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.rl-btn{font-size:12px;border-radius:999px;padding:6px 14px;border:1px solid var(--line);background:transparent;color:var(--muted);text-decoration:none;cursor:pointer;transition:.2s;white-space:nowrap}
+.rl-btn:hover{color:var(--green);border-color:var(--green)}
+.rl-btn-play{background:var(--green);border-color:var(--green);color:#fff}
+.rl-btn-play:hover{color:#fff;opacity:.9}
+.rl-tip{font-size:10.5px;color:var(--muted);margin:2px 0 0;line-height:1.6}
+@media(max-width:600px){.recent-listen{padding:18px 16px}.rl-grid{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){.rl-play,.rl-btn{transition:none}}
+
 /* ================= 照片墙 ================= */
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
 .photo-grid.small{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}

@@ -2,5 +2,29 @@
   "title": "歌单",
   "artist": "寒鹤",
   "cover": "",
-  "tracks": []
+  "tracks": [],
+  "recent": [
+    {
+      "title": "NEON",
+      "artist": "A2O LITE",
+      "up": "A2O_WORLD",
+      "bvid": "BV1VVpo6gEYg",
+      "url": "https://www.bilibili.com/video/BV1VVpo6gEYg/",
+      "cover": "assets/music/neon.jpg",
+      "coverW": 1280,
+      "coverH": 720,
+      "note": "官方 MV"
+    },
+    {
+      "title": "Falling U",
+      "artist": "T-ara",
+      "up": "云端音乐铺",
+      "bvid": "BV19dk9YpE8r",
+      "url": "https://www.bilibili.com/video/BV19dk9YpE8r/",
+      "cover": "assets/music/falling-u.jpg",
+      "coverW": 470,
+      "coverH": 294,
+      "note": "UP 主投稿"
+    }
+  ]
 }
