@@ -5,8 +5,15 @@
     <link>https://hannah-akitsuki.github.io/Hannah-blog/</link>
     <description>课程笔记、阅读归档、照片墙与自制小工具。</description>
     <language>zh-CN</language>
-    <lastBuildDate>Thu, 05 Nov 2026 00:00:00 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 09 Nov 2026 00:00:00 +0800</lastBuildDate>
     <atom:link href="https://hannah-akitsuki.github.io/Hannah-blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>计算机组成原理</title>
+      <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-computer-organization</link>
+      <guid isPermaLink="false">hanhe:note:computer-organization</guid>
+      <pubDate>Mon, 09 Nov 2026 00:00:00 +0800</pubDate>
+      <description>计算机组成原理 与同学 ibuki 共同整理 计组 第一章 计算机硬件组成要素：哪些部分？功能是什么？ 在电子计算机里，相当于算盘功能的部件，我们称之为 运算器 ；相当于纸那样具有“记忆”功能的部件，我们称之为 存储器 ；相当于笔那样把原始…</description>
+    </item>
     <item>
       <title>寒鹤</title>
       <link>https://hannah-akitsuki.github.io/Hannah-blog/#note-about</link>
