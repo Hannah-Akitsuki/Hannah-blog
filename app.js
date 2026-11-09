@@ -222,7 +222,7 @@ function applySiteConfig() {
   set('#brandName', s.brandName);
   set('#brandSub', s.brandSub);
   set('#heroTitle', s.heroTitle);
-  set('#heroSub', s.heroSubtitle);
+  setHeroSubtitle(s.heroSubtitle);
   set('#heroEyebrow', s.heroEyebrow);
   set('#profileName', s.nickname);
   set('#profileSign', s.signature);
@@ -234,6 +234,35 @@ function applySiteConfig() {
   if (hero) { $('#heroImg').src = hero; }
   $('#year').textContent = new Date().getFullYear();
   applyTheme(currentTheme());
+}
+
+/* hero 副标题：逐字出现 + 细光标。隐藏的 sizer 提前占好高度，
+   文案长短或 390px 折行都不会让下方内容跳动；只在本页首次加载播一次。 */
+let heroTyped = false;
+function setHeroSubtitle(text) {
+  const el = $('#heroSub');
+  if (!el) return;
+  const full = text || '';
+  if (!full) { el.textContent = ''; return; }
+  if (heroTyped || reduceMotion()) {
+    heroTyped = true;
+    el.textContent = full;
+    return;
+  }
+  heroTyped = true;
+  el.innerHTML =
+    '<span class="hero-sr">' + esc(full) + '</span>' +
+    '<span class="hero-ghost" aria-hidden="true">' + esc(full) + '</span>' +
+    '<span class="hero-typed" aria-hidden="true"><span class="hero-chars"></span><i class="hero-caret"></i></span>';
+  const chars = el.querySelector('.hero-chars');
+  let i = 0;
+  const step = () => {
+    if (!chars || !chars.isConnected) return;
+    chars.textContent = full.slice(0, ++i);
+    if (i < full.length) setTimeout(step, 65);
+    else setTimeout(() => { if (el.isConnected) el.classList.add('hero-typed-done'); }, 220);
+  };
+  setTimeout(step, 140);
 }
 
 /* ---------------- 导航渲染 ---------------- */
