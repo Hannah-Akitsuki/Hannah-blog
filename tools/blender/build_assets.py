@@ -381,13 +381,19 @@ def build_hero(mats):
     island = floating_island("Island", (2.85, 0.55, -0.35), 0.82, 0.58, mats, (0.05, 0, 0.1))
     shard1 = floating_island("ShardA", (-0.65, 0.30, -1.55), 0.24, 0.20, mats, (0.2, 0.3, 0.4))
     shard2 = floating_island("ShardB", (1.35, 0.40, -2.10), 0.15, 0.13, mats, (0.1, 0.2, 0.6))
+    # Dreamcore landmarks: distant rose moon, tiny orbiting stars and a floating archipelago.
+    moonmat = make_mat("MoonPearl", "#F4D7D8", .58, emit="#DCAEC9", emit_strength=.28)
+    moon = add_ico("Moon", (3.25, 2.5, 2.5), (.72,.12,.72), moonmat, subdiv=3)
+    stars=[]
+    for i,(x,y,z,r) in enumerate([(-3.7,2.4,2.1,.07),(-2.8,2.2,2.8,.045),(-1.7,2.5,2.3,.06),(1.2,2.7,2.8,.05),(2.0,2.6,2.1,.045),(4.0,2.2,1.8,.07),(-4.4,1.7,1.0,.045)]):
+        stars.append(add_ico("Star%02d"%i,(x,y,z),(r,r,r),mats["glow"],subdiv=2))
 
-    geoms = crane_parts + [cloud_a, cloud_b, cloud_c, cloud_d, island, shard1, shard2]
+    geoms = crane_parts + [cloud_a, cloud_b, cloud_c, cloud_d, island, shard1, shard2, moon] + stars
 
-    world_ambient(0.55, "#FBFAF4")
-    add_area("Key", (-4.5, -5.0, 5.0), 420, 5.0, (1.0, 0.91, 0.78), (-1.2, 0.2, 0.9))
-    add_area("Fill", (5.0, -3.5, 2.6), 220, 6.0, (0.68, 0.82, 1.0), (0.5, 0, 0.6))
-    add_area("Rim", (1.5, 6.0, 4.5), 380, 4.0, (1.0, 0.78, 0.55), (0, 0, 0.5))
+    world_ambient(0.55, "#D5C9E5")
+    add_area("Key", (-4.5, -5.0, 5.0), 520, 5.0, (1.0, 0.78, 0.78), (-1.2, 0.2, 0.9))
+    add_area("Fill", (5.0, -3.5, 2.6), 320, 6.0, (0.62, 0.78, 1.0), (0.5, 0, 0.6))
+    add_area("Rim", (1.5, 6.0, 4.5), 520, 4.0, (0.82, 0.72, 1.0), (0, 0, 0.5))
     bpy.context.scene.view_settings.exposure = -0.15
     add_camera((0.0, -13.4, 3.85), (0.0, 0.0, 0.95), 52.0)
     return geoms, (1600, 700)
