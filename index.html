@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=30">
+<link rel="stylesheet" href="style.css?v=31">
 <script type="importmap">
 {
   "imports": {
@@ -566,6 +566,12 @@ document.documentElement.classList.add('booting');
     <button class="foot-copy" id="rssCopy" type="button">复制订阅链接</button>
     <span class="foot-note">邮箱订阅需要第三方服务（如 follow.it），要注册账号；本站暂未接入。</span>
   </div>
+  <!-- 访问统计：接口未配置或请求失败时整块保持隐藏，不显示占位数字 -->
+  <div class="foot-stats" id="footStats" hidden>
+    <span class="fs-item"><span class="fs-k">今日访问</span><b id="statToday"></b></span>
+    <span class="fs-item"><span class="fs-k">累计</span><b id="statTotal"></b></span>
+    <span class="fs-note">统计仅记录去重访问数，不保存原始 IP</span>
+  </div>
 </footer>
 
 <!-- 搜索面板 -->
@@ -632,7 +638,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=28"></script>
+<script src="app.js?v=29"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

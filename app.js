@@ -202,6 +202,7 @@ async function bootstrap() {
   }
   applySiteConfig();
   initPlan();
+  initStats();
   renderNavs();
   renderHome();
   renderArchive();
@@ -1624,6 +1625,40 @@ async function renderAbout() {
     box.dataset.done = '1';
   } catch (e) {
     box.innerHTML = '<div class="empty">介绍文章加载失败。</div>';
+  }
+}
+
+/* ---------------- 访问统计 ----------------
+   数据来自自建 Cloudflare Worker（见 stats-worker/）。接口地址写在
+   config.json 的 stats.endpoint；未配置、请求失败或字段不合法时整块隐藏，
+   不显示 0 或其它占位数字，也不弹错误提示。 */
+async function initStats() {
+  const box = $('#footStats');
+  const cfg = (state.config && state.config.stats) || {};
+  const endpoint = String(cfg.endpoint || '').trim();
+  if (!box || !endpoint) return;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 5000);
+  try {
+    const res = await fetch(endpoint, {
+      signal: ctrl.signal,
+      cache: 'no-store',
+      headers: { Accept: 'application/json' }
+    });
+    if (!res.ok) throw new Error('stats status ' + res.status);
+    const data = await res.json();
+    const today = Number(data && data.today);
+    const total = Number(data && data.total);
+    if (!Number.isInteger(today) || !Number.isInteger(total) || today < 0 || total < 0) {
+      throw new Error('stats payload invalid');
+    }
+    $('#statToday').textContent = today.toLocaleString('zh-CN');
+    $('#statTotal').textContent = total.toLocaleString('zh-CN');
+    box.hidden = false;
+  } catch (e) {
+    /* 静默降级：保持隐藏，控制台也不打扰普通访客 */
+  } finally {
+    clearTimeout(timer);
   }
 }
 

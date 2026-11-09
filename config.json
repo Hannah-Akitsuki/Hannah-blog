@@ -23,5 +23,8 @@
     "emitMetadata": "0",
     "inputPosition": "top",
     "lang": "zh-CN"
+  },
+  "stats": {
+    "endpoint": ""
   }
 }

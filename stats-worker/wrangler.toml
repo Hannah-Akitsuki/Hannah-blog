@@ -1,0 +1,17 @@
+name = "hanhe-visit-stats"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# 允许哪些站点跨域读取计数（逗号分隔；* 表示全部放行）
+[vars]
+ALLOWED_ORIGINS = "https://hannah-akitsuki.github.io"
+TZ_OFFSET = "8"
+
+# 先执行：npx wrangler kv namespace create STATS
+# 把返回的 id 填到下面；这是唯一需要手动改的地方
+[[kv_namespaces]]
+binding = "STATS"
+id = "请替换为你的 KV 命名空间 ID"
+
+# 盐不要写进本文件，用命令设置：
+# npx wrangler secret put IP_SALT
