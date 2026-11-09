@@ -9,6 +9,8 @@
       "artist": "A2O LITE",
       "up": "A2O_WORLD",
       "bvid": "BV1VVpo6gEYg",
+      "aid": 117427861985029,
+      "cid": 42682355579,
       "url": "https://www.bilibili.com/video/BV1VVpo6gEYg/",
       "cover": "assets/music/neon.jpg",
       "coverW": 1280,
@@ -21,6 +23,8 @@
       "artist": "T-ara",
       "up": "云端音乐铺",
       "bvid": "BV19dk9YpE8r",
+      "aid": 113706474149185,
+      "cid": 27504151818,
       "url": "https://www.bilibili.com/video/BV19dk9YpE8r/",
       "cover": "assets/music/falling-u.jpg",
       "coverW": 470,
@@ -39,6 +43,8 @@
         "up": "东桥的保护神",
         "duration": 208,
         "bvid": "BV1cP4y1e7X8",
+        "aid": 904700748,
+        "cid": 949613745,
         "url": "https://www.bilibili.com/video/BV1cP4y1e7X8/",
         "cover": "assets/music/playlist/BV1cP4y1e7X8.jpg"
       },
@@ -48,6 +54,8 @@
         "up": "Arrebol_Feng",
         "duration": 3573,
         "bvid": "BV11D9VY9EsA",
+        "aid": 114081897913128,
+        "cid": 28623441855,
         "url": "https://www.bilibili.com/video/BV11D9VY9EsA/",
         "cover": "assets/music/playlist/BV11D9VY9EsA.jpg"
       },
@@ -57,6 +65,8 @@
         "up": "i9Ris",
         "duration": 186,
         "bvid": "BV1aX4y1w73N",
+        "aid": 716547940,
+        "cid": 367817149,
         "url": "https://www.bilibili.com/video/BV1aX4y1w73N/",
         "cover": "assets/music/playlist/BV1aX4y1w73N.jpg"
       },
@@ -66,6 +76,8 @@
         "up": "wef1491",
         "duration": 133,
         "bvid": "BV1NdSmYyEUK",
+        "aid": 113419969630179,
+        "cid": 26604736186,
         "url": "https://www.bilibili.com/video/BV1NdSmYyEUK/",
         "cover": "assets/music/playlist/BV1NdSmYyEUK.jpg"
       },
@@ -75,6 +87,8 @@
         "up": "关中雲",
         "duration": 237,
         "bvid": "BV1iT411b7rG",
+        "aid": 485837059,
+        "cid": 1120658732,
         "url": "https://www.bilibili.com/video/BV1iT411b7rG/",
         "cover": "assets/music/playlist/BV1iT411b7rG.jpg"
       },
@@ -84,6 +98,8 @@
         "up": "Sean_Dream",
         "duration": 102,
         "bvid": "BV1124y1x72L",
+        "aid": 696206674,
+        "cid": 1057559731,
         "url": "https://www.bilibili.com/video/BV1124y1x72L/",
         "cover": "assets/music/playlist/BV1124y1x72L.jpg"
       },
@@ -93,6 +109,8 @@
         "up": "嘿呀你个不争气的",
         "duration": 130,
         "bvid": "BV1TJ4m1H7QK",
+        "aid": 1253377493,
+        "cid": 1510870844,
         "url": "https://www.bilibili.com/video/BV1TJ4m1H7QK/",
         "cover": "assets/music/playlist/BV1TJ4m1H7QK.jpg"
       },
@@ -102,6 +120,8 @@
         "up": "默-cry",
         "duration": 168,
         "bvid": "BV1NU4y1e7kh",
+        "aid": 686718799,
+        "cid": 795611300,
         "url": "https://www.bilibili.com/video/BV1NU4y1e7kh/",
         "cover": "assets/music/playlist/BV1NU4y1e7kh.jpg"
       },
@@ -111,6 +131,8 @@
         "up": "凋零音乐库",
         "duration": 195,
         "bvid": "BV15r421n7p6",
+        "aid": 1401810304,
+        "cid": 32874628639,
         "url": "https://www.bilibili.com/video/BV15r421n7p6/",
         "cover": "assets/music/playlist/BV15r421n7p6.jpg"
       }

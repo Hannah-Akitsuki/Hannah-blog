@@ -1046,23 +1046,118 @@ function fmtTime(t) {
   const m = Math.floor(t / 60), s = Math.floor(t % 60);
   return m + ':' + String(s).padStart(2, '0');
 }
+/* 首页迷你卡：有本地音频时沿用 <audio> 播放器；
+   没有本地音频时改成可直接选曲并原地播放 B 站嵌入的小播放器。 */
+let miniPick = null;
+const MINI_KEY = 'music:mini-pick';
+function miniPickLoad() {
+  try {
+    const v = JSON.parse(localStorage.getItem(MINI_KEY) || 'null');
+    if (!v || (v.group !== 'recent' && v.group !== 'playlist')) return null;
+    const i = Number(v.i);
+    return Number.isInteger(i) && i >= 0 ? { group: v.group, i } : null;
+  } catch (e) { return null; }
+}
+function miniPickSave(pick) {
+  try { localStorage.setItem(MINI_KEY, JSON.stringify(pick)); } catch (e) {}
+}
+function miniPickTrack(pick) {
+  if (!pick) return null;
+  if (pick.group === 'recent') return recentTracks()[pick.i] || null;
+  const pl = playlistData();
+  return (pl && pl.items && pl.items[pick.i]) || null;
+}
+function miniDefaultPick() {
+  if (recentTracks().length) return { group: 'recent', i: 0 };
+  const pl = playlistData();
+  if (pl && pl.items && pl.items.length) return { group: 'playlist', i: 0 };
+  return null;
+}
+function miniMeta(t) {
+  const a = t.artist || '信息未取到';
+  const up = t.up ? ' · UP 主 ' + t.up : '';
+  const dur = t.duration ? ' · ' + fmtDur(t.duration) : '';
+  return a + up + dur;
+}
+function miniGroupHTML(group, label, items, pick) {
+  return `<details class="mm-group" data-mm-group="${group}">
+    <summary><span>${esc(label)}</span><b>${items.length}</b></summary>
+    <ul class="mm-list">${items.map((t, i) => {
+      const on = pick && pick.group === group && pick.i === i;
+      return `<li><button class="mm-row${on ? ' on' : ''}" type="button" data-mm-pick="${group}" data-mm-i="${i}">
+        <span class="mm-idx">${String(i + 1).padStart(2, '0')}</span>
+        <span class="mm-name">${esc(t.title)}</span>
+        <span class="mm-dur">${t.duration ? fmtDur(t.duration) : ''}</span>
+      </button></li>`;
+    }).join('')}</ul>
+  </details>`;
+}
 function miniMusicHTML() {
   const list = tracks();
-  const cover = (state.music && state.music.cover) || '';
-  const t = curTrack();
-  return `<div class="mc-cover">${cover ? `<img src="${esc(cover)}" alt="">` : '<span>♪</span>'}</div>
-    <p class="mc-title">${esc(t ? t.title : (state.music && state.music.title) || '暂无歌单')}</p>
-    <p class="mc-artist">${esc(t ? (t.artist || (state.music && state.music.artist) || '') : (list.length ? '' : '音乐页可查看说明'))}</p>
-    <div class="mc-bar"><i id="mcFill"></i></div>
-    <div class="mc-time"><span id="mcNow">0:00</span><span id="mcDur">0:00</span></div>
-    <div class="mc-controls">
-      <button class="mc-sub" data-act="prev" title="上一首">⏮</button>
-      <button class="mc-play" data-act="toggle" title="播放/暂停">▶</button>
-      <button class="mc-sub" data-act="next" title="下一首">⏭</button>
-    </div>`;
+  if (list.length) {
+    const cover = (state.music && state.music.cover) || '';
+    const t = curTrack();
+    return `<div class="mc-cover">${cover ? `<img src="${esc(cover)}" alt="">` : '<span>♪</span>'}</div>
+      <p class="mc-title">${esc(t ? t.title : (state.music && state.music.title) || '暂无歌单')}</p>
+      <p class="mc-artist">${esc(t ? (t.artist || '') : '')}</p>
+      <div class="mc-bar"><i id="mcFill"></i></div>
+      <div class="mc-time"><span id="mcNow">0:00</span><span id="mcDur">0:00</span></div>
+      <div class="mc-controls">
+        <button class="mc-sub" data-act="prev" title="上一首">⏮</button>
+        <button class="mc-play" data-act="toggle" title="播放/暂停">▶</button>
+        <button class="mc-sub" data-act="next" title="下一首">⏭</button>
+      </div>`;
+  }
+  const rec = recentTracks();
+  const pl = playlistData();
+  const plItems = (pl && pl.items) || [];
+  if (!miniPick) miniPick = miniPickLoad();
+  if (!miniPickTrack(miniPick)) miniPick = miniDefaultPick();
+  const t = miniPickTrack(miniPick);
+  const cover = t && t.cover;
+  return `<div class="mm-media" id="mmMedia">
+      ${cover ? `<img src="${esc(cover)}" alt="${esc(t.title)} 封面" loading="lazy" decoding="async">` : '<span class="mm-fallback">♪</span>'}
+    </div>
+    <p class="mc-title" id="mmTitle">${esc(t ? t.title : '暂无曲目')}</p>
+    <p class="mc-artist" id="mmMeta">${esc(t ? miniMeta(t) : '音乐页可查看说明')}</p>
+    <div class="mm-actions">
+      ${t ? '<button class="rl-btn rl-btn-play" type="button" data-mm-play>▶ 播放</button>' : ''}
+      <a class="rl-btn" href="#music">去音乐页 ↗</a>
+    </div>
+    ${rec.length ? miniGroupHTML('recent', '最近在听', rec, miniPick) : ''}
+    ${plItems.length ? miniGroupHTML('playlist', (pl && pl.title) || '歌单', plItems, miniPick) : ''}
+    <p class="mm-tip">点曲目会在这张卡里直接播放；B 站嵌入不提供进度，也没有整张歌单连续播放。</p>`;
+}
+function miniSelect(pick, play) {
+  const t = miniPickTrack(pick);
+  if (!t) return;
+  miniPick = pick;
+  miniPickSave(pick);
+  const title = $('#mmTitle'), meta = $('#mmMeta'), media = $('#mmMedia');
+  if (title) title.textContent = t.title;
+  if (meta) meta.textContent = miniMeta(t);
+  if (media && play) {
+    media.innerHTML = `<iframe class="mm-iframe" src="${biliPlayerSrc(t)}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
+  }
+  $$('#miniMusic [data-mm-pick]').forEach(b => {
+    b.classList.toggle('on', b.dataset.mmPick === pick.group && +b.dataset.mmI === pick.i);
+  });
+}
+function miniClick(e) {
+  const row = e.target.closest('[data-mm-pick]');
+  if (row) { miniSelect({ group: row.dataset.mmPick, i: +row.dataset.mmI }, true); return; }
+  if (e.target.closest('[data-mm-play]')) {
+    if (!miniPickTrack(miniPick)) miniPick = miniDefaultPick();
+    if (miniPick) miniSelect(miniPick, true);
+  }
 }
 function renderMusic() {
-  $('#miniMusic').innerHTML = miniMusicHTML();
+  const mini = $('#miniMusic');
+  mini.innerHTML = miniMusicHTML();
+  if (!mini.dataset.bound) {
+    mini.dataset.bound = '1';
+    mini.addEventListener('click', miniClick);
+  }
   const list = tracks();
   const cover = (state.music && state.music.cover) || '';
   const player = $('#player');
@@ -1149,7 +1244,7 @@ function renderRecentMusic() {
     const t = recentTracks()[+btn.dataset.rlPlay];
     const media = btn.closest('.rl-card') && btn.closest('.rl-card').querySelector('.rl-media');
     if (!t || !media || media.querySelector('iframe')) return;
-    media.innerHTML = `<iframe class="rl-iframe" src="${biliPlayerSrc(t.bvid)}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
+    media.innerHTML = `<iframe class="rl-iframe" src="${biliPlayerSrc(t)}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
     btn.closest('.rl-card').classList.add('playing');
   });
 }
@@ -1166,9 +1261,18 @@ function loadLyrics(id) {
   lyricCache.set(key, p);
   return p;
 }
-function biliPlayerSrc(bvid, sec) {
-  return 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(bvid) +
-    '&page=1&autoplay=1&danmaku=0&high_quality=1' + (sec ? '&t=' + Math.floor(sec) : '');
+/* 只带 bvid 时，这批音乐视频在 iframe 里会落到 B 站「无法正常播放」提示页；
+   补上官方嵌入需要的 aid/cid 与 isOutside=true 后才有真实画面（已实测）。 */
+function biliPlayerSrc(t, sec) {
+  const tv = typeof t === 'string' ? { bvid: t } : (t || {});
+  if (!tv.bvid) return '';
+  let s = 'https://player.bilibili.com/player.html?isOutside=true';
+  if (tv.aid) s += '&aid=' + encodeURIComponent(tv.aid);
+  s += '&bvid=' + encodeURIComponent(tv.bvid);
+  if (tv.cid) s += '&cid=' + encodeURIComponent(tv.cid);
+  s += '&p=1&autoplay=1&danmaku=0&high_quality=1';
+  if (sec) s += '&t=' + Math.floor(sec);
+  return s;
 }
 function lrcListHTML(d) {
   return `<ol class="lrc-list">${(d.lines || []).map(l =>
@@ -1209,7 +1313,7 @@ function jumpRecentLyric(line) {
   const media = card.querySelector('.rl-media');
   if (!t || !media) return;
   const sec = Math.max(0, Math.floor(+line.dataset.lrcTime || 0));
-  media.innerHTML = `<iframe class="rl-iframe" src="${biliPlayerSrc(t.bvid, sec)}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
+  media.innerHTML = `<iframe class="rl-iframe" src="${biliPlayerSrc(t, sec)}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
   card.classList.add('playing');
   const out = card.querySelector('.rl-actions a');
   if (out) out.href = t.url + '?t=' + sec;
@@ -1339,9 +1443,7 @@ function selectPlaylistTrack(i) {
   const t = pl.items[i];
   const media = $('#plStageMedia');
   if (!media) return;
-  const src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(t.bvid) +
-    '&page=1&autoplay=1&danmaku=0&high_quality=1';
-  media.innerHTML = `<iframe class="pl-iframe" src="${src}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
+  media.innerHTML = `<iframe class="pl-iframe" src="${biliPlayerSrc(t)}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
   /* 从列表底部点歌时舞台可能已经滚出视口，把它带回来，否则播放器“插入”了却看不见 */
   const stage = media.closest('.pl-stage');
   if (stage && stage.getBoundingClientRect().bottom < 0) {
