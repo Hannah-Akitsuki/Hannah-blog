@@ -102,13 +102,20 @@ body.scrolled .topbar{background:var(--head-bg);backdrop-filter:blur(16px);borde
 .hero-sky{
   position:absolute;inset:0;
   background:
-    radial-gradient(120% 88% at 50% 10%,rgba(255,246,228,.20) 0%,rgba(255,246,228,0) 62%),
-    linear-gradient(172deg,#2f4438 0%,#3b5447 46%,#24342c 100%);
+    radial-gradient(ellipse at 50% 34%,rgba(255,234,207,.24) 0%,rgba(255,234,207,0) 48%),
+    radial-gradient(ellipse at 12% 15%,rgba(128,172,190,.25) 0%,transparent 38%),
+    linear-gradient(165deg,#314b60 0%,#567487 42%,#354d5b 72%,#263943 100%);
 }
+.hero-sky::before,.hero-sky::after{content:'';position:absolute;inset:-20%;pointer-events:none}
+.hero-sky::before{opacity:.38;background:repeating-linear-gradient(155deg,transparent 0 90px,rgba(255,255,255,.045) 91px 93px,transparent 94px 180px);animation:sky-drift 38s linear infinite}
+.hero-sky::after{background:linear-gradient(180deg,rgba(17,28,38,.06),transparent 26%,transparent 66%,rgba(14,25,32,.25))}
+@keyframes sky-drift{to{transform:translate3d(5%,2%,0)}}
+.hero-3d::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 35%,rgba(17,28,38,.2) 100%)}
+.hero-inner{filter:drop-shadow(0 8px 30px rgba(13,24,32,.2))}
+.hero-search{border:1px solid rgba(255,255,255,.58);backdrop-filter:blur(14px);transition:transform .25s,box-shadow .25s}
+.hero-search:focus-within{transform:translateY(-2px);box-shadow:0 22px 54px rgba(0,0,0,.28)}
 [data-theme="dark"] .hero-sky{
-  background:
-    radial-gradient(120% 88% at 50% 10%,rgba(246,227,194,.14) 0%,rgba(246,227,194,0) 60%),
-    linear-gradient(172deg,#0f1512 0%,#1a251f 48%,#0b100d 100%);
+  background:radial-gradient(ellipse at 50% 34%,rgba(181,152,123,.16),transparent 48%),linear-gradient(165deg,#172b3a 0%,#263f50 44%,#172a35 100%);
 }
 .hero-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 46%;opacity:0;transition:opacity .55s ease}
 .hero-poster.on{opacity:1}
