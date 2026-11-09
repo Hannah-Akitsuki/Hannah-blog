@@ -345,6 +345,55 @@ article pre{overflow:auto;background:var(--card-2);padding:14px;border-radius:8p
 @media(max-width:600px){.recent-listen{padding:18px 16px}.rl-grid{grid-template-columns:1fr}}
 @media (prefers-reduced-motion: reduce){.rl-play,.rl-btn{transition:none}}
 
+/* 收藏夹歌单：整体列表 + 单一舞台播放器 */
+.playlist-block{margin-top:24px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:22px 22px 18px;box-shadow:var(--shadow)}
+.playlist-block[hidden]{display:none}
+.pl-stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:center;margin-bottom:16px}
+.pl-stage-media{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#cfe0d4,#e9dccd);display:grid;place-items:center;min-width:0}
+[data-theme="dark"] .pl-stage-media{background:linear-gradient(135deg,#243830,#3a2f28)}
+.pl-stage-media img{width:100%;height:100%;object-fit:cover;display:block}
+.pl-stage-empty{font-size:12px;color:var(--muted)}
+.pl-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.pl-now-kicker{font:10px 'DM Sans';letter-spacing:1.3px;color:var(--muted);margin:0 0 6px;text-transform:uppercase}
+.pl-now-title{font:500 18px 'Noto Serif SC',serif;margin:0 0 6px;overflow-wrap:anywhere}
+.pl-now-meta{font-size:11.5px;color:var(--muted);margin:0 0 12px;line-height:1.6;overflow-wrap:anywhere}
+.pl-stage-actions{display:flex;gap:8px;flex-wrap:wrap}
+.plv-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.pl-row{display:grid;grid-template-columns:minmax(0,1fr) 34px;align-items:center;border-radius:10px;min-width:0}
+.pl-row:hover,.pl-row.on{background:var(--card-2)}
+.pl-row.on{box-shadow:inset 3px 0 0 var(--green)}
+.pl-main{display:grid;grid-template-columns:26px 64px minmax(0,1fr) 46px;gap:10px;align-items:center;width:100%;min-width:0;background:none;border:0;padding:6px 8px;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.pl-idx{font:11px 'DM Sans';color:var(--muted)}
+.pl-thumb{width:64px;height:40px;border-radius:6px;object-fit:cover;background:var(--card);display:block}
+.pl-text{min-width:0;display:flex;flex-direction:column;gap:2px}
+.pl-text b{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-text small{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-row.on .pl-text b{color:var(--green)}
+.pl-dur{font:11px 'DM Sans';color:var(--muted);text-align:right}
+.pl-out{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid transparent;color:var(--muted);text-decoration:none;font-size:13px}
+.pl-out:hover{color:var(--green);border-color:var(--green)}
+
+/* 歌词面板：B 站曲目点行跳秒；站内音频逐行高亮 */
+.lrc-slot{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+.lrc-slot[hidden]{display:none}
+.lrc-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.lrc-kicker{font:10px 'DM Sans';letter-spacing:1.4px;color:var(--accent)}
+.lrc-credit{font-size:10px;color:var(--muted);line-height:1.5;text-align:right;overflow-wrap:anywhere;min-width:0}
+.lrc-list{list-style:none;margin:8px 0 0;padding:0;max-height:200px;overflow:auto;display:flex;flex-direction:column;gap:1px}
+.lrc-line{display:grid;grid-template-columns:42px minmax(0,1fr);gap:8px;align-items:baseline;width:100%;min-width:0;text-align:left;background:none;border:0;border-radius:6px;padding:5px 6px;cursor:pointer;color:var(--muted);font:inherit;font-size:12px;line-height:1.5}
+.lrc-line time{font:10.5px 'DM Sans';color:var(--accent)}
+.lrc-line span{min-width:0;overflow-wrap:anywhere}
+.lrc-line:hover{background:var(--card-2);color:var(--ink)}
+.lrc-line.on{color:var(--green);background:rgba(84,115,99,.10)}
+.lrc-note{font-size:10px;color:var(--muted);margin:6px 0 0;line-height:1.6;overflow-wrap:anywhere}
+.lrc-loading{font-size:11px;color:var(--muted);margin:6px 0}
+.pl-lrc{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.pl-lrc[hidden]{display:none}
+.pl-lrc .lrc-list{max-height:180px}
+@media(max-width:700px){.pl-stage{grid-template-columns:1fr}.pl-main{grid-template-columns:22px 56px minmax(0,1fr) 42px;gap:8px}.pl-thumb{width:56px;height:35px}}
+@media(max-width:600px){.playlist-block{padding:18px 14px}}
+@media (prefers-reduced-motion: reduce){.pl-row,.pl-main,.pl-out{transition:none}}
+
 /* ================= 照片墙 ================= */
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
 .photo-grid.small{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}

@@ -13,7 +13,8 @@
       "cover": "assets/music/neon.jpg",
       "coverW": 1280,
       "coverH": 720,
-      "note": "官方 MV"
+      "note": "官方 MV",
+      "lyrics": "neon"
     },
     {
       "title": "Falling U",
@@ -24,7 +25,95 @@
       "cover": "assets/music/falling-u.jpg",
       "coverW": 470,
       "coverH": 294,
-      "note": "UP 主投稿"
+      "note": "UP 主投稿",
+      "lyrics": "falling-u"
     }
-  ]
+  ],
+  "playlist": {
+    "title": "收藏夹歌单",
+    "collectionUrl": "https://www.bilibili.com/list/ml1742236984",
+    "items": [
+      {
+        "title": "Love is 4 Walls",
+        "artist": "",
+        "up": "东桥的保护神",
+        "duration": 208,
+        "bvid": "BV1cP4y1e7X8",
+        "url": "https://www.bilibili.com/video/BV1cP4y1e7X8/",
+        "cover": "assets/music/playlist/BV1cP4y1e7X8.jpg"
+      },
+      {
+        "title": "Green to blue (Sped Up)",
+        "artist": "Aurenth",
+        "up": "Arrebol_Feng",
+        "duration": 3573,
+        "bvid": "BV11D9VY9EsA",
+        "url": "https://www.bilibili.com/video/BV11D9VY9EsA/",
+        "cover": "assets/music/playlist/BV11D9VY9EsA.jpg"
+      },
+      {
+        "title": "Comfort Chain",
+        "artist": "Instupendo",
+        "up": "i9Ris",
+        "duration": 186,
+        "bvid": "BV1aX4y1w73N",
+        "url": "https://www.bilibili.com/video/BV1aX4y1w73N/",
+        "cover": "assets/music/playlist/BV1aX4y1w73N.jpg"
+      },
+      {
+        "title": "The Loser（纯音乐伴奏）",
+        "artist": "",
+        "up": "wef1491",
+        "duration": 133,
+        "bvid": "BV1NdSmYyEUK",
+        "url": "https://www.bilibili.com/video/BV1NdSmYyEUK/",
+        "cover": "assets/music/playlist/BV1NdSmYyEUK.jpg"
+      },
+      {
+        "title": "溯（钢琴版）",
+        "artist": "柳轻颂",
+        "up": "关中雲",
+        "duration": 237,
+        "bvid": "BV1iT411b7rG",
+        "url": "https://www.bilibili.com/video/BV1iT411b7rG/",
+        "cover": "assets/music/playlist/BV1iT411b7rG.jpg"
+      },
+      {
+        "title": "nop",
+        "artist": "陈越龙",
+        "up": "Sean_Dream",
+        "duration": 102,
+        "bvid": "BV1124y1x72L",
+        "url": "https://www.bilibili.com/video/BV1124y1x72L/",
+        "cover": "assets/music/playlist/BV1124y1x72L.jpg"
+      },
+      {
+        "title": "花日",
+        "artist": "CMJ",
+        "up": "嘿呀你个不争气的",
+        "duration": 130,
+        "bvid": "BV1TJ4m1H7QK",
+        "url": "https://www.bilibili.com/video/BV1TJ4m1H7QK/",
+        "cover": "assets/music/playlist/BV1TJ4m1H7QK.jpg"
+      },
+      {
+        "title": "Are You Lost",
+        "artist": "park bird",
+        "up": "默-cry",
+        "duration": 168,
+        "bvid": "BV1NU4y1e7kh",
+        "url": "https://www.bilibili.com/video/BV1NU4y1e7kh/",
+        "cover": "assets/music/playlist/BV1NU4y1e7kh.jpg"
+      },
+      {
+        "title": "7 Weeks & 3 Days",
+        "artist": "yungatita",
+        "up": "凋零音乐库",
+        "duration": 195,
+        "bvid": "BV15r421n7p6",
+        "url": "https://www.bilibili.com/video/BV15r421n7p6/",
+        "cover": "assets/music/playlist/BV15r421n7p6.jpg"
+      }
+    ]
+  }
 }

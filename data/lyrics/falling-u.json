@@ -1,0 +1,17 @@
+{
+  "id": "falling-u",
+  "title": "Falling U",
+  "artist": "T-ara",
+  "origin": "B 站 UP 主 云端音乐铺（搬运/分享）",
+  "mode": "external",
+  "bvid": "BV19dk9YpE8r",
+  "url": "https://www.bilibili.com/video/BV19dk9YpE8r/",
+  "credit": "歌词片段摘自 QQ 音乐，仅摘录开头 5 行；时间轴按音源，B 站 MV 可能有几秒偏差。",
+  "lines": [
+    { "time": 7, "text": "Love is pain" },
+    { "time": 9, "text": "Oh oh a e ya e" },
+    { "time": 12, "text": "Don't say good bye" },
+    { "time": 13, "text": "Oh oh a e ya e ya" },
+    { "time": 16, "text": "한참을 멍하니 보고 있었어" }
+  ]
+}

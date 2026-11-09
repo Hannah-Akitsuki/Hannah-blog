@@ -1,0 +1,17 @@
+{
+  "id": "neon",
+  "title": "NEON",
+  "artist": "A2O LITE",
+  "origin": "B 站 UP 主 A2O_WORLD（官方 MV）",
+  "mode": "external",
+  "bvid": "BV1VVpo6gEYg",
+  "url": "https://www.bilibili.com/video/BV1VVpo6gEYg/",
+  "credit": "歌词片段摘自 QQ 音乐，仅摘录 5 行；时间轴按音源，B 站 MV 可能有几秒偏差。",
+  "lines": [
+    { "time": 44, "text": "We are neon and beyond see the sparkles in our stones" },
+    { "time": 48, "text": "다시 불 붙여 무지개빛의 불 (Neon)" },
+    { "time": 52, "text": "We are neon and beyond see me in a different form" },
+    { "time": 55, "text": "낮게 날아 모두 눈치 못 채게 (Neon)" },
+    { "time": 59, "text": "Flashing neon yeah" }
+  ]
+}

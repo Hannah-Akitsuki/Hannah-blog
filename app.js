@@ -1039,6 +1039,7 @@ function ensureAudio() {
 }
 function tracks() { return (state.music && state.music.tracks) || []; }
 function recentTracks() { return (state.music && state.music.recent) || []; }
+function playlistData() { return (state.music && state.music.playlist) || null; }
 function curTrack() { return tracks()[state.track] || null; }
 function fmtTime(t) {
   if (!isFinite(t)) return '0:00';
@@ -1079,8 +1080,9 @@ function renderMusic() {
       ${list.length ? `<ul class="pl-list" id="plList">${list.map((t, i) =>
         `<li data-track="${i}" class="${i === state.track ? 'on' : ''}"><span>${esc(t.title)}</span><span>${esc(t.artist || '')}</span></li>`).join('')}</ul>`
       : `<div class="empty" style="margin-top:18px">${isOwner()
-          ? '还没有音频文件。把 mp3 放进仓库（例如 <code>audio/xxx.mp3</code>），然后在 <code>data/music.json</code> 的 <code>tracks</code> 里加一条 <code>{"title":"歌名","artist":"歌手","src":"audio/xxx.mp3"}</code> 即可播放。'
+          ? '还没有音频文件。把 mp3 放进仓库（例如 <code>audio/xxx.mp3</code>），然后在 <code>data/music.json</code> 的 <code>tracks</code> 里加一条 <code>{"title":"歌名","artist":"歌手","src":"audio/xxx.mp3","lyrics":"xxx"}</code> 即可播放并自动跟歌词（歌词放 <code>data/lyrics/xxx.json</code>）。'
           : '博主还没有上传音乐。'}</div>`}
+      <div class="pl-lrc" id="playerLyrics" hidden></div>
     </div>`;
 
   $$('[data-act]').forEach(btn => btn.addEventListener('click', () => {
@@ -1095,6 +1097,7 @@ function renderMusic() {
     if (li) { state.track = +li.dataset.track; loadTrack(true); }
   });
   renderRecentMusic();
+  renderPlaylist();
 }
 /* 最近在听：不接收音频文件，点开才插入 B 站官方嵌入播放器 */
 function renderRecentMusic() {
@@ -1109,7 +1112,7 @@ function renderRecentMusic() {
       <span class="tiny">B 站嵌入播放器，未放音频文件</span>
     </div>
     <div class="rl-grid">${list.map((t, i) => `
-      <article class="rl-card">
+      <article class="rl-card" data-rl-card="${i}">
         <div class="rl-media">
           <img src="${esc(t.cover)}" alt="${esc(t.title)} 封面" width="${t.coverW || 480}" height="${t.coverH || 270}" loading="lazy" decoding="async">
           <button class="rl-play" type="button" data-rl-play="${i}" aria-label="在站内播放 ${esc(t.title)}">▶</button>
@@ -1120,23 +1123,216 @@ function renderRecentMusic() {
           <div class="rl-actions">
             <button class="rl-btn rl-btn-play" type="button" data-rl-play="${i}">站内播放</button>
             <a class="rl-btn" href="${esc(t.url)}" target="_blank" rel="noopener noreferrer">去 B 站 ↗</a>
+            ${t.lyrics ? `<button class="rl-btn" type="button" data-rl-lyrics="${i}" aria-expanded="false">歌词</button>` : ''}
           </div>
           <p class="rl-tip">播放器点击后才加载；若提示无法播放，请点「去 B 站」。</p>
+          <div class="lrc-slot" data-lrc-slot hidden></div>
         </div>
       </article>`).join('')}</div>`;
   if (box.dataset.bound) return;
   box.dataset.bound = '1';
   box.addEventListener('click', e => {
+    const lbtn = e.target.closest('[data-rl-lyrics]');
+    if (lbtn) { toggleRecentLyrics(lbtn); return; }
+    const line = e.target.closest('[data-lrc-time]');
+    if (line) { jumpRecentLyric(line); return; }
     const btn = e.target.closest('[data-rl-play]');
     if (!btn) return;
     const t = recentTracks()[+btn.dataset.rlPlay];
     const media = btn.closest('.rl-card') && btn.closest('.rl-card').querySelector('.rl-media');
     if (!t || !media || media.querySelector('iframe')) return;
-    const src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(t.bvid) +
-      '&page=1&autoplay=1&danmaku=0&high_quality=1';
-    media.innerHTML = `<iframe class="rl-iframe" src="${src}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
+    media.innerHTML = `<iframe class="rl-iframe" src="${biliPlayerSrc(t.bvid)}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
     btn.closest('.rl-card').classList.add('playing');
   });
+}
+/* 歌词：每首一份 JSON，点开才拉；B 站曲目只做「点行跳秒」，不跟唱 */
+const lyricCache = new Map();
+function loadLyrics(id) {
+  const key = String(id || '');
+  if (!/^[a-z0-9-]+$/i.test(key)) return Promise.reject(new Error('bad lyrics id'));
+  if (lyricCache.has(key)) return lyricCache.get(key);
+  const p = fetch(bust('data/lyrics/' + key + '.json')).then(r => {
+    if (!r.ok) throw new Error('lyrics ' + r.status);
+    return r.json();
+  });
+  lyricCache.set(key, p);
+  return p;
+}
+function biliPlayerSrc(bvid, sec) {
+  return 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(bvid) +
+    '&page=1&autoplay=1&danmaku=0&high_quality=1' + (sec ? '&t=' + Math.floor(sec) : '');
+}
+function lrcListHTML(d) {
+  return `<ol class="lrc-list">${(d.lines || []).map(l =>
+    `<li><button class="lrc-line" type="button" data-lrc-time="${+l.time}"><time>${fmtTime(+l.time)}</time><span>${esc(l.text)}</span></button></li>`).join('')}</ol>`;
+}
+function lrcHeadHTML(d) {
+  return `<div class="lrc-head"><span class="lrc-kicker">LYRICS</span><span class="lrc-credit">${esc(d.credit || '')}</span></div>` +
+    `<p class="lrc-note">出处：${esc(d.origin || '')}</p>`;
+}
+function toggleRecentLyrics(btn) {
+  const t = recentTracks()[+btn.dataset.rlLyrics];
+  const card = btn.closest('.rl-card');
+  const slot = card && card.querySelector('[data-lrc-slot]');
+  if (!t || !t.lyrics || !slot) return;
+  if (!slot.hidden) {
+    slot.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+    btn.textContent = '歌词';
+    return;
+  }
+  slot.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  btn.textContent = '收起歌词';
+  if (slot.dataset.loaded) return;
+  slot.innerHTML = '<p class="lrc-loading">歌词加载中…</p>';
+  loadLyrics(t.lyrics).then(d => {
+    slot.innerHTML = lrcHeadHTML(d) + lrcListHTML(d) +
+      '<p class="lrc-note">点击某行让上方播放器从该秒起播；不自动滚动、不高亮。</p>';
+    slot.dataset.loaded = '1';
+  }).catch(() => {
+    slot.innerHTML = '<p class="lrc-loading">歌词加载失败，可点「去 B 站」。</p>';
+  });
+}
+function jumpRecentLyric(line) {
+  const card = line.closest('.rl-card');
+  if (!card) return;
+  const t = recentTracks()[+card.dataset.rlCard];
+  const media = card.querySelector('.rl-media');
+  if (!t || !media) return;
+  const sec = Math.max(0, Math.floor(+line.dataset.lrcTime || 0));
+  media.innerHTML = `<iframe class="rl-iframe" src="${biliPlayerSrc(t.bvid, sec)}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
+  card.classList.add('playing');
+  const out = card.querySelector('.rl-actions a');
+  if (out) out.href = t.url + '?t=' + sec;
+}
+/* 站内音频：timeupdate 逐行高亮 + 自动滚动 + 点行 seek */
+let localLrc = null;
+function renderLocalLyrics() {
+  const box = $('#playerLyrics');
+  const t = curTrack();
+  if (!box) return;
+  localLrc = null;
+  box.hidden = true;
+  box.innerHTML = '';
+  if (!t || !t.lyrics) return;
+  box.hidden = false;
+  box.innerHTML = '<p class="lrc-loading">歌词加载中…</p>';
+  loadLyrics(t.lyrics).then(d => {
+    const now = curTrack();
+    if (!now || now.lyrics !== t.lyrics || !box.isConnected) return;
+    box.innerHTML = lrcHeadHTML(d) + lrcListHTML(d) +
+      '<p class="lrc-note">播放时逐行高亮并自动滚动；点某行可跳到该句。</p>';
+    const list = box.querySelector('.lrc-list');
+    localLrc = { lines: d.lines || [], els: [...box.querySelectorAll('.lrc-line')], idx: -1, scroller: list };
+    list.addEventListener('click', e => {
+      const line = e.target.closest('[data-lrc-time]');
+      if (!line || !audio) return;
+      audio.currentTime = Math.max(0, +line.dataset.lrcTime || 0);
+      syncLocalLyrics(audio.currentTime);
+    });
+    syncLocalLyrics(audio ? audio.currentTime : 0);
+  }).catch(() => {
+    box.innerHTML = '<p class="lrc-loading">歌词加载失败。</p>';
+  });
+}
+function syncLocalLyrics(sec) {
+  if (!localLrc || !localLrc.els.length) return;
+  const lines = localLrc.lines;
+  let idx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (+lines[i].time <= sec) idx = i; else break;
+  }
+  if (idx === localLrc.idx) return;
+  localLrc.idx = idx;
+  localLrc.els.forEach((el, i) => el.classList.toggle('on', i === idx));
+  if (idx < 0) return;
+  const el = localLrc.els[idx];
+  const list = localLrc.scroller;
+  if (!list) return;
+  const elTop = el.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+  const top = elTop - list.clientHeight / 2 + el.clientHeight / 2;
+  if (reduceMotion()) list.scrollTop = Math.max(0, top);
+  else if (list.scrollTo) list.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  else list.scrollTop = Math.max(0, top);
+}
+/* 收藏夹歌单：整体列表，选中后同一块舞台按需插入 B 站播放器 */
+let plCurrent = -1;
+function fmtDur(s) {
+  s = Math.max(0, Math.round(+s || 0));
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+function trackMeta(t) {
+  const a = t.artist ? esc(t.artist) : '信息未取到';
+  return a + ' · UP 主 ' + esc(t.up || '信息未取到');
+}
+function renderPlaylist() {
+  const box = $('#playlistBlock');
+  if (!box) return;
+  const pl = playlistData();
+  if (!pl || !pl.items || !pl.items.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  const items = pl.items;
+  const cur = plCurrent >= 0 ? items[plCurrent] : null;
+  box.innerHTML = `
+    <div class="rl-head">
+      <h2>${esc(pl.title || '歌单')} <span>/ PLAYLIST</span></h2>
+      <span class="tiny">${items.length} 首 · B 站嵌入${pl.collectionUrl ? ` · <a href="${esc(pl.collectionUrl)}" target="_blank" rel="noopener noreferrer">收藏夹 ↗</a>` : ''}</span>
+    </div>
+    <div class="pl-stage">
+      <div class="pl-stage-media" id="plStageMedia">
+        ${cur ? `<img src="${esc(cur.cover)}" alt="${esc(cur.title)} 封面" width="640" height="360" loading="lazy" decoding="async">` : '<div class="pl-stage-empty">选一首开始</div>'}
+      </div>
+      <div class="pl-stage-side">
+        <p class="pl-now-kicker">当前选择</p>
+        <p class="pl-now-title">${cur ? esc(cur.title) : '从下面列表选一首'}</p>
+        <p class="pl-now-meta">${cur ? trackMeta(cur) + ' · ' + fmtDur(cur.duration) : '点击后才会加载 B 站播放器，首屏不加载多个 iframe'}</p>
+        <div class="pl-stage-actions">
+          <button class="rl-btn" type="button" data-pl-step="-1" aria-label="上一首">⏮</button>
+          <button class="rl-btn rl-btn-play" type="button" data-pl-stage-play${cur ? '' : ' disabled'}>▶ 站内播放</button>
+          <button class="rl-btn" type="button" data-pl-step="1" aria-label="下一首">⏭</button>
+          ${cur ? `<a class="rl-btn" href="${esc(cur.url)}" target="_blank" rel="noopener noreferrer">去 B 站 ↗</a>` : ''}
+        </div>
+        <p class="rl-tip">嵌入播放器不提供播放进度，这里只做曲目切换，不做假同步。</p>
+      </div>
+    </div>
+    <ol class="plv-list">
+      ${items.map((t, i) => `
+        <li class="pl-row${i === plCurrent ? ' on' : ''}">
+          <button class="pl-main" type="button" data-pl-i="${i}" aria-label="播放 ${esc(t.title)}">
+            <span class="pl-idx">${String(i + 1).padStart(2, '0')}</span>
+            <img class="pl-thumb" src="${esc(t.cover)}" alt="" width="64" height="40" loading="lazy" decoding="async">
+            <span class="pl-text"><b>${esc(t.title)}</b><small>${trackMeta(t)}</small></span>
+            <span class="pl-dur">${fmtDur(t.duration)}</span>
+          </button>
+          <a class="pl-out" href="${esc(t.url)}" target="_blank" rel="noopener noreferrer" aria-label="在 B 站打开 ${esc(t.title)}">↗</a>
+        </li>`).join('')}
+    </ol>`;
+  if (box.dataset.bound) return;
+  box.dataset.bound = '1';
+  box.addEventListener('click', e => {
+    const row = e.target.closest('[data-pl-i]');
+    if (row) { selectPlaylistTrack(+row.dataset.plI); return; }
+    const step = e.target.closest('[data-pl-step]');
+    if (step) {
+      const n = items.length;
+      selectPlaylistTrack(plCurrent < 0 ? 0 : (plCurrent + (+step.dataset.plStep) + n) % n);
+      return;
+    }
+    if (e.target.closest('[data-pl-stage-play]')) selectPlaylistTrack(plCurrent < 0 ? 0 : plCurrent);
+  });
+}
+function selectPlaylistTrack(i) {
+  const pl = playlistData();
+  if (!pl || !pl.items || !pl.items[i]) return;
+  plCurrent = i;
+  renderPlaylist();
+  const t = pl.items[i];
+  const media = $('#plStageMedia');
+  if (!media) return;
+  const src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(t.bvid) +
+    '&page=1&autoplay=1&danmaku=0&high_quality=1';
+  media.innerHTML = `<iframe class="pl-iframe" src="${src}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
 }
 function loadTrack(play) {
   const t = curTrack();
@@ -1144,6 +1340,7 @@ function loadTrack(play) {
   const a = ensureAudio();
   a.src = t.src;
   $$('#plList li').forEach(li => li.classList.toggle('on', +li.dataset.track === state.track));
+  renderLocalLyrics();
   if (play) a.play().catch(() => {});
   return true;
 }
@@ -1169,6 +1366,7 @@ function paintProgress() {
   ['#mcFill', '#mcFill2'].forEach(s => { const el = $(s); if (el) el.style.width = pct + '%'; });
   ['#mcNow', '#mcNow2'].forEach(s => { const el = $(s); if (el) el.textContent = fmtTime(audio.currentTime); });
   ['#mcDur', '#mcDur2'].forEach(s => { const el = $(s); if (el) el.textContent = fmtTime(audio.duration); });
+  syncLocalLyrics(audio.currentTime);
 }
 function paintPlayState() {
   $$('.mc-play').forEach(b => b.textContent = (audio && !audio.paused) ? '❚❚' : '▶');
