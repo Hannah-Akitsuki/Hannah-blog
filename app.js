@@ -1065,7 +1065,15 @@ function renderMusic() {
   $('#miniMusic').innerHTML = miniMusicHTML();
   const list = tracks();
   const cover = (state.music && state.music.cover) || '';
-  $('#player').innerHTML = `
+  const player = $('#player');
+  /* 没有本地音频时不要摆一个 0:00 的空播放器（访客会以为坏了）。
+     播放交给紧随其后的歌单块：选中曲目后原地插入 B 站官方 iframe。 */
+  player.hidden = !list.length && !isOwner();
+  player.innerHTML = !list.length
+    ? (isOwner()
+      ? '<div class="empty player-note">本地音频还没配置：把 mp3 放进 <code>audio/</code>，在 <code>data/music.json</code> 的 <code>tracks</code> 里加一条 <code>{"title":"歌名","artist":"歌手","src":"audio/xxx.mp3","lyrics":"xxx"}</code>，歌词放 <code>data/lyrics/xxx.json</code>。访客默认用下方歌单里的 B 站嵌入播放。</div>'
+      : '')
+    : `
     <div class="mc-cover">${cover ? `<img src="${esc(cover)}" alt="">` : '<span>♪</span>'}</div>
     <div>
       <p class="pl-title">${esc((state.music && state.music.title) || '歌单')}</p>
@@ -1281,19 +1289,20 @@ function renderPlaylist() {
     </div>
     <div class="pl-stage">
       <div class="pl-stage-media" id="plStageMedia">
-        ${cur ? `<img src="${esc(cur.cover)}" alt="${esc(cur.title)} 封面" width="640" height="360" loading="lazy" decoding="async">` : '<div class="pl-stage-empty">选一首开始</div>'}
+        ${cur ? `<img src="${esc(cur.cover)}" alt="${esc(cur.title)} 封面" width="640" height="360" loading="lazy" decoding="async">`
+        : `<div class="pl-stage-empty"><span class="pl-stage-mark">♪</span><b>从下面列表点一首</b><small>B 站官方嵌入会在这一块原地播放，不跳转</small></div>`}
       </div>
       <div class="pl-stage-side">
         <p class="pl-now-kicker">当前选择</p>
-        <p class="pl-now-title">${cur ? esc(cur.title) : '从下面列表选一首'}</p>
-        <p class="pl-now-meta">${cur ? trackMeta(cur) + ' · ' + fmtDur(cur.duration) : '点击后才会加载 B 站播放器，首屏不加载多个 iframe'}</p>
+        <p class="pl-now-title">${cur ? esc(cur.title) : '还没选曲目'}</p>
+        <p class="pl-now-meta">${cur ? trackMeta(cur) + ' · ' + fmtDur(cur.duration) : '点一首后这里显示歌名、歌手与时长；首屏不预载多个 iframe。'}</p>
         <div class="pl-stage-actions">
           <button class="rl-btn" type="button" data-pl-step="-1" aria-label="上一首">⏮</button>
           <button class="rl-btn rl-btn-play" type="button" data-pl-stage-play${cur ? '' : ' disabled'}>▶ 站内播放</button>
           <button class="rl-btn" type="button" data-pl-step="1" aria-label="下一首">⏭</button>
           ${cur ? `<a class="rl-btn" href="${esc(cur.url)}" target="_blank" rel="noopener noreferrer">去 B 站 ↗</a>` : ''}
         </div>
-        <p class="rl-tip">嵌入播放器不提供播放进度，这里只做曲目切换，不做假同步。</p>
+        <p class="rl-tip">本站不放音频文件，全部用 B 站官方嵌入；B 站没有整张歌单连续播放的嵌入能力，切歌请点曲目或上/下一首；嵌入也不提供进度，不做假同步。</p>
       </div>
     </div>
     <ol class="plv-list">
@@ -1333,6 +1342,13 @@ function selectPlaylistTrack(i) {
   const src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(t.bvid) +
     '&page=1&autoplay=1&danmaku=0&high_quality=1';
   media.innerHTML = `<iframe class="pl-iframe" src="${src}" title="${esc(t.title)} · B 站播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen frameborder="0" scrolling="no"></iframe>`;
+  /* 从列表底部点歌时舞台可能已经滚出视口，把它带回来，否则播放器“插入”了却看不见 */
+  const stage = media.closest('.pl-stage');
+  if (stage && stage.getBoundingClientRect().bottom < 0) {
+    try {
+      stage.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'center' });
+    } catch (e) { stage.scrollIntoView(); }
+  }
 }
 function loadTrack(play) {
   const t = curTrack();
