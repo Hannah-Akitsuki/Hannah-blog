@@ -326,7 +326,7 @@ def floating_island(name, loc, radius, depth, mats, rot=(0, 0, 0)):
 
 
 def build_hero(mats):
-    # —— 纸鹤：八面体机身 + 折面双翼 + 锥形长颈 / 喙 / 尾 ——
+    # —— 优雅的展翼鹤：长颈、尖喙、分层羽片和带折痕的扇形双翼 ——
     P = mats["paper"]
     # 用暖白、珍珠灰和淡金的细微差异强调折纸折面
     wing_light = make_mat("WingLight", "#FFF7E8", 0.68)
@@ -340,18 +340,19 @@ def build_hero(mats):
 
     # 左翼：四个三角面构成带折痕的斜上掠翼
     wing_v = [
-        (-0.16, 0.34, 0.26), (-0.16, -0.30, 0.22), (-0.78, 0.02, 0.70),
-        (-1.62, 0.26, 0.92), (-1.35, -0.40, 0.80),
+        (-0.12,.40,.22),(-.12,-.34,.18),(-.52,.08,.42),(-.98,.27,.67),
+        (-1.52,.34,.93),(-1.86,.43,1.12),(-1.60,-.37,.91),(-1.03,-.34,.65),(-.50,-.25,.39),
+        (-1.10,.20,.54),(-1.42,.08,.66),(-1.64,-.08,.77),(-1.70,-.24,.83)
     ]
-    wing_f = [(0, 1, 2), (0, 2, 3), (1, 4, 2), (2, 4, 3)]
-    wing_l = add_mesh("CraneWingL", wing_v, wing_f, [P, wing_light, wing_shadow], [0, 1, 2, 1])
+    wing_f = [(0,2,1),(2,8,1),(2,7,8),(2,3,7),(3,9,7),(3,10,9),(3,4,10),(4,11,10),(4,5,11),(5,12,11),(5,6,12),(6,7,12),(7,9,12),(9,10,12),(10,11,12)]
+    wing_l = add_mesh("CraneWingL", wing_v, wing_f, [P, wing_light, wing_shadow], [0,1,2,1,2,0,1,2,1,0,2,1,0,2,1])
     wing_r = add_mesh("CraneWingR", [(-x, y, z) for (x, y, z) in wing_v],
-                      [(0, 2, 1), (0, 3, 2), (1, 2, 4), (2, 3, 4)], [P, wing_light, wing_shadow], [0, 1, 2, 1])
+                      [tuple(reversed(f)) for f in wing_f], [P, wing_light, wing_shadow], [0,1,2,1,2,0,1,2,1,0,2,1,0,2,1])
 
     neck = add_cone("CraneNeck", (0.0, 0.60, 0.58), 0.14, 0.075, 0.86, P,
                     rot=(math.radians(-35), 0, 0), verts=6)
-    head = add_ico("CraneHead", (0.0, 0.86, 0.94), (0.15, 0.16, 0.14), P, subdiv=1)
-    beak = add_cone("CraneBeak", (0.0, 1.05, 0.92), 0.055, 0.004, 0.28, mats["sage_dark"],
+    head = add_ico("CraneHead", (0.0, 0.86, 0.94), (0.145, 0.17, 0.13), P, subdiv=2)
+    beak = add_cone("CraneBeak", (0.0, 1.08, 0.93), 0.045, 0.002, 0.34, mats["clay"],
                     rot=(math.radians(-90), 0, 0), verts=6)
     tail = add_cone("CraneTail", (0.0, -1.02, 0.40), 0.10, 0.012, 1.05, P,
                     rot=(math.radians(66), 0, 0), verts=6)
@@ -375,12 +376,13 @@ def build_hero(mats):
     # 远景薄云带，降低画面空旷感；体积克制以保持标题可读
     cloud_c = cloud_cluster("CloudC", (0.05, 2.8, 1.35),
                             [(0,0,0,1.05,.30,.14),(.86,.02,.04,.72,.25,.12),(-.92,.01,.02,.66,.24,.12)], mats)
+    cloud_d = cloud_cluster("CloudD", (-3.4,2.15,1.20), [(-.8,0,0,.85,.32,.19),(0,0,.10,1.0,.38,.25),(.75,0,0,.8,.3,.18)], mats)
     # —— 浮空地形 ——
     island = floating_island("Island", (2.85, 0.55, -0.35), 0.82, 0.58, mats, (0.05, 0, 0.1))
     shard1 = floating_island("ShardA", (-0.65, 0.30, -1.55), 0.24, 0.20, mats, (0.2, 0.3, 0.4))
     shard2 = floating_island("ShardB", (1.35, 0.40, -2.10), 0.15, 0.13, mats, (0.1, 0.2, 0.6))
 
-    geoms = crane_parts + [cloud_a, cloud_b, cloud_c, island, shard1, shard2]
+    geoms = crane_parts + [cloud_a, cloud_b, cloud_c, cloud_d, island, shard1, shard2]
 
     world_ambient(0.55, "#FBFAF4")
     add_area("Key", (-4.5, -5.0, 5.0), 420, 5.0, (1.0, 0.91, 0.78), (-1.2, 0.2, 0.9))
