@@ -38,17 +38,19 @@ def reset_scene():
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
-    scene.cycles.samples = 40
+    scene.cycles.samples = 96
     scene.cycles.use_denoising = True
-    scene.cycles.max_bounces = 4
+    scene.cycles.max_bounces = 8
+    scene.cycles.use_preview_denoising = True
     scene.cycles.transparent_max_bounces = 3
     scene.render.film_transparent = True
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
     scene.render.image_settings.color_depth = "8"
     scene.render.image_settings.compression = 20
-    scene.view_settings.view_transform = "Standard"
-    scene.view_settings.look = "None"
+    scene.view_settings.view_transform = "AgX"
+    scene.view_settings.look = "AgX - Medium High Contrast"
+    scene.render.image_settings.file_format = "PNG"
     return scene
 
 
@@ -248,7 +250,7 @@ def render_to(path, width, height):
     scene = bpy.context.scene
     scene.render.resolution_x = width
     scene.render.resolution_y = height
-    scene.render.resolution_percentage = 100
+    scene.render.resolution_percentage = 125
     scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
 

@@ -536,11 +536,14 @@ dialog h3{font:500 19px 'Noto Serif SC';margin:0 0 8px}
 .foot-copy:hover{color:var(--green);border-color:var(--green)}
 .foot-note{font-size:11px;color:var(--muted);line-height:1.7}
 /* 访问统计：未接入数据时由 [hidden] 整块隐藏，不占位 */
-.foot-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px 16px;max-width:700px;margin:18px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:18px;background:var(--surface);font-size:12px;color:var(--muted)}
-.foot-stats[hidden]{display:none}
-.fs-title{grid-column:1/-1;padding-left:10px;border-left:3px solid var(--green);font-size:16px;color:var(--ink)}
-.fs-item{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.fs-note{grid-column:1/-1;font-size:10px}
+.home-stats{max-width:1240px;margin:32px auto;padding:22px clamp(16px,4vw,40px);border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--muted)}
+.home-stats[hidden]{display:none}
+.fs-title{margin:0 0 16px;padding-left:11px;border-left:3px solid var(--green);font-size:18px;color:var(--ink)}
+.home-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 20px}
+.home-stats .fs-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.home-stats .fs-item b{font:600 14px 'DM Sans',sans-serif;color:var(--green);font-variant-numeric:tabular-nums}
+.home-stats .fs-note{margin:12px 0 0;font-size:11px;color:var(--muted)}
+@media(max-width:650px){.home-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .fs-item{display:inline-flex;align-items:baseline;gap:5px}
 .fs-k{color:var(--muted)}
 .foot-stats b{font:600 13px 'DM Sans',sans-serif;color:var(--green);font-variant-numeric:tabular-nums}
