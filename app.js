@@ -1543,6 +1543,12 @@ function initToc() {
   $('#tocSheetList').addEventListener('click', onLink);
 
   $('#content').addEventListener('click', e => {
+    const img = e.target.closest('#content img');
+    if (img) {
+      e.preventDefault();
+      openLightbox(img.currentSrc || img.src, '', img.getAttribute('alt') || '');
+      return;
+    }
     const b = e.target.closest('.sec-anchor');
     if (!b) return;
     e.preventDefault();
@@ -1555,6 +1561,9 @@ function initToc() {
     copyText(url).then(ok => toast(ok ? '已复制本节链接' : '复制失败，请手动复制地址栏'));
   });
 
+  $('#content').addEventListener('load', e => {
+    if (e.target.tagName === 'IMG') onScroll();
+  }, true);
   $('#tocFab').addEventListener('click', openTocSheet);
   $('#tocSheetClose').addEventListener('click', closeTocSheet);
   $('#tocSheetMask').addEventListener('click', closeTocSheet);
@@ -1568,7 +1577,15 @@ function onScroll() {
   document.body.classList.toggle('scrolled', scrolled);
   const isHome = $('#hero') && !$('#hero').hidden;
   $('.topbar').classList.toggle('over-hero', !!isHome && !scrolled);
+  updateReadProgress(y);
   if (!scrollRaf) scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; updateTocActive(); });
+}
+function updateReadProgress(y) {
+  const bar = $('#readBar');
+  if (!bar) return;
+  if (!$('#view-article.active')) { bar.style.width = '0%'; return; }
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  bar.style.width = (total > 0 ? Math.min(100, Math.max(0, (y / total) * 100)) : 0).toFixed(2) + '%';
 }
 
 /* ---------------- 搜索 ---------------- */

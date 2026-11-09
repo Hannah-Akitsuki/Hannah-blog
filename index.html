@@ -13,7 +13,7 @@
 /* 首屏不做切页动画 */
 document.documentElement.classList.add('booting');
 </script>
-<link rel="stylesheet" href="style.css?v=22">
+<link rel="stylesheet" href="style.css?v=23">
 <script type="importmap">
 {
   "imports": {
@@ -251,6 +251,7 @@ document.documentElement.classList.add('booting');
 
   <!-- 文章 -->
   <section class="view" id="view-article" data-view="article">
+    <div class="read-progress" aria-hidden="true"><i id="readBar"></i></div>
     <div class="layout">
       <aside class="side">
         <div class="side-title">个人笔记 <span id="articleCount"></span></div>
@@ -505,7 +506,7 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="app.js?v=21"></script>
+<script src="app.js?v=22"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>
 </html>

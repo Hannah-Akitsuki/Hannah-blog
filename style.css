@@ -273,7 +273,10 @@ article p{margin:12px 0;color:inherit;opacity:.9}
 article blockquote{margin:18px 0;padding:9px 15px;border-left:2px solid var(--green);color:var(--muted);background:var(--card-2);font-size:13px}
 article ul,article ol{padding-left:28px}
 article pre{overflow:auto;background:var(--card-2);padding:14px;border-radius:8px}
-#content img{max-width:min(560px,100%);height:auto;display:block;margin:1em 0;border-radius:8px}
+#content img{max-width:min(560px,100%);height:auto;display:block;margin:1em 0;border-radius:8px;cursor:zoom-in}
+.read-progress{position:fixed;left:0;right:0;top:0;height:3px;z-index:80;pointer-events:none}
+.read-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .12s linear}
+@media (prefers-reduced-motion: reduce){.read-progress i{transition:none}}
 .locked-page{margin:45px 0;padding:45px 35px;background:var(--paper);border-radius:12px}
 .locked-page h1{font:500 30px 'Noto Serif SC';margin:14px 0}
 .locked-page p{color:var(--muted)}
