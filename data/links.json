@@ -12,9 +12,9 @@
     "tag": "主页"
   },
   {
-    "name": "Firefly",
-    "url": "https://rererego.github.io/Firefly/",
-    "desc": "友链：Firefly 的个人站点。",
+    "name": "ibuki",
+    "url": "https://rererego.github.io/MyBlog/",
+    "desc": "友链：rererego（ibuki）的个人博客。",
     "tag": "友链",
     "friend": true
   }
