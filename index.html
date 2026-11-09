@@ -568,9 +568,16 @@ document.documentElement.classList.add('booting');
   </div>
   <!-- 访问统计：接口未配置或请求失败时整块保持隐藏，不显示占位数字 -->
   <div class="foot-stats" id="footStats" hidden>
+    <strong class="fs-title">站点统计</strong>
+    <span class="fs-item"><span class="fs-k">文章</span><b id="statArticles">—</b></span>
+    <span class="fs-item"><span class="fs-k">分类</span><b id="statCategories">—</b></span>
+    <span class="fs-item"><span class="fs-k">标签</span><b id="statTags">—</b></span>
+    <span class="fs-item"><span class="fs-k">总字数</span><b id="statWords">—</b></span>
+    <span class="fs-item"><span class="fs-k">运行时长</span><b id="statDays">—</b></span>
+    <span class="fs-item"><span class="fs-k">最后活动</span><b id="statActivity">—</b></span>
     <span class="fs-item"><span class="fs-k">今日访问</span><b id="statToday"></b></span>
     <span class="fs-item"><span class="fs-k">累计</span><b id="statTotal"></b></span>
-    <span class="fs-note">统计仅记录去重访问数，不保存原始 IP</span>
+    <span class="fs-note">访问量需配置在线统计服务；本机数据库不能被 GitHub Pages 直接访问。</span>
   </div>
 </footer>
 

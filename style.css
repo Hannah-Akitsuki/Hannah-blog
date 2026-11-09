@@ -536,8 +536,11 @@ dialog h3{font:500 19px 'Noto Serif SC';margin:0 0 8px}
 .foot-copy:hover{color:var(--green);border-color:var(--green)}
 .foot-note{font-size:11px;color:var(--muted);line-height:1.7}
 /* 访问统计：未接入数据时由 [hidden] 整块隐藏，不占位 */
-.foot-stats{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;margin-top:12px;font-size:11.5px;color:var(--muted)}
+.foot-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px 16px;max-width:700px;margin:18px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:18px;background:var(--surface);font-size:12px;color:var(--muted)}
 .foot-stats[hidden]{display:none}
+.fs-title{grid-column:1/-1;padding-left:10px;border-left:3px solid var(--green);font-size:16px;color:var(--ink)}
+.fs-item{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fs-note{grid-column:1/-1;font-size:10px}
 .fs-item{display:inline-flex;align-items:baseline;gap:5px}
 .fs-k{color:var(--muted)}
 .foot-stats b{font:600 13px 'DM Sans',sans-serif;color:var(--green);font-variant-numeric:tabular-nums}

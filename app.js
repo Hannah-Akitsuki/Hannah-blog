@@ -1636,7 +1636,29 @@ async function initStats() {
   const box = $('#footStats');
   const cfg = (state.config && state.config.stats) || {};
   const endpoint = String(cfg.endpoint || '').trim();
-  if (!box || !endpoint) return;
+  if (!box) return;
+  // Published content metrics are available on GitHub Pages without a server.
+  const docs = Array.isArray(state.docs) ? state.docs : [];
+  const categories = new Set(docs.map(d => String(d.category || '').trim()).filter(Boolean));
+  const tags = new Set(docs.flatMap(d => Array.isArray(d.tags) ? d.tags : []).map(String).filter(Boolean));
+  let words = 0;
+  for (const d of docs) {
+    try {
+      const res = await fetch(bust(d.file));
+      if (res.ok) words += countWords(stripFrontMatter(await res.text()));
+    } catch (_) {}
+  }
+  $('#statArticles').textContent = docs.length.toLocaleString('zh-CN');
+  $('#statCategories').textContent = categories.size.toLocaleString('zh-CN');
+  $('#statTags').textContent = tags.size.toLocaleString('zh-CN');
+  $('#statWords').textContent = words.toLocaleString('zh-CN');
+  const firstDate = docs.map(d => String(d.date || '')).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)).sort()[0];
+  const days = firstDate ? Math.max(1, Math.floor((Date.now() - new Date(firstDate + 'T00:00:00+08:00').getTime()) / 86400000) + 1) : '—';
+  $('#statDays').textContent = typeof days === 'number' ? days.toLocaleString('zh-CN') + ' 天' : days;
+  const lastDate = docs.map(d => String(d.date || '')).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)).sort().pop();
+  $('#statActivity').textContent = lastDate === new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' }) ? '今天' : (lastDate || '—');
+  box.hidden = false;
+  if (!endpoint) return;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 5000);
   try {
