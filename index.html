@@ -82,20 +82,6 @@ document.documentElement.classList.add('booting');
 
   <!-- 首页 -->
   <section class="view" id="view-home" data-view="home">
-    <section class="home-stats" id="footStats" hidden aria-label="站点统计">
-      <h2 class="fs-title">站点统计</h2>
-      <div class="home-stats-grid">
-        <div class="fs-item"><span class="fs-k">文章</span><b id="statArticles">—</b></div>
-        <div class="fs-item"><span class="fs-k">分类</span><b id="statCategories">—</b></div>
-        <div class="fs-item"><span class="fs-k">标签</span><b id="statTags">—</b></div>
-        <div class="fs-item"><span class="fs-k">总字数</span><b id="statWords">—</b></div>
-        <div class="fs-item"><span class="fs-k">运行时长</span><b id="statDays">—</b></div>
-        <div class="fs-item"><span class="fs-k">最后活动</span><b id="statActivity">—</b></div>
-        <div class="fs-item"><span class="fs-k">今日访问</span><b id="statToday">未接入</b></div>
-        <div class="fs-item"><span class="fs-k">累计访问</span><b id="statTotal">未接入</b></div>
-      </div>
-      <p class="fs-note">访问统计服务尚未配置；其它数据根据公开文章自动统计。</p>
-    </section>
     <div class="home-grid">
       <div class="home-side">
       <aside class="profile-card">
@@ -137,6 +123,21 @@ document.documentElement.classList.add('booting');
 
       <aside class="music-card" id="miniMusic"></aside>
     </div>
+
+    <section class="home-stats" id="footStats" hidden aria-label="站点统计">
+      <h2 class="fs-title">站点统计</h2>
+      <div class="home-stats-grid">
+        <div class="fs-item"><span class="fs-k">文章</span><b id="statArticles">—</b></div>
+        <div class="fs-item"><span class="fs-k">分类</span><b id="statCategories">—</b></div>
+        <div class="fs-item"><span class="fs-k">标签</span><b id="statTags">—</b></div>
+        <div class="fs-item"><span class="fs-k">总字数</span><b id="statWords">—</b></div>
+        <div class="fs-item"><span class="fs-k">运行时长</span><b id="statDays">—</b></div>
+        <div class="fs-item"><span class="fs-k">最后活动</span><b id="statActivity">—</b></div>
+        <div class="fs-item"><span class="fs-k">今日访问</span><b id="statToday">未接入</b></div>
+        <div class="fs-item"><span class="fs-k">累计访问</span><b id="statTotal">未接入</b></div>
+      </div>
+      <p class="fs-note">访问统计服务尚未配置；其它数据根据公开文章自动统计。</p>
+    </section>
 
     <div class="home-study">
       <div class="feed-head">
