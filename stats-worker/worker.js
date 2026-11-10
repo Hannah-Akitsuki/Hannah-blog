@@ -49,13 +49,20 @@ export default {
     // 同一哈希当天只 +1；KV 最终一致，高并发下可能少计，个人站可接受
     const seen = await env.STATS.get(seenKey);
     if (!seen) {
-      today += 1;
-      total += 1;
-      await env.STATS.put(seenKey, '1', { expirationTtl: DAY_TTL });
-      await Promise.all([
-        env.STATS.put(dayKey, String(today)),
-        env.STATS.put('total', String(total))
-      ]);
+      try {
+        today += 1;
+        total += 1;
+        await env.STATS.put(seenKey, '1', { expirationTtl: DAY_TTL });
+        await Promise.all([
+          env.STATS.put(dayKey, String(today)),
+          env.STATS.put('total', String(total))
+        ]);
+      } catch (e) {
+        // KV 写入失败（例如免费额度用尽）时回退为只读计数：
+        // 照常返回已读到的数字，前端继续显示，不报错也不造假
+        today -= 1;
+        total -= 1;
+      }
     }
 
     return json({ today, total }, 200, cors);

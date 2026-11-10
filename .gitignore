@@ -9,3 +9,15 @@ __pycache__/
 *.pyc
 # Draco 对比导出（只用于体积对比，未上线）
 assets/3d/*-draco.glb
+# 凭证与本地密钥：任何情况下都不提交
+.env
+.env.*
+*.env
+.dev.vars
+.dev.vars.*
+.wrangler/
+stats-worker/.wrangler/
+*.pem
+*.key
+# 计划脚本的实际数据（提醒目录内也有一份规则，这里再兜一层）
+reminders/plan.json
