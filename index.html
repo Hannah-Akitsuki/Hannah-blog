@@ -137,10 +137,10 @@ document.documentElement.classList.add('booting');
         <div class="fs-item"><span class="fs-k">总字数</span><b id="statWords">—</b></div>
         <div class="fs-item"><span class="fs-k">运行时长</span><b id="statDays">—</b></div>
         <div class="fs-item"><span class="fs-k">最后活动</span><b id="statActivity">—</b></div>
-        <div class="fs-item"><span class="fs-k">今日访问</span><b id="statToday">未接入</b></div>
-        <div class="fs-item"><span class="fs-k">累计访问</span><b id="statTotal">未接入</b></div>
+        <div class="fs-item" id="busuanzi_container_site_uv" style="display:none"><span class="fs-k">总访客</span><b id="busuanzi_value_site_uv">—</b></div>
+        <div class="fs-item" id="busuanzi_container_site_pv" style="display:none"><span class="fs-k">总浏览</span><b id="busuanzi_value_site_pv">—</b></div>
       </div>
-      <p class="fs-note">访问统计服务尚未配置；其它数据根据公开文章自动统计。</p>
+      <p class="fs-note">访客计数由第三方服务「不蒜子」匿名统计，本站不记录 IP；其它数据根据公开文章自动统计。</p>
     </section>
 
     <div class="home-study">
@@ -651,6 +651,8 @@ document.documentElement.classList.add('booting');
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- 不蒜子匿名访客计数（国内可达）；服务不可用时对应格子保持隐藏 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <script src="app.js?v=30"></script>
 <script type="module" src="scene3d.js?v=13"></script>
 </body>

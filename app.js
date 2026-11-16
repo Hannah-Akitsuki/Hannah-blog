@@ -1694,8 +1694,11 @@ async function initStats() {
     if (!Number.isInteger(today) || !Number.isInteger(total) || today < 0 || total < 0) {
       throw new Error('stats payload invalid');
     }
-    $('#statToday').textContent = today.toLocaleString('zh-CN');
-    $('#statTotal').textContent = total.toLocaleString('zh-CN');
+    /* 首页统计格已改用不蒜子（busuanzi）；Worker 路径保留为休眠备用，元素不存在时跳过 */
+    const tEl = $('#statToday');
+    const sEl = $('#statTotal');
+    if (tEl) tEl.textContent = today.toLocaleString('zh-CN');
+    if (sEl) sEl.textContent = total.toLocaleString('zh-CN');
     box.hidden = false;
   } catch (e) {
     /* 静默降级：保持隐藏，控制台也不打扰普通访客 */
