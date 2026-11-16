@@ -171,6 +171,15 @@ html.ready .view.active:not(.initial){animation:fade .28s ease}
 .profile-actions{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
 .chip{font-size:12px;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 13px;color:var(--muted);transition:.2s}
 .chip:hover{color:var(--green);border-color:var(--green)}
+.chip-gh{display:inline-flex;align-items:center;gap:6px}
+.chip-ic{flex:none;display:block}
+/* 关于页「关注我」区块 */
+.follow-card{margin-top:28px;padding:20px 22px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius)}
+.follow-card h2{font:500 17px 'Noto Serif SC',serif;margin:0 0 8px}
+.follow-tip{margin:0 0 14px;font-size:13px;color:var(--muted)}
+.follow-row{display:flex;flex-wrap:wrap;gap:10px}
+.follow-row .chip{font-size:12.5px;padding:7px 16px}
+.follow-card .tiny{margin:14px 0 0}
 .profile-card .ghost-btn{width:100%;font-size:12.5px;padding:8px}
 .feed{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 22px 24px;box-shadow:var(--shadow);min-width:0}
 .feed-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
