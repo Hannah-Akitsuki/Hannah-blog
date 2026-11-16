@@ -73,8 +73,11 @@ if ($LASTEXITCODE -ne 0) { Fail "写入 secret 失败：`n$secretOut" }
 Write-Host "[4/5] IP_SALT 已写入（值不回显）" -ForegroundColor Green
 
 # 5. 部署并回填 config.json
+# PowerShell 5 会把原生命令的 stderr 警告当成 terminating error，这里放宽处理
+$ErrorActionPreference = 'Continue'
 Write-Host "[5/5] 部署 Worker ..."
 $depOut = (npx wrangler deploy 2>&1 | Out-String)
+$ErrorActionPreference = 'Stop'
 Write-Host $depOut
 if ($LASTEXITCODE -ne 0) { Fail "部署失败，请查看上方输出" }
 $m2 = [regex]::Match($depOut, 'https://[A-Za-z0-9._-]+\.workers\.dev')
